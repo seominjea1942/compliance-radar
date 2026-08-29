@@ -40,6 +40,7 @@ print(f"untagged decisions: {len(rows)}")
 for i in range(0, len(rows), 25):
     batch = rows[i:i+25]
     payload = [{"id": r[0], "source": r[1], "title": r[2], "why": r[3]} for r in batch]
+    tagger.messages = []
     resp = str(tagger(json.dumps(payload))).strip()
     if resp.startswith("```"):
         resp = resp.strip("`").removeprefix("json").strip()
