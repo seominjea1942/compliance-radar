@@ -46,6 +46,7 @@ def triage_item(agent: Agent, item: dict, profile: dict) -> dict:
         "BUSINESS PROFILE:\n" + json.dumps(profile, indent=2) +
         "\n\nITEM TO TRIAGE:\n" + json.dumps(item, indent=2)
     )
+    agent.messages = []
     result = agent(prompt)
     text = str(result).strip()
     if text.startswith("```"):
