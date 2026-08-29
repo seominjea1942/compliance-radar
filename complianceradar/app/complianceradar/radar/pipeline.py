@@ -75,6 +75,10 @@ def triage_with_context(agent, item, profile, past):
     prompt = ("BUSINESS PROFILE:\n" + json.dumps(profile_view, indent=2) +
               context +
               "\n\nITEM TO TRIAGE:\n" + json.dumps(item, indent=2))
+    # Each triage is independent: clear conversation state so the agent does not
+    # drag prior items' prompts along (the default sliding window multiplied
+    # input tokens ~25x across long batch loops).
+    agent.messages = []
     text = str(agent(prompt)).strip()
     if text.startswith("```"):
         text = text.strip("`").removeprefix("json").strip()
