@@ -1,0 +1,55 @@
+{
+  "$schema": "https://schema.agentcore.aws.dev/v1/agentcore.json",
+  "name": "complianceradar",
+  "version": 1,
+  "managedBy": "CDK",
+  "tags": {
+    "agentcore:created-by": "agentcore-cli",
+    "agentcore:project-name": "complianceradar"
+  },
+  "runtimes": [
+    {
+      "name": "complianceradar",
+      "build": "CodeZip",
+      "entrypoint": "main.py",
+      "codeLocation": "app/complianceradar/",
+      "runtimeVersion": "PYTHON_3_14",
+      "networkMode": "PUBLIC",
+      "protocol": "HTTP",
+      "envVars": [
+        {
+          "name": "TIDB_HOST",
+          "value": "gateway01.us-west-2.prod.aws.tidbcloud.com"
+        },
+        {
+          "name": "TIDB_PORT",
+          "value": "4000"
+        },
+        {
+          "name": "TIDB_USER",
+          "value": "ntcgNL97uxfWpLo.root"
+        },
+        {
+          "name": "TIDB_PASSWORD",
+          "value": "bagwcVDB27BO3a5N"
+        },
+        {
+          "name": "TIDB_DATABASE",
+          "value": "compliance_radar"
+        }
+      ]
+    }
+  ],
+  "memories": [],
+  "knowledgeBases": [],
+  "credentials": [],
+  "evaluators": [],
+  "onlineEvalConfigs": [],
+  "agentCoreGateways": [],
+  "policyEngines": [],
+  "configBundles": [],
+  "abTests": [],
+  "harnesses": [],
+  "datasets": [],
+  "payments": []
+}
