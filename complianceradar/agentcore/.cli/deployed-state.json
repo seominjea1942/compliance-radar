@@ -1,0 +1,17 @@
+{
+  "targets": {
+    "default": {
+      "resources": {
+        "runtimes": {
+          "complianceradar": {
+            "runtimeId": "complianceradar_complianceradar-3K4xYLD8E5",
+            "runtimeArn": "arn:aws:bedrock-agentcore:us-west-2:513189074111:runtime/complianceradar_complianceradar-3K4xYLD8E5",
+            "roleArn": "arn:aws:iam::513189074111:role/AgentCore-complianceradar-ApplicationAgentComplianc-KSKlr9fIldyR"
+          }
+        },
+        "stackName": "AgentCore-complianceradar-default",
+        "deployHash": "9e6cdf3dcce33275"
+      }
+    }
+  }
+}
