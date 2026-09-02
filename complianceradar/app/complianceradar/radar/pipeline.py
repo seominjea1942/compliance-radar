@@ -98,6 +98,13 @@ def run(limit=None) -> dict:
     items = fda_recalls.fetch_items()
     for it in items:
         it["external_id"] = item_key(it)
+    try:
+        from radar import fsis_email
+        items += fsis_email.fetch_items()
+    except Exception as e:
+        # FSIS email channel is additive; a bad email or S3 hiccup must not
+        # kill the FDA pass. Surface it in logs only.
+        print(f"fsis_email fetch failed: {type(e).__name__}: {e}")
 
     with conn.cursor() as c:
         c.execute("SELECT source, external_id FROM documents")
