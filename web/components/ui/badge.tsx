@@ -9,6 +9,7 @@ const badgeVariants = cva(
     variants: {
       variant: {
         outline: "rounded border border-line-chip px-2 py-1 text-body",
+        outlineAlert: "rounded border border-alert-line px-2 py-1 text-alert",
         bare: "text-faint",
         alert: "text-alert",
       },

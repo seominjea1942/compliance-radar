@@ -1,19 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, BellOff, Check, Mail, MessageCircle } from "lucide-react";
+import { AlertTriangle, BellOff, Check, Info, Mail, MessageCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardActions } from "@/components/ui/card";
+import { Tooltip } from "@/components/ui/tooltip";
 import type { SurfacedItem } from "@/lib/queries";
 
-/** The FDA's own recall severity scale, spelled out for anyone who doesn't
- *  read enforcement reports for a living. */
+/**
+ * The FDA's own recall severity scale, spelled out for anyone who doesn't read
+ * enforcement reports for a living. The chip shows the FDA's term because that
+ * is what the source document and any inspector will say; the tooltip carries
+ * the plain-English meaning.
+ */
 const CLASS_MEANING: Record<string, string> = {
-  "Class I": "FDA Class I: reasonable probability of serious harm or death.",
-  "Class II":
-    "FDA Class II: temporary or medically reversible harm; remote chance of serious harm.",
-  "Class III": "FDA Class III: unlikely to cause harm, typically a labelling issue.",
+  "Class I": "The FDA's most serious tier: a reasonable probability of serious harm or death.",
+  "Class II": "Temporary or medically reversible harm, with only a remote chance of serious harm.",
+  "Class III": "Unlikely to cause harm. Usually a labelling or packaging defect.",
 };
 
 function UrgentBanner({ reason }: { reason: string }) {
@@ -42,13 +46,25 @@ export function SurfacedCard({ item }: { item: SurfacedItem }) {
       <div className="flex flex-wrap items-center gap-2.5">
         <Badge>{item.sourceLabel}</Badge>
         {item.classification && (
-          <Badge
-            variant={urgent ? "alert" : "bare"}
-            title={CLASS_MEANING[item.classification] ?? item.classification}
-            className="cursor-help"
+          <Tooltip
+            content={
+              <>
+                <span className="font-medium">FDA {item.classification}</span>
+                <br />
+                {CLASS_MEANING[item.classification] ?? "FDA recall classification."}
+              </>
+            }
           >
-            {item.classification}
-          </Badge>
+            {/* tabIndex so the tooltip is reachable by keyboard, not hover only */}
+            <Badge
+              variant={urgent ? "outlineAlert" : "outline"}
+              tabIndex={0}
+              className="cursor-help gap-1.5 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {item.classification}
+              <Info className="size-3 opacity-70" strokeWidth={1.6} aria-hidden />
+            </Badge>
+          </Tooltip>
         )}
       </div>
 

@@ -22,6 +22,7 @@ Primitives live in `components/ui/`:
 | `Badge` | the uppercase mono eyebrow: source chips, recall class |
 | `Avatar` | initials tile (`square` store, `round` owner) |
 | `NavItem` | a row in the left rail |
+| `Tooltip` | designed hover/focus bubble, Radix-backed |
 
 Screen-level components (`Sidebar`, `TopicTable`, `SurfacedCard`, `PermitMap`)
 compose those. Add a card action by adding one `<Button variant="cardAction">`,
@@ -126,5 +127,9 @@ to `bedrock:InvokeModel` — not the project's admin AWS keys.
   deriving urgency from reason text where classification is missing (fda_rss);
   that is deliberately not done, because keyword-sniffing prose would
   manufacture a severity the record does not state. Say the word if you want it.
+- **Recall class chips** show the FDA's own term (Class I/II/III) because that
+  is what the source document says, with an info icon and a tooltip carrying
+  the plain-English meaning. The chip is focusable, so the explanation is
+  reachable by keyboard and not hover-only.
 - **BIGINT ids** are read as strings (`bigNumberStrings: true`), per contract
   rule 2. Do not turn them into numbers.
