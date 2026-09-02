@@ -3,6 +3,11 @@ import { NavItem } from "@/components/ui/nav-item";
 import type { StoreProfile } from "@/lib/queries";
 import { count } from "@/lib/format";
 
+/**
+ * Left rail on desktop; a sticky top bar below `md`, where the nav scrolls
+ * horizontally rather than disappearing. One component, no JS: the design's
+ * mobile artboards do not exist, so this is the web version made responsive.
+ */
 export function Sidebar({
   profile,
   surfacedCount,
@@ -16,22 +21,26 @@ export function Sidebar({
 
   return (
     <nav
-      data-rail
-      // The design frames a fixed rail; the feed can run to tens of thousands
-      // of pixels, so pin it rather than letting it stretch.
-      className="sticky top-0 flex h-screen w-[214px] flex-none flex-col gap-5 self-start border-r border-line bg-rail px-3.5 py-4"
+      className={[
+        "sticky top-0 z-10 flex flex-none bg-rail",
+        // Mobile: full-width bar across the top.
+        "w-full flex-row items-center gap-3 overflow-x-auto border-b border-line px-4 py-3",
+        // Desktop: the design's fixed rail.
+        "md:h-screen md:w-[214px] md:flex-col md:items-stretch md:gap-5",
+        "md:self-start md:overflow-visible md:border-r md:border-b-0 md:px-3.5 md:py-4",
+      ].join(" ")}
     >
-      <div className="flex items-center gap-2.5 rounded-[9px] border border-line-card bg-paper px-[11px] py-2.5">
+      <div className="flex max-w-[180px] flex-none items-center gap-2.5 rounded-[9px] border border-line-card bg-paper px-[11px] py-2.5 md:max-w-none">
         <Avatar name={storeName} shape="square" />
         <div className="flex min-w-0 flex-col gap-px">
           <span className="truncate font-serif text-sm/tight font-semibold">{storeName}</span>
           {profile?.location && (
-            <span className="text-[11.5px] text-faint">{profile.location}</span>
+            <span className="truncate text-[11.5px] text-faint">{profile.location}</span>
           )}
         </div>
       </div>
 
-      <div className="flex flex-col gap-0.5">
+      <div className="flex flex-none flex-row gap-1 md:flex-col md:gap-0.5">
         <NavItem href="/" label="Overview" meta={count(surfacedCount)} active />
         <NavItem href="/log" label="Log" meta={count(filteredCount)} />
         <NavItem href="/profile" label="Store profile" />
@@ -41,7 +50,9 @@ export function Sidebar({
       </div>
 
       {profile?.owner && (
-        <div className="mt-auto flex flex-col gap-3 border-t border-line pt-3.5">
+        // The owner block is rail furniture; on the top bar it would push the
+        // nav off-screen, so it is desktop-only.
+        <div className="mt-auto hidden flex-col gap-3 border-t border-line pt-3.5 md:flex">
           <div className="flex items-center gap-2.5">
             <Avatar name={profile.owner} />
             <div className="flex min-w-0 flex-col gap-px">

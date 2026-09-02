@@ -1,28 +1,20 @@
-import "server-only";
-import mysql from "mysql2/promise";
+import { connect } from "@tidbcloud/serverless";
 
 /**
  * TiDB access for the web tier.
  *
- * Mirrors `db/client.py` (same host/credentials, same TLS requirement). The
- * pool is cached on globalThis so warm serverless invocations reuse
- * connections instead of opening one per request, which TiDB's connection
- * limit does not tolerate.
+ * Uses the HTTP-based serverless driver rather than mysql2: there are no TCP
+ * connections to pool, so short-lived serverless invocations cannot exhaust
+ * the cluster's connection limit, and it runs on the Edge runtime.
+ *
+ * Credentials: `DATABASE_URL` (TiDB Cloud console -> Connect -> Serverless
+ * Driver) if set, otherwise assembled from the same TIDB_* variables the
+ * Python side uses, so dev works off the existing .env.local.
  */
-declare global {
-  // eslint-disable-next-line no-var
-  var __radarPool: mysql.Pool | undefined;
-}
+function connectionUrl(): string {
+  if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
 
-function makePool(): mysql.Pool {
-  const {
-    TIDB_HOST,
-    TIDB_PORT,
-    TIDB_USER,
-    TIDB_PASSWORD,
-    TIDB_DATABASE,
-  } = process.env;
-
+  const { TIDB_HOST, TIDB_PORT, TIDB_USER, TIDB_PASSWORD, TIDB_DATABASE } = process.env;
   const missing = Object.entries({
     TIDB_HOST,
     TIDB_PORT,
@@ -35,35 +27,27 @@ function makePool(): mysql.Pool {
 
   if (missing.length) {
     throw new Error(
-      `Missing TiDB env vars: ${missing.join(", ")}. ` +
-        `Set them in web/.env.local for dev and in the Vercel project settings for deploys.`,
+      `Set DATABASE_URL, or all of: ${missing.join(", ")}. ` +
+        `Local dev reads web/.env.local; deploys read Vercel project env vars.`,
     );
   }
 
-  return mysql.createPool({
-    host: TIDB_HOST,
-    port: Number(TIDB_PORT),
-    user: TIDB_USER,
-    // The Python side strips surrounding quotes; .env.local carries them.
-    password: TIDB_PASSWORD!.replace(/^"|"$/g, ""),
-    database: TIDB_DATABASE,
-    ssl: { minVersion: "TLSv1.2" },
-    connectionLimit: 4,
-    connectTimeout: 10_000,
-    // BIGINT ids exceed Number.MAX_SAFE_INTEGER (data contract rule 2).
-    supportBigNumbers: true,
-    bigNumberStrings: true,
-    timezone: "Z",
-    dateStrings: true,
-  });
+  // The password is percent-encoded: TiDB passwords routinely contain
+  // characters that would otherwise terminate the URL's userinfo section.
+  const user = encodeURIComponent(TIDB_USER!);
+  const pass = encodeURIComponent(TIDB_PASSWORD!.replace(/^"|"$/g, ""));
+  return `mysql://${user}:${pass}@${TIDB_HOST}:${TIDB_PORT}/${TIDB_DATABASE}`;
 }
 
-export function pool(): mysql.Pool {
-  if (!global.__radarPool) global.__radarPool = makePool();
-  return global.__radarPool;
+let conn: ReturnType<typeof connect> | undefined;
+
+function client() {
+  // Cheap to construct (no socket), but cached so each request reuses config.
+  if (!conn) conn = connect({ url: connectionUrl() });
+  return conn;
 }
 
 export async function query<T>(sql: string, params: unknown[] = []): Promise<T[]> {
-  const [rows] = await pool().query(sql, params);
+  const rows = await client().execute(sql, params);
   return rows as T[];
 }

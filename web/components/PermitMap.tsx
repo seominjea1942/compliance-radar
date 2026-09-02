@@ -1,4 +1,4 @@
-import { c, f } from "@/lib/theme";
+import { Card, CardNote, CardTitle } from "@/components/ui/card";
 import { STORE_ANCHOR, type Permit } from "@/lib/queries";
 
 const W = 336;
@@ -11,8 +11,7 @@ const H = 216;
  * in real metres.
  */
 function project(permits: Permit[]) {
-  const latRad = (STORE_ANCHOR.lat * Math.PI) / 180;
-  const kx = Math.cos(latRad);
+  const kx = Math.cos((STORE_ANCHOR.lat * Math.PI) / 180);
 
   const pts = permits.map((p) => ({
     permit: p,
@@ -20,18 +19,27 @@ function project(permits: Permit[]) {
     dy: STORE_ANCHOR.lat - p.lat, // screen y grows downward
   }));
 
-  const span = Math.max(
-    ...pts.map((p) => Math.max(Math.abs(p.dx), Math.abs(p.dy))),
-    1e-4,
-  );
-  // Leave a margin so edge pins and their labels stay inside the plate.
-  const scale = (Math.min(W, H) / 2 - 26) / span;
+  /*
+   * Scale to the 90th percentile rather than the furthest permit. A handful of
+   * outliers would otherwise squeeze the ~70 permits near the store into an
+   * unreadable blob at the centre. Anything beyond the percentile is clamped to
+   * the plate edge, so it still shows as "out there" without setting the scale.
+   */
+  const radii = pts.map((p) => Math.hypot(p.dx, p.dy)).sort((a, b) => a - b);
+  const span = Math.max(radii[Math.floor(radii.length * 0.9)] ?? 0, 1e-5);
+  const scale = (Math.min(W, H) / 2 - 14) / span;
 
-  return pts.map((p) => ({
-    permit: p.permit,
-    x: W / 2 + p.dx * scale,
-    y: H / 2 + p.dy * scale,
-  }));
+  return pts.map((p) => {
+    const r = Math.hypot(p.dx, p.dy);
+    // Clamp the outliers back onto the edge, keeping their direction.
+    const k = r > span ? span / r : 1;
+    return {
+      permit: p.permit,
+      x: W / 2 + p.dx * scale * k,
+      y: H / 2 + p.dy * scale * k,
+      clamped: r > span,
+    };
+  });
 }
 
 function shortTitle(t: string): string {
@@ -47,68 +55,47 @@ function metres(d: number | null): string {
 
 export function PermitMap({ permits }: { permits: Permit[] }) {
   const placed = project(permits);
-  const withDistance = permits.filter((p) => p.distanceM !== null);
-  const closest = [...withDistance].sort((a, b) => a.distanceM! - b.distanceM!).slice(0, 2);
+  const closest = permits
+    .filter((p) => p.distanceM !== null)
+    .sort((a, b) => a.distanceM! - b.distanceM!)
+    .slice(0, 2);
   const labelled = new Set(closest.map((p) => p.documentId));
 
   return (
-    <section
-      data-map
-      style={{
-        width: 372,
-        flex: "none",
-        background: c.paper,
-        border: `1px solid ${c.line}`,
-        borderRadius: 12,
-        padding: 18,
-        display: "flex",
-        flexDirection: "column",
-        gap: 14,
-      }}
-    >
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        <h2 style={{ margin: 0, font: `400 20px ${f.serif}` }}>
+    <Card className="w-full flex-none gap-3.5 p-4.5 md:w-[372px]">
+      <div className="flex flex-col gap-1.5">
+        <CardTitle>
           Watching {permits.length} nearby {permits.length === 1 ? "site" : "sites"}.
-        </h2>
-        <p style={{ margin: 0, font: `400 14px/1.5 ${f.sans}`, color: c.faint }}>
-          {permits.length} permits filed within a quarter mile in the last 90 days.
-          {closest.length > 0 && (
-            <>
-              {" "}
-              The closest is {metres(closest[0]!.distanceM)} away.
-            </>
-          )}
-        </p>
+        </CardTitle>
+        <CardNote>
+          {permits.length} permits filed within a quarter mile.
+          {closest.length > 0 && ` The closest is ${metres(closest[0]!.distanceM)} away.`}
+        </CardNote>
       </div>
 
-      <div
-        style={{
-          position: "relative",
-          flex: 1,
-          minHeight: H,
-          background: c.wash,
-          border: `1px solid ${c.line}`,
-          borderRadius: 9,
-          overflow: "hidden",
-        }}
-      >
-        <svg viewBox={`0 0 ${W} ${H}`} width="100%" height="100%" role="img"
-             aria-label={`Map of ${permits.length} permits near the store`}>
+      <div className="relative min-h-[216px] flex-1 overflow-hidden rounded-[9px] border border-line bg-wash">
+        <svg
+          viewBox={`0 0 ${W} ${H}`}
+          width="100%"
+          height="100%"
+          role="img"
+          aria-label={`Map of ${permits.length} permits near the store`}
+        >
           {/* Streets are decorative: the design's plate, not surveyed geometry. */}
-          <rect x="0" y="78" width={W} height="9" fill={c.road} />
-          <rect x="0" y="166" width={W} height="6" fill={c.roadFaint} />
-          <rect x="106" y="0" width="8" height={H} fill={c.road} />
-          <rect x="248" y="0" width="5" height={H} fill={c.roadFaint} />
+          <rect x="0" y="78" width={W} height="9" className="fill-road" />
+          <rect x="0" y="166" width={W} height="6" className="fill-road-faint" />
+          <rect x="106" y="0" width="8" height={H} className="fill-road" />
+          <rect x="248" y="0" width="5" height={H} className="fill-road-faint" />
 
           {placed.map(({ permit, x, y }) => {
-            const isLabelled = labelled.has(permit.documentId);
+            const isClosest = labelled.has(permit.documentId);
             return (
               <circle
                 key={permit.documentId}
                 cx={x}
                 cy={y}
-                r={isLabelled ? 5 : 4}
-                fill={isLabelled ? c.pin : c.pinFaint}
+                r={isClosest ? 5 : 4}
+                className={isClosest ? "fill-pin" : "fill-pin-faint"}
               >
                 <title>
                   {`${permit.title}${permit.distanceM !== null ? ` · ${metres(permit.distanceM)}` : ""}`}
@@ -117,32 +104,29 @@ export function PermitMap({ permits }: { permits: Permit[] }) {
             );
           })}
 
-          {placed
-            .filter(({ permit }) => labelled.has(permit.documentId))
-            .map(({ permit, x, y }) => (
-              <text
-                key={`l-${permit.documentId}`}
-                x={x + 9}
-                y={y - 6}
-                fill={c.faint}
-                style={{ font: `400 10.5px ${f.sans}` }}
-              >
-                {shortTitle(permit.title)} · {metres(permit.distanceM)}
-              </text>
-            ))}
-
-          <circle cx={W / 2} cy={H / 2} r="14" fill="rgba(46,90,70,.16)" />
-          <circle cx={W / 2} cy={H / 2} r="8" fill={c.green} />
+          <circle cx={W / 2} cy={H / 2} r="14" className="fill-green/15" />
+          <circle cx={W / 2} cy={H / 2} r="8" className="fill-green" />
           <text
-            x={W / 2 + 14}
-            y={H / 2 - 4}
-            fill={c.green}
-            style={{ font: `500 12px ${f.sans}` }}
+            x={W / 2 + 13}
+            y={H / 2 - 11}
+            className="fill-green font-sans text-xs font-medium"
           >
             Your store
           </text>
         </svg>
       </div>
-    </section>
+
+      {closest.length > 0 && (
+        <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
+          {closest.map((p) => (
+            <li key={p.documentId} className="flex items-baseline gap-2 text-[11.5px]">
+              <span className="size-1.5 flex-none translate-y-[-1px] rounded-full bg-pin" />
+              <span className="min-w-0 flex-1 truncate text-muted">{shortTitle(p.title)}</span>
+              <span className="flex-none font-mono text-faint">{metres(p.distanceM)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Card>
   );
 }

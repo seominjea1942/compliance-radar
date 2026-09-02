@@ -1,9 +1,10 @@
-import { c, f } from "@/lib/theme";
-import { Sidebar } from "@/components/Sidebar";
-import { TopicTable } from "@/components/TopicTable";
+import { Card } from "@/components/ui/card";
 import { PermitMap } from "@/components/PermitMap";
+import { Sidebar } from "@/components/Sidebar";
 import { SurfacedCard } from "@/components/SurfacedCard";
-import { getHeadline, getNearbyPermits, getStoreProfile, getSurfaced } from "@/lib/queries";
+import { TopicTable } from "@/components/TopicTable";
+import { getNearbyPermits, getStoreProfile, getSurfaced, getWeeklySummary } from "@/lib/queries";
+import { getLastChecked, getWeeklyTopics } from "@/lib/pending-views";
 import { checkedAt, count } from "@/lib/format";
 
 // Live operational data: never serve a build-time snapshot.
@@ -12,75 +13,58 @@ export const dynamic = "force-dynamic";
 function Hero({ surfaced, reviewed }: { surfaced: number; reviewed: number }) {
   const quiet = surfaced === 0;
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-      <h1 style={{ margin: 0, font: `400 25px/1.25 ${f.serif}`, color: c.ink }}>
+    <div className="flex flex-col gap-1.5">
+      <h1 className="font-serif text-[21px]/tight text-ink md:text-[25px]">
         {quiet
           ? "Nothing needs you this week."
           : `${count(surfaced)} ${surfaced === 1 ? "thing needs" : "things need"} you.`}
       </h1>
-      <p
-        style={{
-          margin: 0,
-          font: `400 15.5px/1.55 ${f.sans}`,
-          color: c.body,
-          textWrap: "pretty",
-          maxWidth: 700,
-        }}
-      >
+      <p className="max-w-[700px] text-[14.5px]/relaxed text-pretty text-body md:text-[15.5px]">
         {quiet
-          ? `I read ${count(reviewed)} items in the last 90 days. None of them touch your store.`
-          : `Out of ${count(reviewed)} items read in the last 90 days. Everything else is in the log.`}
+          ? `I read ${count(reviewed)} items this week. None of them touch your store.`
+          : `Out of ${count(reviewed)} items read this week. Everything else is in the log.`}
       </p>
     </div>
   );
 }
 
 export default async function HomePage() {
-  const [headline, surfaced, permits, profile] = await Promise.all([
-    getHeadline(),
+  const [summary, surfaced, permits, profile, topics, lastChecked] = await Promise.all([
+    getWeeklySummary(),
     getSurfaced(),
     getNearbyPermits(),
     getStoreProfile(),
+    getWeeklyTopics(),
+    getLastChecked(),
   ]);
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: c.shell }}>
+    <div className="flex min-h-screen flex-col bg-shell md:flex-row">
       <Sidebar
         profile={profile}
-        surfacedCount={headline.surfaced}
-        filteredCount={headline.filtered}
+        surfacedCount={summary.surfaced}
+        filteredCount={summary.filtered}
       />
 
-      <main style={{ flex: 1, minWidth: 0, background: c.shell }}>
-        <div data-main style={{ padding: "30px 48px 48px", display: "flex", flexDirection: "column", gap: 26 }}>
-          <section
-            style={{
-              background: c.paper,
-              border: `1px solid ${c.line}`,
-              borderRadius: 12,
-              padding: "22px 26px",
-              display: "flex",
-              flexDirection: "column",
-              gap: 20,
-            }}
-          >
-            <Hero surfaced={headline.surfaced} reviewed={headline.reviewed} />
-
+      <main className="min-w-0 flex-1">
+        <div className="flex flex-col gap-5 px-4 pt-5 pb-10 md:gap-6.5 md:px-12 md:pt-7.5 md:pb-12">
+          <Card className="gap-5">
+            <Hero surfaced={summary.surfaced} reviewed={summary.reviewed} />
             {surfaced.length > 0 && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <div className="flex flex-col gap-3.5">
                 {surfaced.map((item) => (
                   <SurfacedCard key={item.decisionId} item={item} />
                 ))}
               </div>
             )}
-          </section>
+          </Card>
 
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 24, alignItems: "stretch" }}>
+          <div className="flex flex-wrap items-stretch gap-5 md:gap-6">
             <TopicTable
-              reviewed={headline.reviewed}
-              filtered={headline.filtered}
-              checked={checkedAt(headline.lastCheckedUtc)}
-              topics={headline.topics}
+              reviewed={summary.reviewed}
+              filtered={summary.filtered}
+              checked={checkedAt(lastChecked)}
+              topics={topics}
             />
             {permits.length > 0 && <PermitMap permits={permits} />}
           </div>
