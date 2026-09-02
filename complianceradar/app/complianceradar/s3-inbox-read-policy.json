@@ -1,0 +1,13 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:ListBucket"],
+      "Resource": [
+        "arn:aws:s3:::compliance-radar-inbound-emails-513189074111",
+        "arn:aws:s3:::compliance-radar-inbound-emails-513189074111/*"
+      ]
+    }
+  ]
+}

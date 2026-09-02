@@ -37,6 +37,9 @@
           "name": "TIDB_DATABASE",
           "value": "compliance_radar"
         }
+      ],
+      "additionalPolicies": [
+        "s3-inbox-read-policy.json"
       ]
     }
   ],
