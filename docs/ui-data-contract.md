@@ -105,6 +105,30 @@ store_name)` -> plain text, 4 sections: WHAT HAPPENED / WHY IT MAY AFFECT THE
 STORE / DEADLINE OR TIMING / SOURCE). ~2s latency, costs a fraction of a
 cent. Not pre-stored; the UI should call it lazily per surfaced item.
 
+## Stack recommendations (resolves the cons you flagged)
+
+1. **DB access: use `@tidbcloud/serverless`, not `mysql2`.** It is HTTP-based,
+   so there are no TCP connections to pool and no connection-limit risk from
+   short-lived serverless functions, and it runs on the Edge runtime too.
+   Get its connection string from the TiDB Cloud console: cluster -> Connect ->
+   select "Serverless Driver" (same cluster, different connect format).
+2. **Query duplication: don't duplicate.** All shared query logic lives in the
+   DB views above; the TS side should be `SELECT * FROM v_...` one-liners.
+   If a screen needs a new shape, ask the backend session to add/extend a view
+   rather than writing bespoke joins in TS: the views are the single source of
+   truth for both languages.
+3. **The one Node-runtime route.** Only the forwardable-brief endpoint needs
+   the AWS SDK (Bedrock call); keep that single route handler on the Node
+   runtime and everything else can be Edge or static. Do NOT put the project's
+   admin AWS keys in Vercel: request a least-privilege key (bedrock:InvokeModel
+   only) from the backend session, which will provision it.
+4. **Home screen scope = current week, not all-time.** The design's tidy
+   numbers come from time-scoping, not filtering: use the 7-day window
+   (v_weekly_summary semantics) for the home strip and surfaced feed, and put
+   the 90-day totals in the history/log screens. Render zero-count topics as
+   "watched, quiet this week" states instead of hiding them: the empty rows
+   are the product thesis, not missing data.
+
 ## Hard rules from the backend
 
 1. Never re-triage or mutate historical decisions from the UI; the only
