@@ -45,6 +45,7 @@ Respond ONLY with JSON:
   "reason": "<one sentence citing the specific profile fact>",
   "profile_fact_id": "<fact id or null>",
   "tags": ["<1-2 from: city-programs-fees, council-routine, nearby-construction, labor-workforce>"],
+  "action_type": "act" | "verify" | "fyi",  (surfaced only: act = store is affected on the facts; verify = one concrete check the owner can perform; fyi = awareness only)
   "key_dates": [{"label": "<what the date is>", "date": "<YYYY-MM-DD or YYYY-MM>"}],
   "evidence": {"quote": "<the exact sentence(s) from the report that drove the decision, max 60 words>", "page_hint": <integer page number where found, or null>}
 }"""

@@ -63,14 +63,22 @@ parseFloat them. Store anchor: lat 37.3085, lon -121.8995. 73 rows, nearly
 all REJECT (gray pins); 4 ALERTs are residential items very close by (known
 over-sensitivity; render them as normal alerts or gray, design's call).
 
-### 5. Surfaced items (alerts feed) — no dedicated view, query directly:
-```sql
-SELECT d.id AS decision_id, doc.title, doc.source, d.decision, d.reason,
-       d.tags, d.profile_fact_id, d.created_at, doc.payload
-FROM triage_decisions d JOIN documents doc ON doc.id = d.document_id
-WHERE d.decision IN ('ALERT','OPPORTUNITY')
-ORDER BY d.created_at DESC
-```
+### 5. `v_surfaced_feed` — alerts feed (now a real view)
+Columns: `decision_id`, `title`, `source`, `decision`, `action_type`,
+`reason`, `tags`, `profile_fact_id`, `created_at`, `payload`. Newest first.
+
+`action_type` (the ranking signal you asked for, 2026-09-02):
+- `act` (7 rows): the store is affected on the stated facts; every current
+  act row is a literal carry-list brand match (Straus x5, Motor City, Amy's).
+- `verify` (30): one concrete check exists (named product plausibly on the
+  shelf). NOTE: the sprouts alerts are `verify` under the strict definition
+  ("check the walk-in" IS the concrete check); rank Class I / pathogen
+  verify items above the rest using payload.classification + reason.
+- `fyi` (9): awareness only (includes the 4 residential permit alerts).
+- NULL on REJECT rows always.
+New items get action_type at triage time; the prompt was also tightened so
+category-overlap-only recalls now REJECT instead of becoming verify alerts,
+so the verify volume should fall going forward.
 `payload` is the full normalized source item (JSON string). Useful payload
 fields by source: fda: `classification` ("Class I/II/III" — MISSING on
 fda_rss items, derive urgency from reason text), `distribution_pattern`,
