@@ -62,7 +62,7 @@ export function PermitMap({ permits }: { permits: Permit[] }) {
   const labelled = new Set(closest.map((p) => p.documentId));
 
   return (
-    <Card className="w-full flex-none gap-3.5 p-4.5 md:w-[372px]">
+    <Card className="w-full flex-none gap-3.5 p-4.5 md:w-[300px]">
       <div className="flex flex-col gap-1.5">
         <CardTitle>
           Watching {permits.length} nearby {permits.length === 1 ? "site" : "sites"}.

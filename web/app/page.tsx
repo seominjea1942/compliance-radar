@@ -47,7 +47,7 @@ export default async function HomePage() {
       />
 
       <main className="min-w-0 flex-1">
-        <div className="flex flex-col gap-5 px-4 pt-5 pb-10 md:gap-6.5 md:px-12 md:pt-7.5 md:pb-12">
+        <div className="mx-auto flex w-full max-w-[800px] flex-col gap-5 px-4 pt-5 pb-10 md:gap-6.5 md:px-12 md:pt-7.5 md:pb-12">
           <Card className="gap-5">
             <Hero surfaced={summary.surfaced} reviewed={summary.reviewed} />
             {surfaced.length > 0 && (

@@ -3,7 +3,7 @@ import type { TopicRow } from "@/lib/pending-views";
 import { count } from "@/lib/format";
 
 /** Column widths shared by the header and every row. */
-const COL = { read: "w-16 text-right", forYou: "w-24 text-right" };
+const COL = { read: "w-12 text-right", forYou: "w-16 text-right" };
 
 function Row({ topic }: { topic: TopicRow }) {
   // Nothing arrived on this topic this week. That is the product working, not
@@ -12,11 +12,11 @@ function Row({ topic }: { topic: TopicRow }) {
 
   return (
     <div className="flex items-baseline gap-4 bg-paper px-4 py-3">
-      <span className={`flex-1 font-serif text-base ${quiet ? "text-faint" : "text-ink"}`}>
+      <span className={`flex-1 font-serif text-[15px] text-balance ${quiet ? "text-faint" : "text-ink"}`}>
         {topic.label}
       </span>
       {quiet ? (
-        <span className="text-[12.5px] text-faint italic">Watched, quiet this week</span>
+        <span className="text-[12.5px] text-faint italic">Quiet this week</span>
       ) : (
         <>
           <span className={`${COL.read} text-[15px] text-faint`}>{count(topic.read)}</span>
@@ -41,7 +41,7 @@ export function TopicTable({
   topics: TopicRow[];
 }) {
   return (
-    <Card className="min-w-0 flex-[1_1_340px] gap-4.5">
+    <Card className="min-w-0 flex-[1_1_280px] gap-4.5">
       <div className="flex items-baseline justify-between gap-4">
         <CardTitle>
           {count(reviewed)} items read this week. Filtered {count(filtered)}.

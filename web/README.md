@@ -108,6 +108,9 @@ to `bedrock:InvokeModel` — not the project's admin AWS keys.
   derived from the payload, so the sort cannot live in SQL; it happens in
   `getSurfaced()` after mapping. Without it, ingestion time decides what the
   owner sees first and Class I recalls sink below routine permits.
+- **Content column** is capped at 800px and centred, so it does not sprawl on
+  wide screens. The bottom row (topic table + map) is sized to stay 2-up inside
+  that cap rather than wrapping and orphaning the map.
 - **Responsive, not a separate mobile build.** The rail is a left column at
   `md+` and a sticky top bar below it, with the nav scrolling horizontally.
   Plain Tailwind breakpoints, no JS and no second layout to maintain.
