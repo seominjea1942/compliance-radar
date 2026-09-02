@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Newsreader, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
-import { c } from "@/lib/theme";
-import "./app.css";
+import "./globals.css";
 
 const newsreader = Newsreader({
   subsets: ["latin"],
@@ -27,8 +26,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${newsreader.variable} ${plexSans.variable} ${plexMono.variable}`}>
-      <body style={{ margin: 0, background: c.shell, color: c.ink }}>{children}</body>
+    <html
+      lang="en"
+      className={`${newsreader.variable} ${plexSans.variable} ${plexMono.variable}`}
+    >
+      <body>{children}</body>
     </html>
   );
 }

@@ -1,20 +1,30 @@
 import { Card, CardNote, CardTitle } from "@/components/ui/card";
-import type { TopicRow } from "@/lib/queries";
+import type { TopicRow } from "@/lib/pending-views";
 import { count } from "@/lib/format";
 
-/** Column widths are shared by the header and every row. */
+/** Column widths shared by the header and every row. */
 const COL = { read: "w-16 text-right", forYou: "w-24 text-right" };
 
 function Row({ topic }: { topic: TopicRow }) {
+  // Nothing arrived on this topic this week. That is the product working, not
+  // missing data, so it gets a stated quiet state rather than a blank cell.
+  const quiet = topic.read === 0;
+
   return (
     <div className="flex items-baseline gap-4 bg-paper px-4 py-3">
-      <span className="flex-1 font-serif text-base text-ink">{topic.label}</span>
-      <span className={`${COL.read} text-[15px] text-faint`}>
-        {topic.read === 0 ? "—" : count(topic.read)}
+      <span className={`flex-1 font-serif text-base ${quiet ? "text-faint" : "text-ink"}`}>
+        {topic.label}
       </span>
-      <span className={`${COL.forYou} text-[15px] font-medium text-ink`}>
-        {topic.forYou === 0 ? "—" : count(topic.forYou)}
-      </span>
+      {quiet ? (
+        <span className="text-[12.5px] text-faint italic">Watched, quiet this week</span>
+      ) : (
+        <>
+          <span className={`${COL.read} text-[15px] text-faint`}>{count(topic.read)}</span>
+          <span className={`${COL.forYou} text-[15px] font-medium text-ink`}>
+            {topic.forYou === 0 ? "—" : count(topic.forYou)}
+          </span>
+        </>
+      )}
     </div>
   );
 }
@@ -34,7 +44,7 @@ export function TopicTable({
     <Card className="min-w-0 flex-[1_1_340px] gap-4.5">
       <div className="flex items-baseline justify-between gap-4">
         <CardTitle>
-          {count(reviewed)} items read in 90 days. Filtered {count(filtered)}.
+          {count(reviewed)} items read this week. Filtered {count(filtered)}.
         </CardTitle>
         <a
           href="/log"

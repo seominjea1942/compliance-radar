@@ -40,10 +40,10 @@ export function SurfacedCard({ item }: { item: SurfacedItem }) {
       {urgent && <UrgentBanner reason={item.reason} />}
 
       <div className="flex flex-col gap-2.5">
-        <h3 className="max-w-[740px] font-serif text-[25px]/tight font-medium">{item.title}</h3>
+        <h3 className="max-w-[740px] font-serif text-[20px]/tight font-medium md:text-[25px]">{item.title}</h3>
         <div className="text-[12.5px] text-faint">{item.timingLabel ?? item.postedLabel}</div>
         {!urgent && (
-          <p className="max-w-[740px] font-serif text-[19px]/normal text-body">{item.reason}</p>
+          <p className="max-w-[740px] font-serif text-[17px]/normal text-body md:text-[19px]">{item.reason}</p>
         )}
       </div>
 
