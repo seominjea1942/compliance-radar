@@ -1,0 +1,120 @@
+@import "tailwindcss";
+
+/*
+ * Single source of truth for the Compliance Radar look.
+ *
+ * Values are lifted verbatim from the Claude Design canvas
+ * (`Compliance Radar.dc.html`). Change a colour here and it changes
+ * everywhere: Tailwind utilities (`bg-paper`, `text-ink`) and the shadcn
+ * semantic tokens below both read from these.
+ */
+@theme {
+  /* Surfaces */
+  --color-canvas: #ede8df;
+  --color-paper: #ffffff;
+  --color-shell: #faf7f1;
+  --color-rail: #f4f0e7;
+  --color-wash: #f0ebe0;
+  --color-hover: #f1ece1;
+
+  /* Lines */
+  --color-line: #e7e0d2;
+  --color-line-soft: #efe9dc;
+  --color-line-strong: #ded6c7;
+  --color-line-card: #e3dccf;
+  --color-line-warm: #e3d3cc;
+  --color-line-chip: #d9d0be;
+
+  /* Ink */
+  --color-ink: #23201b;
+  --color-ink-soft: #3b372f;
+  --color-body: #57514a;
+  --color-muted: #6e675c;
+  --color-faint: #8a8175;
+  --color-monoink: #7c7466;
+  --color-ghost: #a9a093;
+
+  /* Accent */
+  --color-green: #2e5a46;
+  --color-green-deep: #1f3f31;
+  --color-green-soft: #9fbfac;
+  --color-green-tint: #f2f6f3;
+  --color-green-tint-line: #dce6df;
+
+  /* Urgent */
+  --color-alert: #a8412a;
+  --color-alert-ink: #8c3722;
+  --color-alert-bg: #fbf1ed;
+  --color-alert-line: #ebd3c8;
+
+  /* Map */
+  --color-pin: #a79e8e;
+  --color-pin-faint: #bfb7a8;
+  --color-road: #e4dccc;
+  --color-road-faint: #e9e2d4;
+
+  /* Type. next/font sets the --font-* variables in app/layout.tsx. */
+  --font-serif: var(--font-newsreader), Georgia, serif;
+  --font-sans: var(--font-plex-sans), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+
+  --radius-card: 12px;
+  --radius-panel: 10px;
+  --radius-control: 6px;
+}
+
+/*
+ * shadcn's semantic tokens, pointed at the radar palette. Any shadcn component
+ * added later inherits the editorial look without being restyled by hand.
+ */
+:root {
+  --radius: 0.625rem;
+  --background: var(--color-shell);
+  --foreground: var(--color-ink);
+  --card: var(--color-paper);
+  --card-foreground: var(--color-ink);
+  --popover: var(--color-paper);
+  --popover-foreground: var(--color-ink);
+  --primary: var(--color-green);
+  --primary-foreground: var(--color-shell);
+  --secondary: var(--color-rail);
+  --secondary-foreground: var(--color-ink);
+  --muted: var(--color-rail);
+  --muted-foreground: var(--color-faint);
+  --accent: var(--color-hover);
+  --accent-foreground: var(--color-green);
+  --destructive: var(--color-alert);
+  --border: var(--color-line);
+  --input: var(--color-line-card);
+  --ring: var(--color-green-soft);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted-bg: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+}

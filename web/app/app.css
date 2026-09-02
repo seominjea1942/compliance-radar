@@ -1,0 +1,31 @@
+/*
+ * Inline styles carry the design; this file holds only what inline styles
+ * cannot express (media queries and hover states).
+ *
+ * The design's mobile artboards (sections 11/12 of the canvas) are not built
+ * yet. Until they are, this keeps narrow viewports readable instead of
+ * squeezing the content column to one word per line.
+ */
+
+@media (max-width: 900px) {
+  [data-rail] {
+    /* Beats the component's inline display:flex. */
+    display: none !important;
+  }
+  [data-main] {
+    padding: 20px 16px 32px !important;
+  }
+  /* The map is a fixed 372px card; let it take the full column instead. */
+  [data-map] {
+    width: 100% !important;
+  }
+}
+
+[data-action]:hover {
+  color: #2e5a46;
+  background: #f1ece1;
+}
+
+a:hover {
+  text-decoration: underline;
+}
