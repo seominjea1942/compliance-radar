@@ -7,6 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardActions } from "@/components/ui/card";
 import type { SurfacedItem } from "@/lib/queries";
 
+/** The FDA's own recall severity scale, spelled out for anyone who doesn't
+ *  read enforcement reports for a living. */
+const CLASS_MEANING: Record<string, string> = {
+  "Class I": "FDA Class I: reasonable probability of serious harm or death.",
+  "Class II":
+    "FDA Class II: temporary or medically reversible harm; remote chance of serious harm.",
+  "Class III": "FDA Class III: unlikely to cause harm, typically a labelling issue.",
+};
+
 function UrgentBanner({ reason }: { reason: string }) {
   return (
     <div className="flex items-start gap-2.5 rounded-lg border border-alert-line bg-alert-bg px-3.5 py-2.5">
@@ -33,7 +42,13 @@ export function SurfacedCard({ item }: { item: SurfacedItem }) {
       <div className="flex flex-wrap items-center gap-2.5">
         <Badge>{item.sourceLabel}</Badge>
         {item.classification && (
-          <Badge variant={urgent ? "alert" : "bare"}>{item.classification}</Badge>
+          <Badge
+            variant={urgent ? "alert" : "bare"}
+            title={CLASS_MEANING[item.classification] ?? item.classification}
+            className="cursor-help"
+          >
+            {item.classification}
+          </Badge>
         )}
       </div>
 

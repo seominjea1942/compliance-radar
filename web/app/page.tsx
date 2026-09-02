@@ -59,7 +59,7 @@ export default async function HomePage() {
             )}
           </Card>
 
-          <div className="flex flex-wrap items-stretch gap-5 md:gap-6">
+          <div className="flex flex-col gap-5 md:gap-6.5">
             <TopicTable
               reviewed={summary.reviewed}
               filtered={summary.filtered}

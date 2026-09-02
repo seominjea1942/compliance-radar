@@ -1,8 +1,13 @@
 import { Card, CardNote, CardTitle } from "@/components/ui/card";
 import { STORE_ANCHOR, type Permit } from "@/lib/queries";
 
-const W = 336;
-const H = 216;
+/*
+ * Plate dimensions. The container carries the same aspect ratio, so the SVG
+ * fits exactly and the roads span the full width instead of letterboxing into
+ * the middle. Road positions below are fractions of W/H for the same reason.
+ */
+const W = 704;
+const H = 300;
 
 /**
  * Equirectangular projection centred on the store. At this latitude and a
@@ -62,7 +67,7 @@ export function PermitMap({ permits }: { permits: Permit[] }) {
   const labelled = new Set(closest.map((p) => p.documentId));
 
   return (
-    <Card className="w-full flex-none gap-3.5 p-4.5 md:w-[300px]">
+    <Card className="w-full gap-3.5 p-4.5">
       <div className="flex flex-col gap-1.5">
         <CardTitle>
           Watching {permits.length} nearby {permits.length === 1 ? "site" : "sites"}.
@@ -73,7 +78,10 @@ export function PermitMap({ permits }: { permits: Permit[] }) {
         </CardNote>
       </div>
 
-      <div className="relative min-h-[216px] flex-1 overflow-hidden rounded-[9px] border border-line bg-wash">
+      <div
+        className="relative w-full overflow-hidden rounded-[9px] border border-line bg-wash"
+        style={{ aspectRatio: `${W} / ${H}` }}
+      >
         <svg
           viewBox={`0 0 ${W} ${H}`}
           width="100%"
@@ -82,10 +90,10 @@ export function PermitMap({ permits }: { permits: Permit[] }) {
           aria-label={`Map of ${permits.length} permits near the store`}
         >
           {/* Streets are decorative: the design's plate, not surveyed geometry. */}
-          <rect x="0" y="78" width={W} height="9" className="fill-road" />
-          <rect x="0" y="166" width={W} height="6" className="fill-road-faint" />
-          <rect x="106" y="0" width="8" height={H} className="fill-road" />
-          <rect x="248" y="0" width="5" height={H} className="fill-road-faint" />
+          <rect x="0" y={H * 0.36} width={W} height="9" className="fill-road" />
+          <rect x="0" y={H * 0.77} width={W} height="6" className="fill-road-faint" />
+          <rect x={W * 0.32} y="0" width="8" height={H} className="fill-road" />
+          <rect x={W * 0.74} y="0" width="5" height={H} className="fill-road-faint" />
 
           {placed.map(({ permit, x, y }) => {
             const isClosest = labelled.has(permit.documentId);
@@ -107,8 +115,8 @@ export function PermitMap({ permits }: { permits: Permit[] }) {
           <circle cx={W / 2} cy={H / 2} r="14" className="fill-green/15" />
           <circle cx={W / 2} cy={H / 2} r="8" className="fill-green" />
           <text
-            x={W / 2 + 13}
-            y={H / 2 - 11}
+            x={W / 2 + 21}
+            y={H / 2 - 14}
             className="fill-green font-sans text-xs font-medium"
           >
             Your store

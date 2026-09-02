@@ -109,8 +109,10 @@ to `bedrock:InvokeModel` — not the project's admin AWS keys.
   `getSurfaced()` after mapping. Without it, ingestion time decides what the
   owner sees first and Class I recalls sink below routine permits.
 - **Content column** is capped at 800px and centred, so it does not sprawl on
-  wide screens. The bottom row (topic table + map) is sized to stay 2-up inside
-  that cap rather than wrapping and orphaning the map.
+  wide screens. The topic table and the map each get their own full-width row.
+- **Map plate** carries the same aspect ratio as its viewBox, so the SVG fits
+  exactly and the roads reach the edges instead of letterboxing into the
+  middle. Road positions are fractions of W/H so the plate can be resized.
 - **Responsive, not a separate mobile build.** The rail is a left column at
   `md+` and a sticky top bar below it, with the nav scrolling horizontally.
   Plain Tailwind breakpoints, no JS and no second layout to maintain.
