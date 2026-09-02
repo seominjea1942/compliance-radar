@@ -33,17 +33,24 @@ FIXED_TAGS = {"food-recalls", "city-programs-fees", "council-routine",
               "nearby-construction", "labor-workforce"}
 
 
+ACTION_TYPES = {"act", "verify", "fyi"}
+
+
 def insert_decision(conn, document_id: int, decision: dict, embedding=None) -> int:
     tags = [t for t in (decision.get("tags") or []) if t in FIXED_TAGS]
+    action = decision.get("action_type")
+    if decision["decision"] == "REJECT" or action not in ACTION_TYPES:
+        action = None
     with conn.cursor() as c:
         c.execute(
             """INSERT INTO triage_decisions
-               (document_id, decision, reason, profile_fact_id, embedding, tags)
-               VALUES (%s, %s, %s, %s, %s, %s)""",
+               (document_id, decision, reason, profile_fact_id, embedding, tags, action_type)
+               VALUES (%s, %s, %s, %s, %s, %s, %s)""",
             (document_id, decision["decision"], decision["reason"],
              decision.get("profile_fact_id"),
              json.dumps(embedding) if embedding else None,
-             json.dumps(tags) if tags else None))
+             json.dumps(tags) if tags else None,
+             action))
         return c.lastrowid
 
 
