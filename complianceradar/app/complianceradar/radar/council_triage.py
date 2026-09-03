@@ -27,10 +27,12 @@ metadata. Decide:
 - "REJECT": clearly irrelevant to this business (ceremonial, internal city
   procedure, other neighborhoods' land use, city's own staffing).
 - "INVESTIGATE": the item COULD affect this business but the title alone
-  cannot settle it. Fee schedules, rate hearings, program changes,
-  infrastructure or utility work plans, and anything on a consent calendar
-  whose title is generic deserve INVESTIGATE; consent titles routinely hide
-  neighborhood-level details.
+  cannot settle it. ALWAYS INVESTIGATE, never title-reject: fee schedules,
+  rate hearings, tax-roll items, franchise or rights-of-way agreements, and
+  utility/street/infrastructure work plans or programs (these schedule
+  street-level construction whose locations appear only in attachments).
+  Also INVESTIGATE anything on a consent calendar whose title is generic;
+  consent titles routinely hide neighborhood-level details.
 Respond ONLY with JSON: {"decision": "REJECT"|"INVESTIGATE", "reason": "<one
 sentence citing a profile fact for rejects>",
 "tags": ["<from: city-programs-fees, council-routine, nearby-construction, labor-workforce>"]}"""
@@ -67,7 +69,11 @@ def _parse(resp) -> dict:
     text = str(resp).strip()
     if text.startswith("```"):
         text = text.strip("`").removeprefix("json").strip()
-    return json.loads(text)
+    # Models occasionally append prose after the JSON object; take the first
+    # complete object instead of requiring the whole string to be JSON.
+    start = text.find("{")
+    obj, _ = json.JSONDecoder().raw_decode(text[start:])
+    return obj
 
 
 def fetch_staff_report(matter_id: int) -> tuple[str, str]:
