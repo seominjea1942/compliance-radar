@@ -34,7 +34,9 @@ function CardTitle({
   return (
     <Comp
       data-slot="card-title"
-      className={cn("font-serif text-xl font-normal text-ink", className)}
+      // Section headers are the product speaking, so they take the UI face.
+      // Source content (item titles, reasons) stays on the serif.
+      className={cn("text-[17px] font-semibold tracking-[-0.01em] text-ink", className)}
       {...props}
     />
   );

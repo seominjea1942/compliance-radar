@@ -14,7 +14,7 @@ function Hero({ surfaced, reviewed }: { surfaced: number; reviewed: number }) {
   const quiet = surfaced === 0;
   return (
     <div className="flex flex-col gap-1.5">
-      <h1 className="font-serif text-[21px]/tight text-ink md:text-[25px]">
+      <h1 className="text-[20px]/tight font-semibold tracking-[-0.01em] text-ink md:text-[23px]">
         {quiet
           ? "Nothing needs you this week."
           : `${count(surfaced)} ${surfaced === 1 ? "thing needs" : "things need"} you.`}
