@@ -1,5 +1,5 @@
 import { Card, CardNote, CardTitle } from "@/components/ui/card";
-import type { TopicRow } from "@/lib/pending-views";
+import type { TopicRow } from "@/lib/queries";
 import { count } from "@/lib/format";
 
 /** Column widths shared by the header and every row. */

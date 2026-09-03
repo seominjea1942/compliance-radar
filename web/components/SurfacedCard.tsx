@@ -21,6 +21,13 @@ import type { SurfacedItem } from "@/lib/queries";
  * is what the source document and any inspector will say; the tooltip carries
  * the plain-English meaning.
  */
+/** What the row asks of the owner. Empty for plain verify: that is the norm. */
+const ACTION_LABEL: Record<string, string> = {
+  act: "Action needed",
+  "priority-verify": "Check soon",
+  fyi: "For the file",
+};
+
 const CLASS_MEANING: Record<string, string> = {
   "Class I": "The FDA's most serious tier: a reasonable probability of serious harm or death.",
   "Class II": "Temporary or medically reversible harm, with only a remote chance of serious harm.",
@@ -43,7 +50,9 @@ export function SurfacedCard({ item }: { item: SurfacedItem }) {
    * so this collapses the card for the session and nothing else.
    */
   const [done, setDone] = useState(false);
-  const urgent = item.severity === "urgent";
+  // The banner is for "the store is affected", not "a serious recall exists":
+  // a Class I recall of something you don't stock is not an emergency.
+  const needsAction = item.severity === "act";
 
   return (
     <Card
@@ -52,6 +61,11 @@ export function SurfacedCard({ item }: { item: SurfacedItem }) {
     >
       <div className="flex flex-wrap items-center gap-2.5">
         <Badge>{item.sourceLabel}</Badge>
+        {ACTION_LABEL[item.severity] && (
+          <Badge variant={needsAction ? "outlineAlert" : "outline"}>
+            {ACTION_LABEL[item.severity]}
+          </Badge>
+        )}
         {item.classification && (
           <Tooltip
             content={
@@ -64,7 +78,7 @@ export function SurfacedCard({ item }: { item: SurfacedItem }) {
           >
             {/* tabIndex so the tooltip is reachable by keyboard, not hover only */}
             <Badge
-              variant={urgent ? "outlineAlert" : "outline"}
+              variant={needsAction ? "outlineAlert" : "outline"}
               tabIndex={0}
               className="cursor-help gap-1.5 outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
@@ -75,13 +89,15 @@ export function SurfacedCard({ item }: { item: SurfacedItem }) {
         )}
       </div>
 
-      {urgent && <UrgentBanner reason={item.reason} />}
+      {needsAction && <UrgentBanner reason={item.shortReason} />}
 
       <div className="flex flex-col gap-2.5">
         <h3 className="max-w-[740px] font-serif text-[20px]/tight font-medium md:text-[25px]">{item.title}</h3>
         <div className="text-[12.5px] text-faint">{item.timingLabel ?? item.postedLabel}</div>
-        {!urgent && (
-          <p className="max-w-[740px] font-serif text-[17px]/normal text-body md:text-[19px]">{item.reason}</p>
+        {!needsAction && (
+          <p className="max-w-[740px] font-serif text-[17px]/normal text-body md:text-[19px]">
+            {item.shortReason}
+          </p>
         )}
       </div>
 

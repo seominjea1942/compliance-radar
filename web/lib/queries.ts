@@ -13,6 +13,8 @@ import { posted } from "./format";
  * belong to the log/history screens.
  */
 
+export type TopicRow = { id: string; label: string; read: number; forYou: number };
+
 /** The fixed tag set. Exactly these five, in the design's display order. */
 export const TAGS = [
   { id: "food-recalls", label: "Food recalls" },
@@ -91,18 +93,68 @@ export async function getWeeklySummary(): Promise<WeeklySummary> {
 }
 
 /* ------------------------------------------------------------------ *
- * 2. Surfaced items — the contract's sanctioned direct query (section 5),
- *    time-scoped to the home screen's 7-day window.
+ * 1b. v_weekly_topics — the per-tag home table
  * ------------------------------------------------------------------ */
 
-/** Three levels, per the design: urgent, worth knowing, logged. */
-export type Severity = "urgent" | "worth-knowing" | "logged";
+const TAG_LABEL = new Map(TAGS.map((t) => [t.id, t.label]));
 
-/** Feed order: severity first, then newest within a severity. */
+export async function getWeeklyTopics(): Promise<TopicRow[]> {
+  const rows = await query<{ tag: string; read: number | string; for_you: number | string }>(
+    `SELECT * FROM v_weekly_topics`,
+  );
+  const byTag = new Map(rows.map((r) => [r.tag, r]));
+
+  // Iterate the fixed tag set so display order is ours and a tag the view
+  // ever drops still renders as a quiet row rather than vanishing.
+  return TAGS.map((t) => {
+    const r = byTag.get(t.id);
+    return {
+      id: t.id,
+      label: TAG_LABEL.get(t.id) ?? t.id,
+      read: Number(r?.read ?? 0),
+      forYou: Number(r?.for_you ?? 0),
+    };
+  });
+}
+
+/* ------------------------------------------------------------------ *
+ * 1c. v_run_status — the trust stamp
+ * ------------------------------------------------------------------ */
+
+/**
+ * Last pipeline run, including quiet runs that triaged nothing. Replaces
+ * MAX(created_at), which reported the last *item* and so lied on quiet days.
+ * NULL until the first run row exists; the UI says "not yet checked".
+ */
+export async function getLastChecked(): Promise<string | null> {
+  const [row] = await query<{ last_checked: string | null }>(
+    `SELECT last_checked FROM v_run_status`,
+  );
+  return row?.last_checked ?? null;
+}
+
+/* ------------------------------------------------------------------ *
+ * 2. v_surfaced_feed — the alerts feed
+ * ------------------------------------------------------------------ */
+
+/**
+ * What the backend decided this item asks of the owner.
+ *   act    — the store is affected on the stated facts (a carry-list match)
+ *   verify — one concrete check exists
+ *   fyi    — awareness only
+ * NULL on rows triaged before the field existed, or missed by the backfill.
+ */
+export type ActionType = "act" | "verify" | "fyi";
+
+/** Display tiers. `priority-verify` is a verify item that should not wait. */
+export type Severity = "act" | "priority-verify" | "verify" | "fyi";
+
+/** Feed order: tier first, then newest within a tier. */
 const SEVERITY_RANK: Record<Severity, number> = {
-  urgent: 0,
-  "worth-knowing": 1,
-  logged: 2,
+  act: 0,
+  "priority-verify": 1,
+  verify: 2,
+  fyi: 3,
 };
 
 export type SurfacedItem = {
@@ -111,6 +163,10 @@ export type SurfacedItem = {
   source: string;
   sourceLabel: string;
   decision: "ALERT" | "OPPORTUNITY";
+  actionType: ActionType | null;
+  /** One-clause display variant; use this in list rows. */
+  shortReason: string;
+  /** Full recorded rationale; detail views only. */
   reason: string;
   tags: string[];
   profileFactId: string | null;
@@ -133,19 +189,35 @@ const SOURCE_LABEL: Record<string, string> = {
 };
 
 /**
- * Severity from what the record actually says.
+ * Pathogen terms, used ONLY to promote an item within the verify tier.
  *
- * openFDA carries `classification`; Class I is the FDA's own "reasonable
- * probability of serious harm" tier, so it maps to urgent. The contract
- * suggests deriving urgency from reason text where classification is missing
- * (fda_rss); that is left undone deliberately, because keyword-sniffing prose
- * would manufacture a severity the record does not state.
+ * The contract asks for Class I / pathogen verify items to outrank ordinary
+ * ones. `classification` is missing on every fda_rss row (the sprouts recalls
+ * included), so classification alone cannot lift them and the backend
+ * explicitly sanctioned reading the reason text here.
+ *
+ * Kept deliberately narrow: it only reorders a list. It never decides whether
+ * something surfaces, and it never sets an action_type. A pathogen flag on the
+ * decision would be better than this list, and is worth asking for later.
  */
-function severityOf(classification: string | null, decision: string): Severity {
-  if (decision === "OPPORTUNITY") return "logged";
-  if (classification === "Class I") return "urgent";
-  if (classification === "Class III") return "logged";
-  return "worth-knowing";
+const PATHOGENS = /\b(e\.?\s?coli|salmonella|listeria|botulism|cronobacter|hepatitis a)\b/i;
+
+/**
+ * Display tier from the backend's action_type, with one promotion rule.
+ *
+ * action_type is the ranking signal, so severity no longer guesses from FDA
+ * class. Class only breaks ties inside `verify`, per the contract.
+ */
+function severityOf(
+  actionType: ActionType | null,
+  classification: string | null,
+  text: string,
+): Severity {
+  if (actionType === "act") return "act";
+  if (actionType === "fyi") return "fyi";
+  // verify, or NULL where the backfill has not reached yet: treat unknown as
+  // verify rather than dropping it to the bottom, so it stays visible.
+  return classification === "Class I" || PATHOGENS.test(text) ? "priority-verify" : "verify";
 }
 
 /** "20260602" -> "2026-06-02". openFDA packs dates without separators. */
@@ -161,19 +233,15 @@ export async function getSurfaced(): Promise<SurfacedItem[]> {
     title: string;
     source: string;
     decision: "ALERT" | "OPPORTUNITY";
+    action_type: ActionType | null;
     reason: string;
+    short_reason: string | null;
     tags: unknown;
     profile_fact_id: string | null;
     created_at: string;
     payload: unknown;
   }>(
-    `SELECT d.id AS decision_id, doc.title, doc.source, d.decision, d.reason,
-            d.tags, d.profile_fact_id, d.created_at, doc.payload
-       FROM triage_decisions d
-       JOIN documents doc ON doc.id = d.document_id
-      WHERE d.decision IN ('ALERT','OPPORTUNITY')
-        AND d.created_at >= NOW() - INTERVAL ? DAY
-      ORDER BY d.created_at DESC`,
+    `SELECT * FROM v_surfaced_feed WHERE created_at >= NOW() - INTERVAL ? DAY`,
     [WINDOW_DAYS],
   );
 
@@ -198,11 +266,14 @@ export async function getSurfaced(): Promise<SurfacedItem[]> {
       source: r.source,
       sourceLabel: SOURCE_LABEL[r.source] ?? r.source,
       decision: r.decision,
+      actionType: r.action_type,
+      // Fall back to the full reason if a row predates the backfill.
+      shortReason: r.short_reason ?? r.reason,
       reason: r.reason,
       tags: parseTags(r.tags),
       profileFactId: r.profile_fact_id,
       createdAtUtc: r.created_at,
-      severity: severityOf(classification, r.decision),
+      severity: severityOf(r.action_type, classification, `${r.title} ${r.reason}`),
       classification,
       timingLabel,
       postedLabel: posted(r.created_at),
@@ -210,10 +281,9 @@ export async function getSurfaced(): Promise<SurfacedItem[]> {
   });
 
   /*
-   * Severity is derived from the payload, so the ordering cannot live in the
-   * SQL. Sorting here keeps a Class I recall above routine permits instead of
-   * letting ingestion time decide what the owner sees first; ties fall back to
-   * newest, which is the order the query already returned.
+   * The tier depends on payload and text, so the ordering cannot live in SQL.
+   * Sorting here puts what the store must act on above what it merely needs to
+   * check; ties fall back to newest.
    */
   return items.sort((a, b) => {
     const bySeverity = SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity];

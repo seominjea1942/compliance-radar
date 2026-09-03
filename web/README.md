@@ -47,21 +47,17 @@ Scope is the **current 7-day window**; 90-day totals belong to the log screen.
 | Region | Source |
 |---|---|
 | Home strip totals | `v_weekly_summary` (summed across source rows) |
-| Surfaced feed | the contract's sanctioned direct query (§5), scoped to 7 days |
+| Surfaced feed | `v_surfaced_feed`, scoped to 7 days |
+| Topic table | `v_weekly_topics` |
+| "Checked …" stamp | `v_run_status` |
 | Nearby permits map | `v_nearby_permits` |
 | Sidebar store/owner | `store_profile` row `id = 1` |
-| Topic table | ⚠ interim — needs `v_weekly_topics` |
-| "Checked …" stamp | ⚠ interim — needs `last_checked` |
 
 Shapes follow `../docs/ui-data-contract.md`. The views are the query layer: TS
 does `SELECT * FROM v_...`, and a screen needing a new shape gets a new view
 rather than a bespoke join here.
 
-### Pending view requests
-
-`lib/pending-views.ts` holds the only bespoke SQL in the app, for the two
-elements no view covers. Both are requested from the backend session; when the
-views land, delete that file and point the call sites at the views.
+Every read is now a view. There is no bespoke SQL left in the app.
 
 ### A note on the 7-day window
 
@@ -108,10 +104,16 @@ to `bedrock:InvokeModel` — not the project's admin AWS keys.
 - **Writes.** None. The contract permits exactly two write paths (overturns and
   profile facts) and the home screen needs neither. "Done" is session-local
   view state, not persistence.
-- **Feed order** is severity first, then newest within a severity. Severity is
-  derived from the payload, so the sort cannot live in SQL; it happens in
-  `getSurfaced()` after mapping. Without it, ingestion time decides what the
-  owner sees first and Class I recalls sink below routine permits.
+- **Feed order** comes from the backend's `action_type`: act, then priority
+  verify, then verify, then fyi, newest within a tier. The promotion inside
+  `verify` uses `payload.classification` plus a narrow pathogen term list,
+  because `classification` is missing on every `fda_rss` row (the sprouts
+  recalls included) and the contract explicitly sanctions reading the reason
+  there. That list only reorders; it never decides what surfaces.
+- **The headline counts `act`, not everything surfaced.** Most surfaced rows
+  are precautionary checks; calling forty of those "things that need you" is
+  the alert fatigue the product exists to prevent.
+- **`short_reason` in list rows**, full `reason` reserved for detail views.
 - **Content column** is capped at 800px and centred, so it does not sprawl on
   wide screens. The topic table and the map each get their own full-width row.
 - **Map plate** carries the same aspect ratio as its viewBox, so the SVG fits
@@ -125,11 +127,9 @@ to `bedrock:InvokeModel` — not the project's admin AWS keys.
   compress ~70 near-store permits into an unreadable blob. Outliers are clamped
   to the edge keeping their bearing. The streets are the design's decoration,
   not surveyed geometry.
-- **Severity** is taken from the FDA `classification` field where the source
-  provides one (Class I → urgent, Class III → logged). The contract suggests
-  deriving urgency from reason text where classification is missing (fda_rss);
-  that is deliberately not done, because keyword-sniffing prose would
-  manufacture a severity the record does not state. Say the word if you want it.
+- **The alert banner means "the store is affected"** (`action_type = act`),
+  not "a serious recall exists". A Class I recall of something the store does
+  not stock is not an emergency.
 - **Recall class chips** show the FDA's own term (Class I/II/III) because that
   is what the source document says, with an info icon and a tooltip carrying
   the plain-English meaning. The chip is focusable, so the explanation is
