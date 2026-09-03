@@ -21,12 +21,28 @@ Respond with ONLY a JSON object, no other text:
 {
   "decision": "ALERT" | "REJECT" | "OPPORTUNITY",
   "reason": "<one sentence, citing the specific profile fact that drove the decision>",
+  "short_reason": "<max 100 chars, ONE clause: only the decisive fact. Do NOT restate the store name, product category label, or recall class; the UI already shows those.>",
   "profile_fact_id": "<id of the profile fact that drove the decision, or null>",
-  "tags": ["<1-2 tags from EXACTLY this fixed set: food-recalls, city-programs-fees, council-routine, nearby-construction, labor-workforce>"]
+  "tags": ["<1-2 tags from EXACTLY this fixed set: food-recalls, city-programs-fees, council-routine, nearby-construction, labor-workforce>"],
+  "action_type": "act" | "verify" | "fyi"  (surfaced items only; null for REJECT)
 }
+
+action_type meanings, for ALERT/OPPORTUNITY only:
+- "act": the store is affected on the facts given (a carried brand is named,
+  the store's street/premises is named, a fee lands on its bill). The owner
+  should do something now.
+- "verify": there is ONE concrete check the owner can perform (a specific
+  named product/lot that is plausibly on the shelf). If you cannot name the
+  concrete check in the reason, it is not "verify".
+- "fyi": awareness only, no action or check exists.
 
 Default to REJECT. Silence is the product: only ALERT when the item plausibly
 requires the owner to look at it. An overly chatty radar is a broken radar.
+Category overlap ALONE is not enough to surface a recall: if the recalled
+brand is not on the carry list and the tie is only "same category the store
+carries", REJECT and say so; reserve "verify" alerts for named products a
+store like this plausibly stocked (carried brand, house/regional supplier
+overlap, or Class I pathogen risk in a carried fresh category).
 Never give legal advice; you flag items for a human to review.
 
 For RECALL items, when the profile includes a carry list ("what we carry"),
@@ -115,6 +131,8 @@ def run(limit=None) -> dict:
 
     counts = {"ALERT": 0, "REJECT": 0, "OPPORTUNITY": 0}
     alerts = []
+    import datetime
+    run_started = datetime.datetime.utcnow()
     for it in fresh:
         emb = embed(it.get("title", "") + " " + it.get("reason_for_recall", it.get("description", "")))
         past = db.similar_past_decisions(conn, emb, k=5)
@@ -125,5 +143,10 @@ def run(limit=None) -> dict:
         if decision["decision"] in ("ALERT", "OPPORTUNITY"):
             alerts.append({"title": it.get("title", "")[:150],
                            "decision": decision["decision"], "reason": decision["reason"]})
+    # trust stamp for the UI ("Checked today, 6:02 AM"): log every run,
+    # including the quiet ones where nothing new was triaged
+    with conn.cursor() as c:
+        c.execute("INSERT INTO pipeline_runs (ran_at, fetched, triaged, counts) VALUES (%s, %s, %s, %s)",
+                  (run_started, len(items), len(fresh), json.dumps(counts)))
     conn.close()
     return {"fetched": len(items), "triaged": len(fresh), "counts": counts, "alerts": alerts}

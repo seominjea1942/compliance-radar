@@ -63,14 +63,22 @@ parseFloat them. Store anchor: lat 37.3085, lon -121.8995. 73 rows, nearly
 all REJECT (gray pins); 4 ALERTs are residential items very close by (known
 over-sensitivity; render them as normal alerts or gray, design's call).
 
-### 5. Surfaced items (alerts feed) — no dedicated view, query directly:
-```sql
-SELECT d.id AS decision_id, doc.title, doc.source, d.decision, d.reason,
-       d.tags, d.profile_fact_id, d.created_at, doc.payload
-FROM triage_decisions d JOIN documents doc ON doc.id = d.document_id
-WHERE d.decision IN ('ALERT','OPPORTUNITY')
-ORDER BY d.created_at DESC
-```
+### 5. `v_surfaced_feed` — alerts feed (now a real view)
+Columns: `decision_id`, `title`, `source`, `decision`, `action_type`,
+`reason`, `tags`, `profile_fact_id`, `created_at`, `payload`. Newest first.
+
+`action_type` (the ranking signal you asked for, 2026-09-02):
+- `act` (7 rows): the store is affected on the stated facts; every current
+  act row is a literal carry-list brand match (Straus x5, Motor City, Amy's).
+- `verify` (30): one concrete check exists (named product plausibly on the
+  shelf). NOTE: the sprouts alerts are `verify` under the strict definition
+  ("check the walk-in" IS the concrete check); rank Class I / pathogen
+  verify items above the rest using payload.classification + reason.
+- `fyi` (9): awareness only (includes the 4 residential permit alerts).
+- NULL on REJECT rows always.
+New items get action_type at triage time; the prompt was also tightened so
+category-overlap-only recalls now REJECT instead of becoming verify alerts,
+so the verify volume should fall going forward.
 `payload` is the full normalized source item (JSON string). Useful payload
 fields by source: fda: `classification` ("Class I/II/III" — MISSING on
 fda_rss items, derive urgency from reason text), `distribution_pattern`,
@@ -79,6 +87,24 @@ fda_rss items, derive urgency from reason text), `distribution_pattern`,
 deep-read items `key_dates` (list of {label, date}), `evidence`
 ({quote, page_hint}), `staff_report_attachment`; permits: `lat`, `lon`,
 `permit_value`, `square_footage`, `address`, `work_category`.
+
+### 6. `v_weekly_topics` — per-tag home table (added 2026-09-03)
+Columns: `tag` (str), `read` (int), `for_you` (num). One row per fixed tag,
+zeros kept, rolling 7 days. Replaces the interim getWeeklyTopics() query.
+
+### 7. `v_run_status` — trust stamp (added 2026-09-03)
+Single row: `last_checked` (datetime, UTC) = the last pipeline run, INCLUDING
+quiet runs that triaged nothing (backed by a new pipeline_runs table the
+runtime writes on every daily run). Replaces MAX(created_at), which lied on
+quiet days. NOTE: the first row appears after the next daily run (or manual
+invoke); render "not yet checked" for NULL.
+
+### short_reason (added 2026-09-03, request #4)
+`triage_decisions.short_reason` (<=160 chars, typically <=100): one-clause
+display variant of `reason` that omits the store name / category / class the
+UI already shows. Exposed on `v_filtered_log` and `v_surfaced_feed`. Full
+`reason` is unchanged and remains the recorded decision rationale; new items
+generate both fields at triage time.
 
 ## Store profile (profile screen, editable)
 
