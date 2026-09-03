@@ -3,55 +3,56 @@
 /*
  * Single source of truth for the Compliance Radar look.
  *
- * Values are lifted verbatim from the Claude Design canvas
- * (`Compliance Radar.dc.html`). Change a colour here and it changes
+ * Structure and naming come from the Claude Design canvas
+ * (`Compliance Radar.dc.html`); the palette is a neutral grey scale rather
+ * than the canvas's warm cream. Change a colour here and it changes
  * everywhere: Tailwind utilities (`bg-paper`, `text-ink`) and the shadcn
  * semantic tokens below both read from these.
  */
 @theme {
   /* Surfaces */
-  --color-canvas: #ede8df;
+  --color-canvas: #f4f4f5;
   --color-paper: #ffffff;
-  --color-shell: #faf7f1;
-  --color-rail: #f4f0e7;
-  --color-wash: #f0ebe0;
-  --color-hover: #f1ece1;
+  --color-shell: #fafafa;
+  --color-rail: #f4f4f5;
+  --color-wash: #f1f1f3;
+  --color-hover: #f1f1f3;
 
   /* Lines */
-  --color-line: #e7e0d2;
-  --color-line-soft: #efe9dc;
-  --color-line-strong: #ded6c7;
-  --color-line-card: #e3dccf;
-  --color-line-warm: #e3d3cc;
-  --color-line-chip: #d9d0be;
+  --color-line: #e4e4e7;
+  --color-line-soft: #efeff1;
+  --color-line-strong: #d4d4d8;
+  --color-line-card: #e4e4e7;
+  --color-line-warm: #f3cfc9;
+  --color-line-chip: #d4d4d8;
 
   /* Ink */
-  --color-ink: #23201b;
-  --color-ink-soft: #3b372f;
-  --color-body: #57514a;
-  --color-muted: #6e675c;
-  --color-faint: #8a8175;
-  --color-monoink: #7c7466;
-  --color-ghost: #a9a093;
+  --color-ink: #18181b;
+  --color-ink-soft: #27272a;
+  --color-body: #3f3f46;
+  --color-muted: #52525b;
+  --color-faint: #71717a;
+  --color-monoink: #71717a;
+  --color-ghost: #a1a1aa;
 
   /* Accent */
-  --color-green: #2e5a46;
-  --color-green-deep: #1f3f31;
-  --color-green-soft: #9fbfac;
-  --color-green-tint: #f2f6f3;
-  --color-green-tint-line: #dce6df;
+  --color-green: #2f6a4f;
+  --color-green-deep: #245240;
+  --color-green-soft: #8fbaa2;
+  --color-green-tint: #f1f7f3;
+  --color-green-tint-line: #dbe8e0;
 
   /* Urgent */
-  --color-alert: #a8412a;
-  --color-alert-ink: #8c3722;
-  --color-alert-bg: #fbf1ed;
-  --color-alert-line: #ebd3c8;
+  --color-alert: #b42318;
+  --color-alert-ink: #912018;
+  --color-alert-bg: #fef4f2;
+  --color-alert-line: #f6d2cd;
 
   /* Map */
-  --color-pin: #a79e8e;
-  --color-pin-faint: #bfb7a8;
-  --color-road: #e4dccc;
-  --color-road-faint: #e9e2d4;
+  --color-pin: #a1a1aa;
+  --color-pin-faint: #c7c7cc;
+  --color-road: #e4e4e7;
+  --color-road-faint: #ededf0;
 
   /*
    * Type. app/layout.tsx binds the actual faces to these role variables, so a
