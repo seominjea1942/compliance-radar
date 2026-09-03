@@ -45,6 +45,7 @@ Respond ONLY with JSON:
 {
   "decision": "ALERT" | "REJECT" | "OPPORTUNITY",
   "reason": "<one sentence citing the specific profile fact>",
+  "short_reason": "<max 100 chars, one clause, only the decisive fact; no store name or category restatement>",
   "profile_fact_id": "<fact id or null>",
   "tags": ["<1-2 from: city-programs-fees, council-routine, nearby-construction, labor-workforce>"],
   "action_type": "act" | "verify" | "fyi",  (surfaced only: act = store is affected on the facts; verify = one concrete check the owner can perform; fyi = awareness only)

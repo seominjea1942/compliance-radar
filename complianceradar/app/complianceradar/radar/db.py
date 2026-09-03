@@ -44,9 +44,10 @@ def insert_decision(conn, document_id: int, decision: dict, embedding=None) -> i
     with conn.cursor() as c:
         c.execute(
             """INSERT INTO triage_decisions
-               (document_id, decision, reason, profile_fact_id, embedding, tags, action_type)
-               VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+               (document_id, decision, reason, short_reason, profile_fact_id, embedding, tags, action_type)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
             (document_id, decision["decision"], decision["reason"],
+             (decision.get("short_reason") or None) and decision["short_reason"][:160],
              decision.get("profile_fact_id"),
              json.dumps(embedding) if embedding else None,
              json.dumps(tags) if tags else None,

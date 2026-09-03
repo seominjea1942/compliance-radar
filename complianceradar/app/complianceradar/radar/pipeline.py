@@ -21,6 +21,7 @@ Respond with ONLY a JSON object, no other text:
 {
   "decision": "ALERT" | "REJECT" | "OPPORTUNITY",
   "reason": "<one sentence, citing the specific profile fact that drove the decision>",
+  "short_reason": "<max 100 chars, ONE clause: only the decisive fact. Do NOT restate the store name, product category label, or recall class; the UI already shows those.>",
   "profile_fact_id": "<id of the profile fact that drove the decision, or null>",
   "tags": ["<1-2 tags from EXACTLY this fixed set: food-recalls, city-programs-fees, council-routine, nearby-construction, labor-workforce>"],
   "action_type": "act" | "verify" | "fyi"  (surfaced items only; null for REJECT)
@@ -130,6 +131,8 @@ def run(limit=None) -> dict:
 
     counts = {"ALERT": 0, "REJECT": 0, "OPPORTUNITY": 0}
     alerts = []
+    import datetime
+    run_started = datetime.datetime.utcnow()
     for it in fresh:
         emb = embed(it.get("title", "") + " " + it.get("reason_for_recall", it.get("description", "")))
         past = db.similar_past_decisions(conn, emb, k=5)
@@ -140,5 +143,10 @@ def run(limit=None) -> dict:
         if decision["decision"] in ("ALERT", "OPPORTUNITY"):
             alerts.append({"title": it.get("title", "")[:150],
                            "decision": decision["decision"], "reason": decision["reason"]})
+    # trust stamp for the UI ("Checked today, 6:02 AM"): log every run,
+    # including the quiet ones where nothing new was triaged
+    with conn.cursor() as c:
+        c.execute("INSERT INTO pipeline_runs (ran_at, fetched, triaged, counts) VALUES (%s, %s, %s, %s)",
+                  (run_started, len(items), len(fresh), json.dumps(counts)))
     conn.close()
     return {"fetched": len(items), "triaged": len(fresh), "counts": counts, "alerts": alerts}
