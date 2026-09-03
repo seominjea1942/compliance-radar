@@ -46,7 +46,7 @@ export default async function HomePage() {
         filteredCount={summary.filtered}
       />
 
-      <main className="min-w-0 flex-1">
+      <main className="min-w-0 flex-1 bg-paper">
         <div className="mx-auto flex w-full max-w-[800px] flex-col gap-5 px-4 pt-5 pb-10 md:gap-6.5 md:px-12 md:pt-7.5 md:pb-12">
           <Card className="gap-5">
             <Hero surfaced={summary.surfaced} reviewed={summary.reviewed} />
