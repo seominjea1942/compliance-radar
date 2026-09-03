@@ -14,8 +14,8 @@ LAYER_URL = ("https://geo.sanjoseca.gov/server/rest/services/PLN/"
              "PLN_PermitsAndComplaints/MapServer/{layer}/query")
 UA = {"User-Agent": "compliance-radar/0.1 (hackathon; contact: seominjea1942@gmail.com)"}
 
-# Fictional store anchor: Lincoln Ave commercial strip, Willow Glen
-STORE_LAT, STORE_LON = 37.3085, -121.8995
+# Store anchor: 1287 Lincoln Ave (fictional number, real commercial strip)
+STORE_LAT, STORE_LON = 37.3053, -121.8990
 
 ACTIVE_LAYER = 8
 RECENT_30D_LAYER = 7
