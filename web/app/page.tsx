@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { PermitMap } from "@/components/PermitMap";
 import { Sidebar } from "@/components/Sidebar";
-import { SurfacedCard } from "@/components/SurfacedCard";
+import { SurfacedFeed } from "@/components/SurfacedFeed";
 import { TopicTable } from "@/components/TopicTable";
 import {
   getLastChecked,
@@ -24,15 +24,6 @@ export const dynamic = "force-dynamic";
  */
 function Hero({ items, reviewed }: { items: SurfacedItem[]; reviewed: number }) {
   const act = items.filter((i) => i.severity === "act").length;
-  const check = items.filter(
-    (i) => i.severity === "priority-verify" || i.severity === "verify",
-  ).length;
-  const file = items.filter((i) => i.severity === "fyi").length;
-
-  const rest = [
-    check > 0 ? `${count(check)} to check` : null,
-    file > 0 ? `${count(file)} for the file` : null,
-  ].filter(Boolean);
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -42,7 +33,6 @@ function Hero({ items, reviewed }: { items: SurfacedItem[]; reviewed: number }) 
           : `${count(act)} ${act === 1 ? "thing needs" : "things need"} action.`}
       </h1>
       <p className="max-w-[700px] text-[14.5px]/relaxed text-pretty text-body md:text-[15.5px]">
-        {rest.length > 0 ? `${rest.join(", ")}. ` : ""}
         {count(reviewed)} items read this week; the rest is in the log.
       </p>
     </div>
@@ -71,13 +61,7 @@ export default async function HomePage() {
         <div className="mx-auto flex w-full max-w-[800px] flex-col gap-5 px-4 pt-5 pb-10 md:gap-6.5 md:px-12 md:pt-7.5 md:pb-12">
           <Card className="gap-5">
             <Hero items={surfaced} reviewed={summary.reviewed} />
-            {surfaced.length > 0 && (
-              <div className="flex flex-col gap-3.5">
-                {surfaced.map((item) => (
-                  <SurfacedCard key={item.decisionId} item={item} />
-                ))}
-              </div>
-            )}
+            {surfaced.length > 0 && <SurfacedFeed items={surfaced} />}
           </Card>
 
           <div className="flex flex-col gap-5 md:gap-6.5">

@@ -23,6 +23,7 @@ Primitives live in `components/ui/`:
 | `Avatar` | initials tile (`square` store, `round` owner) |
 | `NavItem` | a row in the left rail |
 | `Tooltip` | designed hover/focus bubble, Radix-backed |
+| `FilterPills` | segmented control for filtering a list in place |
 
 Icons are Google Material Design, via `react-icons/md` (SVG components rather
 than the icon font, so there is no ligature flash on load).
@@ -114,6 +115,9 @@ to `bedrock:InvokeModel` — not the project's admin AWS keys.
   are precautionary checks; calling forty of those "things that need you" is
   the alert fatigue the product exists to prevent.
 - **`short_reason` in list rows**, full `reason` reserved for detail views.
+- **The feed filters by tier** and opens on "Needs action", so the owner lands
+  on the seven items that matter rather than scrolling forty-eight. It falls
+  back to "All" when nothing needs action.
 - **Content column** is capped at 800px and centred, so it does not sprawl on
   wide screens. The topic table and the map each get their own full-width row.
 - **Map plate** carries the same aspect ratio as its viewBox, so the SVG fits
