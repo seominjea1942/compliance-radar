@@ -14,9 +14,9 @@ function NavItem({
       data-slot="nav-item"
       data-active={active || undefined}
       className={cn(
-        "flex flex-none items-center justify-between gap-2 rounded-control px-3 py-2.5 text-[13.5px] whitespace-nowrap no-underline transition-colors",
+        "flex flex-none items-center justify-between gap-2 rounded-[10px] px-3 py-2.5 text-[13.5px] whitespace-nowrap no-underline transition-colors",
         active
-          ? "border border-line-card bg-paper px-[11px] font-medium text-ink"
+          ? "border border-line-card bg-paper px-[11px] font-medium text-ink shadow-[0_1px_2px_rgba(24,24,27,0.04)]"
           : "font-normal text-muted hover:bg-hover hover:text-ink",
         className,
       )}

@@ -2,15 +2,17 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * The design uses two card weights: `paper` for the outer panels that sit on
- * the shell, and `inset` for items nested inside one (a surfaced alert inside
- * the feed panel). Tone `urgent` swaps the border to the warm alert line.
+ * Two card weights: `paper` for the outer panels that sit on the shell, and
+ * `inset` for items nested inside one (a surfaced alert inside the feed panel).
+ *
+ * There is deliberately no urgent tone. Colouring the whole card border red
+ * competed with the alert banner inside it; the banner carries that signal.
  */
 function Card({
   className,
   tone = "paper",
   ...props
-}: React.ComponentProps<"div"> & { tone?: "paper" | "inset" | "urgent" }) {
+}: React.ComponentProps<"div"> & { tone?: "paper" | "inset" }) {
   return (
     <div
       data-slot="card"
@@ -18,7 +20,6 @@ function Card({
         "flex flex-col border",
         tone === "paper" && "rounded-card border-line bg-paper px-6.5 py-5.5",
         tone === "inset" && "rounded-panel border-line bg-shell px-5.5 py-5",
-        tone === "urgent" && "rounded-panel border-line-warm bg-shell px-5.5 py-5",
         className,
       )}
       {...props}

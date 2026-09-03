@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, BellOff, Check, Info, Mail, MessageCircle } from "lucide-react";
+import {
+  MdCheck,
+  MdInfoOutline,
+  MdOutlineChatBubbleOutline,
+  MdOutlineMailOutline,
+  MdOutlineNotificationsOff,
+  MdOutlineWarningAmber,
+} from "react-icons/md";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardActions } from "@/components/ui/card";
@@ -23,7 +30,7 @@ const CLASS_MEANING: Record<string, string> = {
 function UrgentBanner({ reason }: { reason: string }) {
   return (
     <div className="flex items-start gap-2.5 rounded-lg border border-alert-line bg-alert-bg px-3.5 py-2.5">
-      <AlertTriangle className="mt-px size-4 flex-none stroke-alert" strokeWidth={1.4} />
+      <MdOutlineWarningAmber className="mt-px size-4 flex-none text-alert" aria-hidden />
       <span className="text-[13.5px]/relaxed text-alert-ink">{reason}</span>
     </div>
   );
@@ -40,7 +47,7 @@ export function SurfacedCard({ item }: { item: SurfacedItem }) {
 
   return (
     <Card
-      tone={urgent ? "urgent" : "inset"}
+      tone="inset"
       className={`gap-3.5 transition-opacity duration-300 ${done ? "opacity-55" : "opacity-100"}`}
     >
       <div className="flex flex-wrap items-center gap-2.5">
@@ -62,7 +69,7 @@ export function SurfacedCard({ item }: { item: SurfacedItem }) {
               className="cursor-help gap-1.5 outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {item.classification}
-              <Info className="size-3 opacity-70" strokeWidth={1.6} aria-hidden />
+              <MdInfoOutline className="size-3.5 opacity-70" aria-hidden />
             </Badge>
           </Tooltip>
         )}
@@ -85,19 +92,19 @@ export function SurfacedCard({ item }: { item: SurfacedItem }) {
           onClick={() => setDone(true)}
           disabled={done}
         >
-          <Check className="size-[15px]" strokeWidth={1.4} />
+          <MdCheck className="size-[15px]" aria-hidden />
           Done
         </Button>
         <Button variant="cardAction" size="action">
-          <Mail className="size-[15px]" strokeWidth={1.3} />
+          <MdOutlineMailOutline className="size-[15px]" aria-hidden />
           Share via email
         </Button>
         <Button variant="cardAction" size="action">
-          <BellOff className="size-[15px]" strokeWidth={1.3} />
+          <MdOutlineNotificationsOff className="size-[15px]" aria-hidden />
           Didn&apos;t need this
         </Button>
         <Button variant="cardAction" size="action">
-          <MessageCircle className="size-[15px]" strokeWidth={1.3} />
+          <MdOutlineChatBubbleOutline className="size-[15px]" aria-hidden />
           Ask
         </Button>
         <Button variant="cardAction" size="action" className="ml-auto text-[15px] text-ghost">
@@ -107,7 +114,7 @@ export function SurfacedCard({ item }: { item: SurfacedItem }) {
 
       {done && (
         <div className="flex items-center gap-2.5 rounded-lg border border-green-tint-line bg-green-tint px-3.5 py-2.5">
-          <Check className="size-3.5 flex-none stroke-green" strokeWidth={1.5} />
+          <MdCheck className="size-3.5 flex-none text-green" aria-hidden />
           <span className="text-sm text-green">Handled for this session.</span>
         </div>
       )}

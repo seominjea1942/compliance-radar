@@ -24,6 +24,9 @@ Primitives live in `components/ui/`:
 | `NavItem` | a row in the left rail |
 | `Tooltip` | designed hover/focus bubble, Radix-backed |
 
+Icons are Google Material Design, via `react-icons/md` (SVG components rather
+than the icon font, so there is no ligature flash on load).
+
 Screen-level components (`Sidebar`, `TopicTable`, `SurfacedCard`, `PermitMap`)
 compose those. Add a card action by adding one `<Button variant="cardAction">`,
 not by copying a style object.
