@@ -88,6 +88,24 @@ deep-read items `key_dates` (list of {label, date}), `evidence`
 ({quote, page_hint}), `staff_report_attachment`; permits: `lat`, `lon`,
 `permit_value`, `square_footage`, `address`, `work_category`.
 
+### 6. `v_weekly_topics` — per-tag home table (added 2026-09-03)
+Columns: `tag` (str), `read` (int), `for_you` (num). One row per fixed tag,
+zeros kept, rolling 7 days. Replaces the interim getWeeklyTopics() query.
+
+### 7. `v_run_status` — trust stamp (added 2026-09-03)
+Single row: `last_checked` (datetime, UTC) = the last pipeline run, INCLUDING
+quiet runs that triaged nothing (backed by a new pipeline_runs table the
+runtime writes on every daily run). Replaces MAX(created_at), which lied on
+quiet days. NOTE: the first row appears after the next daily run (or manual
+invoke); render "not yet checked" for NULL.
+
+### short_reason (added 2026-09-03, request #4)
+`triage_decisions.short_reason` (<=160 chars, typically <=100): one-clause
+display variant of `reason` that omits the store name / category / class the
+UI already shows. Exposed on `v_filtered_log` and `v_surfaced_feed`. Full
+`reason` is unchanged and remains the recorded decision rationale; new items
+generate both fields at triage time.
+
 ## Store profile (profile screen, editable)
 
 Table `store_profile`, single row id=1, column `profile` (JSON):
