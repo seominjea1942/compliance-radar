@@ -1,22 +1,27 @@
 import type { Metadata } from "next";
-import { Newsreader, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
+import { Inter, Newsreader, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
-const newsreader = Newsreader({
+/*
+ * Variables are named by role, not by typeface, so swapping a face means
+ * changing the import here and nothing else. globals.css maps these onto the
+ * Tailwind font utilities.
+ */
+const display = Newsreader({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
   style: ["normal", "italic"],
-  variable: "--font-newsreader",
+  variable: "--font-display",
 });
-const plexSans = IBM_Plex_Sans({
+const ui = Inter({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
-  variable: "--font-plex-sans",
+  variable: "--font-ui",
 });
-const plexMono = IBM_Plex_Mono({
+const mono = IBM_Plex_Mono({
   subsets: ["latin"],
   weight: ["400", "500"],
-  variable: "--font-plex-mono",
+  variable: "--font-mono-ui",
 });
 
 export const metadata: Metadata = {
@@ -26,10 +31,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={`${newsreader.variable} ${plexSans.variable} ${plexMono.variable}`}
-    >
+    <html lang="en" className={`${display.variable} ${ui.variable} ${mono.variable}`}>
       <body>{children}</body>
     </html>
   );

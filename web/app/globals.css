@@ -53,10 +53,14 @@
   --color-road: #e4dccc;
   --color-road-faint: #e9e2d4;
 
-  /* Type. next/font sets the --font-* variables in app/layout.tsx. */
-  --font-serif: var(--font-newsreader), Georgia, serif;
-  --font-sans: var(--font-plex-sans), system-ui, sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  /*
+   * Type. app/layout.tsx binds the actual faces to these role variables, so a
+   * typeface swap happens there and nowhere else.
+   *   display -> Newsreader   ui -> Inter   mono-ui -> IBM Plex Mono
+   */
+  --font-serif: var(--font-display), Georgia, serif;
+  --font-sans: var(--font-ui), system-ui, sans-serif;
+  --font-mono: var(--font-mono-ui), ui-monospace, monospace;
 
   --radius-card: 12px;
   --radius-panel: 10px;
