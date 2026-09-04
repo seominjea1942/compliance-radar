@@ -106,6 +106,20 @@ UI already shows. Exposed on `v_filtered_log` and `v_surfaced_feed`. Full
 `reason` is unchanged and remains the recorded decision rationale; new items
 generate both fields at triage time.
 
+### event_key + resolution (added 2026-09-03, Resolve flow)
+`v_surfaced_feed` now also has:
+- `event_key` (str): rows sharing it are ONE real-world recall event (openFDA
+  event_id where available; press-release link for fda_rss; external_id
+  otherwise). Group feed cards on it. Verified groupings include Straus (5
+  rows), Zapp's/Dirty chips (6 rows, genuinely one openFDA event), Boichik (3).
+- `resolution` (`handled` | `not_carried` | NULL=open), `resolved_at` (UTC).
+Write path for Save (per selected row):
+```sql
+UPDATE triage_decisions SET resolution=%s, resolved_at=NOW() WHERE id=%s
+```
+"Keep open" rows: write nothing. Resolution is independent of the overturn
+flow (overturns belong to REJECT rows).
+
 ## Store profile (profile screen, editable)
 
 Table `store_profile`, single row id=1, column `profile` (JSON):
