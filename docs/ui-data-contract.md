@@ -151,8 +151,28 @@ show UPC and code_info when present, and keep the full `title` reachable
 
 Table `store_profile`, single row id=1, column `profile` (JSON):
 `{store_name, owner, location, carry_list:{source, granularity, entries:[{category, carries, brands[]}]}, facts:[{id, fact, implies}]}`.
-53 carry entries + 8 facts. CARRY LIST IS FROZEN until after the demo: the
-UI may render an edit experience but writes to carry_list need human signoff.
+53 carry entries + 8 facts.
+
+CARRY LIST UNFROZEN (owner sign-off 2026-09-05): the profile screen's add/edit
+saves for real now. The runtime reads the DB profile live (file only as
+fallback), so edits change triage of FUTURE items; past decisions never change.
+
+Write path for "Add an item" (atomic, no read-modify-write needed):
+```sql
+UPDATE store_profile
+SET profile = JSON_ARRAY_APPEND(profile, '$.carry_list.entries',
+      CAST(%s AS JSON))          -- %s = '{"category":"...","carries":false,"brands":[]}'
+WHERE id = 1
+```
+To edit/remove an entry, read the row, modify the JSON in the route, and write
+it back whole (single-owner app; lost-update risk is negligible).
+
+REQUIRED DISCLAIMER on save (exact semantics): changes take effect at the next
+daily check, which runs at 6:00 AM America/Los_Angeles. Compute that timestamp
+client-side ("Applies from tomorrow, 6:00 AM" or today if before 6 AM) and say
+that today's list and already-made decisions are unchanged. The chat agent
+("Ask the radar") sees profile edits immediately, so answers may reflect a new
+entry before the next triage run does; that is expected and truthful.
 
 ## Demo-week composition (agreed, do not fabricate)
 
@@ -203,17 +223,22 @@ Node route using the least-privilege key in `.vercel-aws-key.local` (env vars
 for Vercel; AGENT_RUNTIME_ARN included). Payloads:
 
 - Chat: `{"action":"ask", "question":"...", "session_id":"<stable per browser
-  chat session>", "decision_id": <int, optional item scope>}` ->
+  chat session>", "decision_id": "<STRING, optional item scope>"}` ->
   `{"status":"ok","answer":"<markdown-lite text>"}`. Session history lives
   server-side keyed by session_id (bounded sliding window); pass the same
   session_id for follow-ups. Also pass the SAME value as the
   runtimeSessionId invoke parameter (NOTE: AWS requires runtimeSessionId to
-  be at least 33 characters; a uuid4 hex with a prefix works). Latency 3-8s
-  warm; answers may contain
+  be at least 33 characters; a uuid4 hex with a prefix works).
+  decision_id MUST be sent as a string end to end: these BIGINTs exceed
+  Number.MAX_SAFE_INTEGER and Number() silently corrupts them into ids that
+  "don't exist" (measured 2026-09-04); the runtime accepts string ids.
+  Latency: typically 3-8s warm, but vague questions can tool-thrash; measured
+  worst case 121.9s before a 3-tool-call budget was added. Keep the FE 55s
+  abort with a friendly message (Vercel maxDuration 60 ceiling); answers may contain
   **bold** markdown. The agent has tools over the live DB (decision lookup,
   filtered log, open items, semantic search), so the three suggested prompts
   in the design all work as-is.
-- Brief: `{"action":"brief", "decision_id": N}` -> `{"status":"ok",
+- Brief: `{"action":"brief", "decision_id": "<STRING, same rule as ask>"}` -> `{"status":"ok",
   "brief":"<plain text>"}` (replaces the earlier make_brief guidance; no
   Bedrock key needed on Vercel anymore, this one key covers both).
 
