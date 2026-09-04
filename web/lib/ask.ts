@@ -35,13 +35,13 @@ export function isValidSessionId(v: unknown): v is string {
 }
 
 /**
- * Build the runtime payload with `decision_id` as an exact JSON number.
+ * Build the runtime payload, carrying `decision_id` as a string.
  *
- * Decision ids exceed `Number.MAX_SAFE_INTEGER`: routing one through a JS
- * number silently rounds it (7493989779944595520 is fine, but
- * 2017612633062072259 becomes ...2300) and the runtime then reports that no
- * such decision exists. The digits are spliced in as a literal so they survive
- * intact, which is the JS half of the contract's "BIGINT ids as strings" rule.
+ * The contract requires it end to end: decision ids exceed
+ * `Number.MAX_SAFE_INTEGER`, and routing one through a JS number silently
+ * rounds it (2017612633062072259 becomes ...2300), after which the runtime
+ * truthfully reports that no such decision exists. Nothing on this path may
+ * call `Number()` on an id — the digits stay text from the DB to the runtime.
  */
 export function askPayload(question: string, sessionId: string, decisionId?: string | null): string {
   const base: Record<string, unknown> = { action: "ask", question, session_id: sessionId };
@@ -49,9 +49,5 @@ export function askPayload(question: string, sessionId: string, decisionId?: str
   if (!decisionId) return JSON.stringify(base);
   if (!DECISION_ID_RE.test(decisionId)) throw new Error(`Malformed decision id: ${decisionId}`);
 
-  const PLACEHOLDER = "__DECISION_ID__";
-  return JSON.stringify({ ...base, decision_id: PLACEHOLDER }).replace(
-    `"${PLACEHOLDER}"`,
-    decisionId,
-  );
+  return JSON.stringify({ ...base, decision_id: decisionId });
 }

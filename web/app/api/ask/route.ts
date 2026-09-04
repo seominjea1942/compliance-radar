@@ -14,10 +14,12 @@ import { askPayload, isValidSessionId, DECISION_ID_RE, type AskResult } from "@/
 export const runtime = "nodejs";
 
 /**
- * Observed latency: 2-9s once the runtime is warm, but a vague question that
- * sends the agent through several DB tools has been seen to take ~122s. 60s is
- * the ceiling that holds on every Vercel plan, so the request is abandoned
- * just under it with a real message rather than a platform timeout page.
+ * Latency is 3-8s warm. A vague question used to tool-thrash for as long as
+ * 121.9s; the backend has since capped that at a 3-tool-call budget, but the
+ * abort stays because the ceiling is ours to respect either way. 60s is the
+ * limit that holds on every Vercel plan, so the request is abandoned just
+ * under it with a real message rather than a platform timeout page. The
+ * contract endorses this behaviour.
  */
 export const maxDuration = 60;
 const ABORT_AFTER_MS = 55_000;
