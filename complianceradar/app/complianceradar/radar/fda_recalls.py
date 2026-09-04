@@ -35,6 +35,7 @@ def fetch_rss_items() -> list[dict]:
         items.append({
             "source": "fda_rss",
             "type": "food_recall_press_release",
+            "event_key": get("link") or get("title")[:80],  # one press release = one event
             "title": get("title"),
             "description": re.sub(r"<[^>]+>", " ", get("description")).strip(),
             "link": get("link"),
@@ -61,9 +62,14 @@ def fetch_enforcement_items(days_back: int = 30, max_pages: int = 1) -> list[dic
             break
     items = []
     for rec in results:
+        firm = rec.get("recalling_firm", "")
+        init = rec.get("recall_initiation_date", "")
         items.append({
             "source": "openfda_enforcement",
             "type": "food_recall_enforcement",
+            # one real-world recall event spans many product rows; openFDA's
+            # event_id groups them (fallback: firm+initiation date)
+            "event_key": rec.get("event_id") or f"evt-{firm[:40]}-{init}".replace(" ", "_"),
             "title": rec.get("product_description", "")[:200],
             "reason_for_recall": rec.get("reason_for_recall", ""),
             "classification": rec.get("classification", ""),

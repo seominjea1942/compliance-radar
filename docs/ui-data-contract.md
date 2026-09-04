@@ -106,6 +106,20 @@ UI already shows. Exposed on `v_filtered_log` and `v_surfaced_feed`. Full
 `reason` is unchanged and remains the recorded decision rationale; new items
 generate both fields at triage time.
 
+### event_key + resolution (added 2026-09-03, Resolve flow)
+`v_surfaced_feed` now also has:
+- `event_key` (str): rows sharing it are ONE real-world recall event (openFDA
+  event_id where available; press-release link for fda_rss; external_id
+  otherwise). Group feed cards on it. Verified groupings include Straus (5
+  rows), Zapp's/Dirty chips (6 rows, genuinely one openFDA event), Boichik (3).
+- `resolution` (`handled` | `not_carried` | NULL=open), `resolved_at` (UTC).
+Write path for Save (per selected row):
+```sql
+UPDATE triage_decisions SET resolution=%s, resolved_at=NOW() WHERE id=%s
+```
+"Keep open" rows: write nothing. Resolution is independent of the overturn
+flow (overturns belong to REJECT rows).
+
 ## Store profile (profile screen, editable)
 
 Table `store_profile`, single row id=1, column `profile` (JSON):
@@ -154,6 +168,25 @@ cent. Not pre-stored; the UI should call it lazily per surfaced item.
    the 90-day totals in the history/log screens. Render zero-count topics as
    "watched, quiet this week" states instead of hiding them: the empty rows
    are the product thesis, not missing data.
+
+## Ask the radar + brief (runtime API, added 2026-09-04)
+
+Both run on the deployed AgentCore runtime; call InvokeAgentRuntime from a
+Node route using the least-privilege key in `.vercel-aws-key.local` (env vars
+for Vercel; AGENT_RUNTIME_ARN included). Payloads:
+
+- Chat: `{"action":"ask", "question":"...", "session_id":"<stable per browser
+  chat session>", "decision_id": <int, optional item scope>}` ->
+  `{"status":"ok","answer":"<markdown-lite text>"}`. Session history lives
+  server-side keyed by session_id (bounded sliding window); pass the same
+  session_id for follow-ups. Also pass the SAME value as the
+  runtimeSessionId invoke parameter. Latency 3-8s warm; answers may contain
+  **bold** markdown. The agent has tools over the live DB (decision lookup,
+  filtered log, open items, semantic search), so the three suggested prompts
+  in the design all work as-is.
+- Brief: `{"action":"brief", "decision_id": N}` -> `{"status":"ok",
+  "brief":"<plain text>"}` (replaces the earlier make_brief guidance; no
+  Bedrock key needed on Vercel anymore, this one key covers both).
 
 ## Hard rules from the backend
 
