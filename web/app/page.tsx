@@ -47,12 +47,14 @@ export default async function HomePage() {
             weekly numbers and the map stay visible while the feed scrolls,
             which is the point of splitting them out of the column.
           */}
-          <div className="mx-auto grid w-full max-w-[1200px] grid-cols-1 gap-5 px-4 pt-5 pb-10 md:px-12 md:pt-7.5 md:pb-12 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-7">
+          <div className="mx-auto grid w-full max-w-[1200px] grid-cols-1 gap-5 px-4 pt-5 pb-10 md:px-12 md:pt-7.5 md:pb-12 lg:grid-cols-[minmax(0,1fr)_440px] lg:gap-7">
             <Card className="gap-5">
               <SurfacedFeed events={events} reviewed={summary.reviewed} />
             </Card>
 
-            <aside className="flex flex-col gap-5 lg:sticky lg:top-6 lg:self-start">
+            <aside
+              className="flex flex-col gap-5 lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)] lg:overflow-y-auto lg:self-start"
+            >
               <TopicTable
                 reviewed={summary.reviewed}
                 filtered={summary.filtered}

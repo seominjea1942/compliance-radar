@@ -41,7 +41,7 @@ export function TopicTable({
   topics: TopicRow[];
 }) {
   return (
-    <Card className="w-full min-w-0 gap-4">
+    <Card className="w-full min-w-0 gap-4 lg:flex-none">
       <div className="flex items-baseline justify-between gap-4">
         <CardTitle>
           {count(reviewed)} items read this week. Filtered {count(filtered)}.

@@ -161,8 +161,10 @@ to `bedrock:InvokeModel` — not the project's admin AWS keys.
   file), so the screen never opens on an empty list with work one tab away.
 - **Two columns above `lg`**: the feed on the left, the weekly numbers and map
   in a sticky right rail, inside a 1200px shell. Below `lg` it stacks, feed
-  first. The rail is 380px because the topic table's longest label
-  ("City programs & fees") and its "For you" header both wrap below that.
+  first. The rail is 440px so the real basemap has room; the topic table keeps
+  its natural height and the map card takes the rest, with the plate floored at
+  180px. If the viewport is too short for both at that floor, the rail scrolls
+  rather than crushing the map to an unreadable strip.
 - **Map plate** carries the same aspect ratio as its viewBox, so the SVG fits
   exactly and the roads reach the edges instead of letterboxing into the
   middle. Road positions are fractions of W/H so the plate can be resized.
