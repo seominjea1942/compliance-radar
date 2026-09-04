@@ -79,7 +79,7 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
   const needsAction = item.severity === "act";
 
   return (
-    <ItemCard dimmed={done}>
+    <ItemCard dimmed={done} interactive={!event.isGroup}>
       <ItemCard.Chips>
         <Badge>{item.sourceLabel}</Badge>
         {ACTION_LABEL[item.severity] && (
@@ -101,7 +101,7 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
             <Badge
               variant={needsAction ? "outlineAlert" : "outline"}
               tabIndex={0}
-              className="cursor-help gap-1.5 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="relative z-[1] cursor-help gap-1.5 outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {item.classification}
               <MdInfoOutline className="size-3.5 opacity-70" aria-hidden />
@@ -122,9 +122,9 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
           </h3>
         ) : (
           <h3 className="max-w-[740px] font-serif text-[20px]/tight font-medium md:text-[25px]">
-            <Link href={`/item/${item.decisionId}`} className="text-ink no-underline hover:underline">
+            <ItemCard.Link href={`/item/${item.decisionId}`} className="text-ink hover:underline">
               {item.displayTitle}
-            </Link>
+            </ItemCard.Link>
           </h3>
         )}
 
@@ -164,7 +164,7 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
         )}
 
         {event.isGroup && (
-          <div className="flex flex-col gap-2">
+          <div className="relative z-[1] flex flex-col gap-2">
             <button
               type="button"
               onClick={() => setExpanded((v) => !v)}

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import * as React from "react";
 import { Card, CardActions } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -16,10 +17,18 @@ import { cn } from "@/lib/utils";
  */
 function ItemCard({
   dimmed = false,
+  interactive = false,
   className,
   children,
 }: {
   dimmed?: boolean;
+  /**
+   * Whole-card hover and click. The click target itself is a stretched link on
+   * the card's title (see `ItemCard.Link`), so the link keeps its accessible
+   * name and its right-click, middle-click and copy-address behaviour instead
+   * of being a div with an onClick.
+   */
+  interactive?: boolean;
   className?: string;
   children: React.ReactNode;
 }) {
@@ -29,12 +38,35 @@ function ItemCard({
       className={cn(
         "gap-3.5 transition-opacity duration-300",
         dimmed ? "opacity-55" : "opacity-100",
+        interactive &&
+          "relative transition-colors hover:border-line-strong hover:bg-hover focus-within:border-line-strong",
         className,
       )}
     >
       {children}
     </Card>
   );
+}
+
+/**
+ * The card's stretched link: its ::after covers the whole card, so clicking
+ * anywhere that is not another control follows this link.
+ */
+function StretchedLink({
+  className,
+  ...props
+}: React.ComponentProps<typeof Link>) {
+  return (
+    <Link
+      className={cn("no-underline after:absolute after:inset-0 after:content-['']", className)}
+      {...props}
+    />
+  );
+}
+
+/** Sits above the stretched link so nested controls stay clickable. */
+function Above({ className, children }: { className?: string; children: React.ReactNode }) {
+  return <div className={cn("relative z-[1]", className)}>{children}</div>;
 }
 
 function Chips({ children }: { children: React.ReactNode }) {
@@ -45,8 +77,15 @@ function Body({ children }: { children: React.ReactNode }) {
   return <div className="flex flex-col gap-2.5">{children}</div>;
 }
 
+function Actions({ children }: { children: React.ReactNode }) {
+  // z-index keeps the buttons above the stretched link covering the card.
+  return <CardActions className="relative z-[1]">{children}</CardActions>;
+}
+
 ItemCard.Chips = Chips;
 ItemCard.Body = Body;
-ItemCard.Actions = CardActions;
+ItemCard.Actions = Actions;
+ItemCard.Link = StretchedLink;
+ItemCard.Above = Above;
 
 export { ItemCard };

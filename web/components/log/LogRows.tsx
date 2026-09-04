@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { MdCheck, MdOutlineNotificationsActive } from "react-icons/md";
 import { Badge } from "@/components/ui/badge";
@@ -31,7 +30,7 @@ export function LogRows({ rows }: { rows: LogRow[] }) {
     <>
       <div className="flex flex-col gap-3.5">
         {rows.map((row) => (
-          <ItemCard key={row.decisionId} dimmed={row.overturned}>
+          <ItemCard key={row.decisionId} dimmed={row.overturned} interactive>
             <ItemCard.Chips>
               <Badge>{row.sourceLabel}</Badge>
               {row.overturned && (
@@ -44,14 +43,16 @@ export function LogRows({ rows }: { rows: LogRow[] }) {
 
             <ItemCard.Body>
               <p className="m-0 max-w-[740px] font-serif text-[17px]/normal text-body md:text-[19px]">
-                {row.shortReason}
+                <ItemCard.Link
+                  href={`/item/${row.decisionId}`}
+                  className="text-body hover:underline"
+                >
+                  {row.shortReason}
+                </ItemCard.Link>
               </p>
-              <Link
-                href={`/item/${row.decisionId}`}
-                className="max-w-[740px] text-pretty text-[12.5px] text-faint no-underline hover:underline"
-              >
+              <span className="max-w-[740px] text-pretty text-[12.5px] text-faint">
                 {row.title}
-              </Link>
+              </span>
               <div className="text-[12.5px] text-faint">{row.postedLabel}</div>
             </ItemCard.Body>
 
