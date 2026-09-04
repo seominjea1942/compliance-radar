@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MdArrowUpward, MdClose } from "react-icons/md";
+import { MdArrowUpward, MdClose, MdErrorOutline } from "react-icons/md";
 import { RadarFace } from "@/components/ui/radar-face";
+import { AnswerText } from "./AnswerText";
 import type { SurfacedItem } from "@/lib/queries";
 
-type Message = { id: number; from: "user"; text: string };
+export type Message = { id: number; from: "user" | "radar" | "error"; text: string };
 
 const SUGGESTIONS = [
   "Why did this reach me?",
@@ -13,14 +14,54 @@ const SUGGESTIONS = [
   "Show me what you filtered today",
 ];
 
+/** Answers land in 2-9s warm; a tool-heavy question can run far longer. */
+const STILL_WORKING_MS = 12_000;
+
+/**
+ * The waiting state. It escalates once, because a spinner that never changes
+ * reads as a hang on a question that legitimately takes twenty seconds.
+ */
+function Thinking() {
+  const [slow, setSlow] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setSlow(true), STILL_WORKING_MS);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <div
+      className="flex items-center gap-2.5 text-[13px] text-faint"
+      role="status"
+      aria-live="polite"
+    >
+      <span className="flex gap-1" aria-hidden>
+        {[0, 1, 2].map((i) => (
+          <span
+            key={i}
+            className="size-1.5 animate-pulse rounded-full bg-green"
+            style={{ animationDelay: `${i * 160}ms`, animationDuration: "1.1s" }}
+          />
+        ))}
+      </span>
+      {slow ? "Still checking the sources…" : "Reading the radar…"}
+    </div>
+  );
+}
+
 export function AskRadarPanel({
   scopedTo,
+  messages,
+  pending,
+  onSend,
   onClose,
 }: {
   scopedTo: SurfacedItem | null;
+  messages: Message[];
+  pending: boolean;
+  onSend: (text: string) => void;
   onClose: () => void;
 }) {
-  const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const logRef = useRef<HTMLDivElement>(null);
@@ -36,13 +77,13 @@ export function AskRadarPanel({
   }, [onClose]);
 
   useEffect(() => {
-    logRef.current?.scrollTo({ top: logRef.current.scrollHeight });
-  }, [messages]);
+    logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages, pending]);
 
   function send(text: string) {
     const body = text.trim();
-    if (!body) return;
-    setMessages((m) => [...m, { id: Date.now(), from: "user", text: body }]);
+    if (!body || pending) return;
+    onSend(body);
     setDraft("");
   }
 
@@ -76,7 +117,7 @@ export function AskRadarPanel({
           </div>
         )}
 
-        {messages.length === 0 && (
+        {messages.length === 0 && !pending && (
           <div className="flex flex-col gap-2.5 py-1">
             <p className="text-[13.5px]/relaxed text-faint">
               Ask about anything I watch: recalls, permits, council agendas, or why something
@@ -97,26 +138,39 @@ export function AskRadarPanel({
           </div>
         )}
 
-        {messages.map((m) => (
-          <div
-            key={m.id}
-            className="max-w-[250px] self-end rounded-xl border border-green-tint-line bg-green-tint px-3.5 py-2.5 text-sm/relaxed text-ink"
-          >
-            {m.text}
-          </div>
-        ))}
+        {messages.map((m) => {
+          if (m.from === "user") {
+            return (
+              <div
+                key={m.id}
+                className="max-w-[250px] self-end rounded-xl border border-green-tint-line bg-green-tint px-3.5 py-2.5 text-sm/relaxed text-ink"
+              >
+                {m.text}
+              </div>
+            );
+          }
 
-        {messages.length > 0 && (
-          /*
-           * No answer is generated. Answering means an LLM call, which is a
-           * new cost surface and goes through the backend's cost review first.
-           * Saying so is better than faking a reply.
-           */
-          <div className="max-w-[280px] rounded-xl border border-line bg-shell px-3.5 py-3 text-[13px]/relaxed text-faint">
-            Answering isn&apos;t connected yet. This panel is the interface only, so your
-            question is not going anywhere.
-          </div>
-        )}
+          if (m.from === "error") {
+            return (
+              <div
+                key={m.id}
+                role="alert"
+                className="flex max-w-[280px] items-start gap-2 rounded-xl border border-line bg-shell px-3.5 py-3 text-[13px]/relaxed text-faint"
+              >
+                <MdErrorOutline className="mt-px size-4 flex-none text-monoink" aria-hidden />
+                <span className="text-pretty">{m.text}</span>
+              </div>
+            );
+          }
+
+          return (
+            <div key={m.id} className="max-w-[290px] text-ink">
+              <AnswerText text={m.text} />
+            </div>
+          );
+        })}
+
+        {pending && <Thinking />}
       </div>
 
       <form
@@ -131,13 +185,24 @@ export function AskRadarPanel({
             ref={inputRef}
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            placeholder="Ask a follow-up…"
+            onKeyDown={(e) => {
+              // Enter submits explicitly rather than relying on the form's
+              // implicit submission, and never mid-IME-composition: the owner
+              // typing a name in Korean or Japanese would otherwise send the
+              // question on the keystroke that only confirms a character.
+              if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+                e.preventDefault();
+                send(draft);
+              }
+            }}
+            disabled={pending}
+            placeholder={pending ? "Waiting for an answer…" : "Ask a follow-up…"}
             aria-label="Ask a follow-up"
-            className="min-w-0 flex-1 bg-transparent text-[13.5px] text-ink placeholder:text-monoink focus:outline-none"
+            className="min-w-0 flex-1 bg-transparent text-[13.5px] text-ink placeholder:text-monoink focus:outline-none disabled:cursor-not-allowed"
           />
           <button
             type="submit"
-            disabled={!draft.trim()}
+            disabled={!draft.trim() || pending}
             aria-label="Send"
             className="flex size-7 flex-none cursor-pointer items-center justify-center rounded-full bg-green text-shell transition-opacity disabled:cursor-not-allowed disabled:opacity-35"
           >
