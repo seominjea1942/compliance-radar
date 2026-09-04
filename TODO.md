@@ -10,8 +10,10 @@
 - [ ] Update .env.local + Vercel env with the new password.
 
 ## Deferred product decisions (need human call)
-- [ ] Store street address in profile (fixes the Rule 20A Lincoln Ave miss and
-      the residential permit-anchor noise); then re-triage the 62 council items.
+- [x] Store street address in profile — DONE 2026-09-03 (1287 Lincoln Ave).
+- [x] Carry-list freeze LIFTED 2026-09-05 with owner sign-off; profile edits
+      are a supported write path (see contract). Freeze evidence remains in
+      git history (60b0aa8).
 - [ ] Tag set follow-ups: alcohol/SNAP tags when a source produces real items.
 - [ ] Alert-dismissal learning (roadmap; overturned rejections remain the only
       learning signal for now).

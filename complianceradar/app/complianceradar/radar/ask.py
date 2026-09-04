@@ -123,7 +123,12 @@ def search_watched_items(query: str) -> str:
 
 
 def _profile_context() -> str:
-    profile = json.loads(PROFILE_PATH.read_text())
+    from radar.pipeline import load_profile
+    conn = db.connect()
+    try:
+        profile = load_profile(conn)
+    finally:
+        conn.close()
     return json.dumps({"facts": profile["facts"],
                        "location": profile.get("location"),
                        "carries_summary": [

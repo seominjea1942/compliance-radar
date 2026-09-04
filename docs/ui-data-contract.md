@@ -151,8 +151,28 @@ show UPC and code_info when present, and keep the full `title` reachable
 
 Table `store_profile`, single row id=1, column `profile` (JSON):
 `{store_name, owner, location, carry_list:{source, granularity, entries:[{category, carries, brands[]}]}, facts:[{id, fact, implies}]}`.
-53 carry entries + 8 facts. CARRY LIST IS FROZEN until after the demo: the
-UI may render an edit experience but writes to carry_list need human signoff.
+53 carry entries + 8 facts.
+
+CARRY LIST UNFROZEN (owner sign-off 2026-09-05): the profile screen's add/edit
+saves for real now. The runtime reads the DB profile live (file only as
+fallback), so edits change triage of FUTURE items; past decisions never change.
+
+Write path for "Add an item" (atomic, no read-modify-write needed):
+```sql
+UPDATE store_profile
+SET profile = JSON_ARRAY_APPEND(profile, '$.carry_list.entries',
+      CAST(%s AS JSON))          -- %s = '{"category":"...","carries":false,"brands":[]}'
+WHERE id = 1
+```
+To edit/remove an entry, read the row, modify the JSON in the route, and write
+it back whole (single-owner app; lost-update risk is negligible).
+
+REQUIRED DISCLAIMER on save (exact semantics): changes take effect at the next
+daily check, which runs at 6:00 AM America/Los_Angeles. Compute that timestamp
+client-side ("Applies from tomorrow, 6:00 AM" or today if before 6 AM) and say
+that today's list and already-made decisions are unchanged. The chat agent
+("Ask the radar") sees profile edits immediately, so answers may reflect a new
+entry before the next triage run does; that is expected and truthful.
 
 ## Demo-week composition (agreed, do not fabricate)
 
