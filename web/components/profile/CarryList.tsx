@@ -267,12 +267,11 @@ function CarryDialog({
             <MdScheduleSend className="mt-px size-4 flex-none text-faint" aria-hidden />
             <div className="flex flex-col gap-1">
               <p className="m-0 text-[12.5px]/relaxed text-body">
-                Applies from the next daily check{nextCheck ? ` — ${nextCheck}` : ""}. Today&apos;s
-                list and decisions I have already made stay as they are.
+                Applies at the next daily check{nextCheck ? `, ${nextCheck}` : ""}. Today&apos;s
+                list and past decisions don&apos;t change.
               </p>
               <p className="m-0 text-[11.5px]/relaxed text-faint">
-                Ask the radar sees this straight away, so it may mention the change before the
-                next check applies it.
+                Ask the radar sees it now, so it may mention this before the check runs.
               </p>
             </div>
           </div>

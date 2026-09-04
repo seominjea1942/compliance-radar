@@ -6,7 +6,7 @@ import {
 import { askPayload, isValidSessionId, DECISION_ID_RE, type AskResult } from "@/lib/ask";
 
 /**
- * "Ask the radar" — the one route that leaves our infrastructure.
+ * "Ask the radar": the one route that leaves our infrastructure.
  *
  * Node runtime because the AWS SDK signs requests with primitives the Edge
  * runtime does not provide. Everything else in the app stays Edge-capable.

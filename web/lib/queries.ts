@@ -50,7 +50,7 @@ export function parseTags(raw: unknown): string[] {
 }
 
 /* ------------------------------------------------------------------ *
- * 1. v_weekly_summary — the home strip
+ * 1. v_weekly_summary: the home strip
  * ------------------------------------------------------------------ */
 
 export type SourceRow = {
@@ -93,7 +93,7 @@ export async function getWeeklySummary(): Promise<WeeklySummary> {
 }
 
 /* ------------------------------------------------------------------ *
- * 1b. v_weekly_topics — the per-tag home table
+ * 1b. v_weekly_topics: the per-tag home table
  * ------------------------------------------------------------------ */
 
 const TAG_LABEL = new Map(TAGS.map((t) => [t.id, t.label]));
@@ -118,7 +118,7 @@ export async function getWeeklyTopics(): Promise<TopicRow[]> {
 }
 
 /* ------------------------------------------------------------------ *
- * 1c. v_run_status — the trust stamp
+ * 1c. v_run_status: the trust stamp
  * ------------------------------------------------------------------ */
 
 /**
@@ -134,14 +134,14 @@ export async function getLastChecked(): Promise<string | null> {
 }
 
 /* ------------------------------------------------------------------ *
- * 2. v_surfaced_feed — the alerts feed
+ * 2. v_surfaced_feed: the alerts feed
  * ------------------------------------------------------------------ */
 
 /**
  * What the backend decided this item asks of the owner.
- *   act    — the store is affected on the stated facts (a carry-list match)
- *   verify — one concrete check exists
- *   fyi    — awareness only
+ *   act    = the store is affected on the stated facts (a carry-list match)
+ *   verify = one concrete check exists
+ *   fyi    = awareness only
  * NULL on rows triaged before the field existed, or missed by the backfill.
  */
 export type ActionType = "act" | "verify" | "fyi";
@@ -367,7 +367,7 @@ export async function getSurfaced(): Promise<SurfacedItem[]> {
 }
 
 /* ------------------------------------------------------------------ *
- * 3. v_nearby_permits — the home map
+ * 3. v_nearby_permits: the home map
  * ------------------------------------------------------------------ */
 
 export type Permit = {
@@ -491,7 +491,7 @@ export async function getStoreProfile(): Promise<StoreProfile | null> {
 }
 
 /* ------------------------------------------------------------------ *
- * 5. v_filtered_log — the log screen
+ * 5. v_filtered_log: the log screen
  * ------------------------------------------------------------------ */
 
 /** Source groups the log filters by, mapped to the DB's source values. */
@@ -591,7 +591,7 @@ export async function getFilteredLog(opts: {
 }
 
 /* ------------------------------------------------------------------ *
- * 6. One decision — the detail route
+ * 6. One decision: the detail route
  * ------------------------------------------------------------------ */
 
 export type DecisionDetail = {
@@ -695,7 +695,7 @@ export async function getDecisionDetail(id: string): Promise<DecisionDetail | nu
 }
 
 /* ------------------------------------------------------------------ *
- * 2b. Event grouping — one card per real-world recall event
+ * 2b. Event grouping: one card per real-world recall event
  * ------------------------------------------------------------------ */
 
 export type SurfacedEvent = {

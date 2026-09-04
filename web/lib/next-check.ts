@@ -21,10 +21,11 @@ function nowInStoreTz(): { hour: number; minute: number } {
 }
 
 /**
- * "tomorrow, 6:00 AM", or "today, 6:00 AM" when the run has not happened yet.
+ * "tomorrow at 6:00 AM", or "today at 6:00 AM" when the run has not happened
+ * yet. Reads as one clause so the sentence around it needs no extra commas.
  */
 export function nextCheckLabel(): string {
   const { hour, minute } = nowInStoreTz();
   const beforeToday = hour < CHECK_HOUR || (hour === CHECK_HOUR && minute === 0);
-  return `${beforeToday ? "today" : "tomorrow"}, 6:00 AM`;
+  return `${beforeToday ? "today" : "tomorrow"} at 6:00 AM`;
 }

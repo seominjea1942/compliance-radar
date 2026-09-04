@@ -21,7 +21,7 @@ function Row({ topic }: { topic: TopicRow }) {
         <>
           <span className={`${COL.read} text-[15px] text-faint`}>{count(topic.read)}</span>
           <span className={`${COL.forYou} text-[15px] font-medium text-ink`}>
-            {topic.forYou === 0 ? "—" : count(topic.forYou)}
+            {topic.forYou === 0 ? "–" : count(topic.forYou)}
           </span>
         </>
       )}

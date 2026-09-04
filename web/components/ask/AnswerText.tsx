@@ -5,7 +5,7 @@ import { Fragment } from "react";
  * occasional numbered or bulleted lists. That is the whole grammar, so it is
  * parsed here instead of adding a markdown dependency for three constructs.
  *
- * Everything becomes React elements — never `dangerouslySetInnerHTML` — so
+ * Everything becomes React elements, never `dangerouslySetInnerHTML`, so
  * model output cannot inject markup no matter what it contains.
  */
 
