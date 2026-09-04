@@ -17,6 +17,10 @@
   --color-rail: #f4f4f5;
   --color-wash: #f1f1f3;
   --color-hover: #f1f1f3;
+  /* Whole-card hover. Deliberately a step darker than --color-hover, which is
+     sized for small controls and disappears when spread over a whole card. */
+  --color-card-hover: #ebebef;
+  --color-card-hover-line: #bdbdc6;
 
   /* Lines */
   --color-line: #e4e4e7;

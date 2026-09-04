@@ -55,7 +55,10 @@ function ItemCard({
         "gap-3.5 transition-opacity duration-300",
         dimmed ? "opacity-55" : "opacity-100",
         interactive &&
-          "relative transition-colors hover:border-line-strong hover:bg-hover focus-within:border-line-strong",
+          "relative transition-[background-color,border-color,box-shadow] " +
+            "hover:border-card-hover-line hover:bg-card-hover " +
+            "hover:shadow-[0_1px_3px_rgba(24,24,27,0.08)] " +
+            "focus-within:border-card-hover-line focus-within:bg-card-hover",
         onCardClick && "cursor-pointer",
         className,
       )}
