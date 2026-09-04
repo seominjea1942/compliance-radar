@@ -22,6 +22,7 @@ Respond with ONLY a JSON object, no other text:
   "decision": "ALERT" | "REJECT" | "OPPORTUNITY",
   "reason": "<one sentence, citing the specific profile fact that drove the decision>",
   "short_reason": "<max 100 chars, ONE clause: only the decisive fact. Do NOT restate the store name, product category label, or recall class; the UI already shows those.>",
+  "hazard": "<RECALL items only, max 5 words: the hazard as stated in the record, compressed but not invented (e.g. 'foreign metal pieces', 'undeclared egg allergen', 'Listeria contamination'); null for non-recalls>",
   "profile_fact_id": "<id of the profile fact that drove the decision, or null>",
   "tags": ["<1-2 tags from EXACTLY this fixed set: food-recalls, city-programs-fees, council-routine, nearby-construction, labor-workforce>"],
   "action_type": "act" | "verify" | "fyi"  (surfaced items only; null for REJECT)
