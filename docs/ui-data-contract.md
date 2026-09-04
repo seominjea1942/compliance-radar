@@ -113,6 +113,12 @@ generate both fields at triage time.
   otherwise). Group feed cards on it. Verified groupings include Straus (5
   rows), Zapp's/Dirty chips (6 rows, genuinely one openFDA event), Boichik (3).
 - `resolution` (`handled` | `not_carried` | NULL=open), `resolved_at` (UTC).
+- `hazard` (str|NULL, added 2026-09-04): max-5-word hazard compressed from the
+  record's own reason_for_recall, never invented (e.g. "foreign metal
+  pieces"). Recall rows only; use it for the group-card hazard line instead of
+  trimming reason_for_recall client-side. Single-item Resolve confirmed: no
+  modal; Resolve writes `handled`, the secondary "Don't carry" action writes
+  `not_carried`.
 Write path for Save (per selected row):
 ```sql
 UPDATE triage_decisions SET resolution=%s, resolved_at=NOW() WHERE id=%s
