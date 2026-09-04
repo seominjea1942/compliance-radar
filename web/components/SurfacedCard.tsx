@@ -128,7 +128,7 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
           </h3>
         ) : (
           <h3 className="max-w-[740px] font-serif text-[20px]/tight font-medium md:text-[25px]">
-            <ItemCard.Link href={`/item/${item.decisionId}`} className="text-ink">
+            <ItemCard.Link href={`/item/${item.decisionId}`} className="text-ink hover:underline">
               {item.displayTitle}
             </ItemCard.Link>
           </h3>
