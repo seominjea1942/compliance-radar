@@ -515,3 +515,101 @@ export async function getFilteredLog(opts: {
     hasMore: rows.length > limit,
   };
 }
+
+/* ------------------------------------------------------------------ *
+ * 6. One decision — the detail route
+ * ------------------------------------------------------------------ */
+
+export type DecisionDetail = {
+  decisionId: string;
+  title: string;
+  source: string;
+  sourceLabel: string;
+  /** Surfaced items came from v_surfaced_feed; filtered ones from the log. */
+  surfaced: boolean;
+  overturned: boolean;
+  actionType: ActionType | null;
+  severity: Severity | null;
+  reason: string;
+  shortReason: string;
+  tags: string[];
+  createdAtUtc: string;
+  postedLabel: string;
+  classification: string | null;
+  /**
+   * Null for filtered items: v_filtered_log does not expose `payload`, so the
+   * provenance panel has nothing to read. Requested from the backend rather
+   * than joining documents here.
+   */
+  payload: Record<string, unknown> | null;
+};
+
+export async function getDecisionDetail(id: string): Promise<DecisionDetail | null> {
+  if (!/^\d{1,20}$/.test(id)) return null;
+
+  const [hit] = await query<{
+    decision_id: string | number;
+    title: string;
+    source: string;
+    action_type: ActionType | null;
+    reason: string;
+    short_reason: string | null;
+    tags: unknown;
+    created_at: string;
+    payload: unknown;
+  }>(`SELECT * FROM v_surfaced_feed WHERE decision_id = ?`, [id]);
+
+  if (hit) {
+    const payload = asJson<Record<string, unknown>>(hit.payload) ?? {};
+    const classification =
+      typeof payload.classification === "string" ? payload.classification : null;
+    return {
+      decisionId: String(hit.decision_id),
+      title: hit.title,
+      source: hit.source,
+      sourceLabel: SOURCE_LABEL[hit.source] ?? hit.source,
+      surfaced: true,
+      overturned: false,
+      actionType: hit.action_type,
+      severity: severityOf(hit.action_type, classification, `${hit.title} ${hit.reason}`),
+      reason: hit.reason,
+      shortReason: hit.short_reason ?? hit.reason,
+      tags: parseTags(hit.tags),
+      createdAtUtc: hit.created_at,
+      postedLabel: posted(hit.created_at),
+      classification,
+      payload,
+    };
+  }
+
+  const [row] = await query<{
+    decision_id: string | number;
+    title: string;
+    source: string;
+    reason: string;
+    short_reason: string | null;
+    tags: unknown;
+    created_at: string;
+    overturned: number;
+  }>(`SELECT * FROM v_filtered_log WHERE decision_id = ?`, [id]);
+
+  if (!row) return null;
+
+  return {
+    decisionId: String(row.decision_id),
+    title: row.title,
+    source: row.source,
+    sourceLabel: SOURCE_LABEL[row.source] ?? row.source,
+    surfaced: false,
+    overturned: Number(row.overturned) === 1,
+    actionType: null,
+    severity: null,
+    reason: row.reason,
+    shortReason: row.short_reason ?? row.reason,
+    tags: parseTags(row.tags),
+    createdAtUtc: row.created_at,
+    postedLabel: posted(row.created_at),
+    classification: null,
+    payload: null,
+  };
+}

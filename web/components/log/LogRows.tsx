@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { MdCheck, MdOutlineNotificationsActive } from "react-icons/md";
 import { Badge } from "@/components/ui/badge";
@@ -39,7 +40,12 @@ export function LogRows({ rows }: { rows: LogRow[] }) {
               )}
             </div>
 
-            <p className="m-0 text-pretty text-[14.5px]/relaxed text-ink">{row.shortReason}</p>
+            <Link
+              href={`/item/${row.decisionId}`}
+              className="m-0 text-pretty text-[14.5px]/relaxed text-ink no-underline hover:underline"
+            >
+              {row.shortReason}
+            </Link>
 
             <p className="m-0 text-pretty text-[12px] text-faint">
               {row.title} · {row.postedLabel}

@@ -41,7 +41,7 @@ Note: `text-muted` is the design's muted *ink* (`#6E675C`). shadcn's muted
 
 ## What is implemented
 
-The **home screen** (`/`), reading live TiDB data. No mock data anywhere: if a
+`/` overview, `/log`, `/profile`, `/item/[id]` — reading live TiDB data. No mock data anywhere: if a
 value is not in the database, the component omits it rather than inventing one.
 
 Scope is the **current 7-day window**; 90-day totals belong to the log screen.
@@ -54,12 +54,22 @@ Scope is the **current 7-day window**; 90-day totals belong to the log screen.
 | "Checked …" stamp | `v_run_status` |
 | Nearby permits map | `v_nearby_permits` |
 | Sidebar store/owner | `store_profile` row `id = 1` |
+| Log | `v_filtered_log` (status/source/paging in the URL) |
+| Profile | `store_profile` facts + carry_list |
+| Item detail | `v_surfaced_feed`, falling back to `v_filtered_log` |
 
 Shapes follow `../docs/ui-data-contract.md`. The views are the query layer: TS
 does `SELECT * FROM v_...`, and a screen needing a new shape gets a new view
 rather than a bespoke join here.
 
 Every read is now a view. There is no bespoke SQL left in the app.
+
+### Open request: payload on the log
+
+`v_filtered_log` has no `payload`, so the detail route can show provenance for
+surfaced items but not filtered ones. Either add `payload` to that view or add
+a `v_decision_detail` view covering both; the page degrades honestly until then
+rather than joining `documents` here.
 
 ### A note on the 7-day window
 

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import {
   MdCheck,
@@ -94,7 +95,11 @@ export function SurfacedCard({ item }: { item: SurfacedItem }) {
       {needsAction && <UrgentBanner reason={item.shortReason} />}
 
       <div className="flex flex-col gap-2.5">
-        <h3 className="max-w-[740px] font-serif text-[20px]/tight font-medium md:text-[25px]">{item.title}</h3>
+        <h3 className="max-w-[740px] font-serif text-[20px]/tight font-medium md:text-[25px]">
+          <Link href={`/item/${item.decisionId}`} className="text-ink no-underline hover:underline">
+            {item.title}
+          </Link>
+        </h3>
         <div className="text-[12.5px] text-faint">{item.timingLabel ?? item.postedLabel}</div>
         {!needsAction && (
           <p className="max-w-[740px] font-serif text-[17px]/normal text-body md:text-[19px]">
