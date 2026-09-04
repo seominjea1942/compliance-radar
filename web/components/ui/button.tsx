@@ -20,7 +20,7 @@ const buttonVariants = cva(
         ghost: "text-muted hover:bg-hover hover:text-green",
         link: "text-green underline-offset-4 hover:underline",
         cardAction:
-          "flex-none tracking-[0.02em] text-muted hover:bg-hover hover:text-green",
+          "flex-none tracking-[0.02em] text-muted hover:bg-control-hover hover:text-green",
       },
       size: {
         default: "h-9 px-4 text-sm",

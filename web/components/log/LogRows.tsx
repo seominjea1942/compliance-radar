@@ -43,10 +43,7 @@ export function LogRows({ rows }: { rows: LogRow[] }) {
 
             <ItemCard.Body>
               <p className="m-0 max-w-[740px] font-serif text-[17px]/normal text-body md:text-[19px]">
-                <ItemCard.Link
-                  href={`/item/${row.decisionId}`}
-                  className="text-body hover:underline"
-                >
+                <ItemCard.Link href={`/item/${row.decisionId}`} className="text-body">
                   {row.shortReason}
                 </ItemCard.Link>
               </p>

@@ -17,6 +17,10 @@
   --color-rail: #f4f4f5;
   --color-wash: #f1f1f3;
   --color-hover: #f1f1f3;
+  /* Controls sitting on a hovered card. --color-hover is the card's own hover
+     background, so a button using it vanishes exactly when the pointer is on
+     the card. This has to stay darker than that. */
+  --color-control-hover: #e0e0e6;
 
   /* Lines */
   --color-line: #e4e4e7;
