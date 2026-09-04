@@ -116,8 +116,11 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
 
       <div className="flex flex-col gap-2.5">
         {event.isGroup ? (
+          /* Headline carries firm, count and hazard, so the card states what
+             the event is even when the urgent banner is showing above it. */
           <h3 className="max-w-[740px] font-serif text-[20px]/tight font-medium text-ink md:text-[25px]">
             {event.firm ?? item.sourceLabel}: {event.items.length} products
+            {event.hazard ? `, ${event.hazard}` : ""}
           </h3>
         ) : event.resolvedCount > 0 ? (
           <h3 className="max-w-[740px] font-serif text-[20px]/tight font-medium md:text-[25px]">
@@ -145,7 +148,7 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
         </div>
         {!needsAction && (
           <p className="max-w-[740px] font-serif text-[17px]/normal text-body md:text-[19px]">
-            {event.isGroup ? (event.hazard ?? item.shortReason) : item.shortReason}
+            {item.shortReason}
           </p>
         )}
 

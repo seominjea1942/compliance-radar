@@ -182,7 +182,7 @@ export type SurfacedItem = {
   eventKey: string | null;
   /** handled | not_carried once the owner has closed it; null while open. */
   resolution: string | null;
-  /** Recalling firm and the FDA's own hazard sentence, when the source has them. */
+  /** Recalling firm, and the backend's compressed hazard (recall rows only). */
   firm: string | null;
   hazard: string | null;
 };
@@ -227,18 +227,6 @@ function severityOf(
   return classification === "Class I" || PATHOGENS.test(text) ? "priority-verify" : "verify";
 }
 
-/**
- * The hazard shown on a grouped card is the FDA's own `reason_for_recall`,
- * trimmed to its first sentence. Trimming is presentation; paraphrasing it
- * into a two-word hazard would be putting words in the record's mouth.
- */
-function firstSentence(v: unknown): string | null {
-  if (typeof v !== "string" || !v.trim()) return null;
-  const t = v.trim();
-  const stop = t.indexOf(". ");
-  return (stop > 0 ? t.slice(0, stop + 1) : t).replace(/\s+/g, " ");
-}
-
 /** "20260602" -> "2026-06-02". openFDA packs dates without separators. */
 function fdaDate(v: unknown): string | null {
   return typeof v === "string" && /^\d{8}$/.test(v)
@@ -261,6 +249,7 @@ export async function getSurfaced(): Promise<SurfacedItem[]> {
     payload: unknown;
     event_key: string | null;
     resolution: string | null;
+    hazard: string | null;
   }>(
     /*
      * Resolved rows are fetched, not filtered out in SQL. A card needs to know
@@ -306,7 +295,9 @@ export async function getSurfaced(): Promise<SurfacedItem[]> {
       eventKey: r.event_key,
       resolution: r.resolution,
       firm: typeof payload.recalling_firm === "string" ? payload.recalling_firm : null,
-      hazard: firstSentence(payload.reason_for_recall),
+      // Supplied by the backend, compressed from the record's own wording under
+      // a no-invention rule. Null on non-recall sources.
+      hazard: r.hazard,
     };
   });
 
