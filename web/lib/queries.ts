@@ -339,10 +339,19 @@ export async function getNearbyPermits(): Promise<Permit[]> {
  * 4. store_profile
  * ------------------------------------------------------------------ */
 
+export type StoreFact = { id: string; fact: string; implies: string | null };
+
+export type CarryEntry = { category: string; brands: string[]; carries: boolean };
+
 export type StoreProfile = {
   storeName: string;
   owner: string | null;
   location: string | null;
+};
+
+export type StoreProfileFull = StoreProfile & {
+  facts: StoreFact[];
+  carry: { entries: CarryEntry[]; granularity: string | null; source: string | null };
 };
 
 /** `location` is an object: {city, neighborhood, state, zip_codes_nearby}. */
@@ -352,6 +361,46 @@ function locationLabel(loc: unknown): string | null {
   const l = loc as Record<string, unknown>;
   const parts = [l.neighborhood, l.city].filter((v): v is string => typeof v === "string");
   return parts.length ? parts.join(", ") : null;
+}
+
+function str(v: unknown): string | null {
+  return typeof v === "string" ? v : null;
+}
+
+/** Full profile for the store-profile screen. */
+export async function getStoreProfileFull(): Promise<StoreProfileFull | null> {
+  const [row] = await query<{ profile: unknown }>(
+    `SELECT profile FROM store_profile WHERE id = 1`,
+  );
+  const p = asJson<Record<string, unknown>>(row?.profile);
+  if (!p) return null;
+
+  const facts = Array.isArray(p.facts)
+    ? (p.facts as Record<string, unknown>[])
+        .map((f) => ({ id: str(f.id) ?? "", fact: str(f.fact) ?? "", implies: str(f.implies) }))
+        .filter((f) => f.fact)
+    : [];
+
+  const carryList = (p.carry_list ?? {}) as Record<string, unknown>;
+  const entries = Array.isArray(carryList.entries)
+    ? (carryList.entries as Record<string, unknown>[])
+        .map((e) => ({
+          category: str(e.category) ?? "",
+          brands: Array.isArray(e.brands)
+            ? (e.brands as unknown[]).filter((b): b is string => typeof b === "string")
+            : [],
+          carries: e.carries !== false,
+        }))
+        .filter((e) => e.category)
+    : [];
+
+  return {
+    storeName: str(p.store_name) ?? "Store",
+    owner: str(p.owner),
+    location: locationLabel(p.location),
+    facts,
+    carry: { entries, granularity: str(carryList.granularity), source: str(carryList.source) },
+  };
 }
 
 export async function getStoreProfile(): Promise<StoreProfile | null> {
