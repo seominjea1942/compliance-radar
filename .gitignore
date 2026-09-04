@@ -2,3 +2,4 @@
 .venv/
 inbox/
 __pycache__/
+.vercel-aws-key.local
