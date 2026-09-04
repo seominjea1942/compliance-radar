@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardActions } from "@/components/ui/card";
 import { Tooltip } from "@/components/ui/tooltip";
+import { useAskRadar } from "@/components/ask/ask-radar-context";
 import type { SurfacedItem } from "@/lib/queries";
 
 /**
@@ -50,6 +51,7 @@ export function SurfacedCard({ item }: { item: SurfacedItem }) {
    * so this collapses the card for the session and nothing else.
    */
   const [done, setDone] = useState(false);
+  const ask = useAskRadar();
   // The banner is for "the store is affected", not "a serious recall exists":
   // a Class I recall of something you don't stock is not an emergency.
   const needsAction = item.severity === "act";
@@ -119,7 +121,7 @@ export function SurfacedCard({ item }: { item: SurfacedItem }) {
           <MdOutlineNotificationsOff className="size-[15px]" aria-hidden />
           Didn&apos;t need this
         </Button>
-        <Button variant="cardAction" size="action">
+        <Button variant="cardAction" size="action" onClick={() => ask?.open(item)}>
           <MdOutlineChatBubbleOutline className="size-[15px]" aria-hidden />
           Ask
         </Button>

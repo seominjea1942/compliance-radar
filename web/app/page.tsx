@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/card";
+import { AskRadarProvider } from "@/components/ask/AskRadarProvider";
 import { PermitMap } from "@/components/PermitMap";
 import { Sidebar } from "@/components/Sidebar";
 import { SurfacedFeed } from "@/components/SurfacedFeed";
@@ -22,7 +23,13 @@ export const dynamic = "force-dynamic";
  * Most surfaced rows are precautionary checks, and calling forty of those
  * "things that need you" is the alert fatigue the product exists to prevent.
  */
-function Hero({ items, reviewed }: { items: SurfacedItem[]; reviewed: number }) {
+function Hero({
+  items,
+  reviewed,
+}: {
+  items: SurfacedItem[];
+  reviewed: number;
+}) {
   const act = items.filter((i) => i.severity === "act").length;
 
   return (
@@ -40,41 +47,44 @@ function Hero({ items, reviewed }: { items: SurfacedItem[]; reviewed: number }) 
 }
 
 export default async function HomePage() {
-  const [summary, surfaced, permits, profile, topics, lastChecked] = await Promise.all([
-    getWeeklySummary(),
-    getSurfaced(),
-    getNearbyPermits(),
-    getStoreProfile(),
-    getWeeklyTopics(),
-    getLastChecked(),
-  ]);
+  const [summary, surfaced, permits, profile, topics, lastChecked] =
+    await Promise.all([
+      getWeeklySummary(),
+      getSurfaced(),
+      getNearbyPermits(),
+      getStoreProfile(),
+      getWeeklyTopics(),
+      getLastChecked(),
+    ]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-shell md:flex-row">
-      <Sidebar
-        profile={profile}
-        surfacedCount={summary.surfaced}
-        filteredCount={summary.filtered}
-      />
+    <AskRadarProvider>
+      <div className="flex min-h-screen flex-col bg-shell md:flex-row">
+        <Sidebar
+          profile={profile}
+          surfacedCount={summary.surfaced}
+          filteredCount={summary.filtered}
+        />
 
-      <main className="min-w-0 flex-1 bg-paper">
-        <div className="mx-auto flex w-full max-w-[800px] flex-col gap-5 px-4 pt-5 pb-10 md:gap-6.5 md:px-12 md:pt-7.5 md:pb-12">
-          <Card className="gap-5">
-            <Hero items={surfaced} reviewed={summary.reviewed} />
-            {surfaced.length > 0 && <SurfacedFeed items={surfaced} />}
-          </Card>
+        <main className="min-w-0 flex-1 bg-paper">
+          <div className="mx-auto flex w-full max-w-[800px] flex-col gap-5 px-4 pt-5 pb-10 md:gap-6.5 md:px-12 md:pt-7.5 md:pb-12">
+            <Card className="gap-5">
+              <Hero items={surfaced} reviewed={summary.reviewed} />
+              {surfaced.length > 0 && <SurfacedFeed items={surfaced} />}
+            </Card>
 
-          <div className="flex flex-col gap-5 md:gap-6.5">
-            <TopicTable
-              reviewed={summary.reviewed}
-              filtered={summary.filtered}
-              checked={checkedAt(lastChecked)}
-              topics={topics}
-            />
-            {permits.length > 0 && <PermitMap permits={permits} />}
+            <div className="flex flex-col gap-5 md:gap-6.5">
+              <TopicTable
+                reviewed={summary.reviewed}
+                filtered={summary.filtered}
+                checked={checkedAt(lastChecked)}
+                topics={topics}
+              />
+              {permits.length > 0 && <PermitMap permits={permits} />}
+            </div>
           </div>
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </AskRadarProvider>
   );
 }

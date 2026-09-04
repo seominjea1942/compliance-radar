@@ -24,6 +24,7 @@ Primitives live in `components/ui/`:
 | `NavItem` | a row in the left rail |
 | `Tooltip` | designed hover/focus bubble, Radix-backed |
 | `FilterPills` | segmented control for filtering a list in place |
+| `RadarFace` | the radar mark, used by the Ask launcher and panel |
 
 Icons are Google Material Design, via `react-icons/md` (SVG components rather
 than the icon font, so there is no ligature flash on load).
@@ -115,6 +116,11 @@ to `bedrock:InvokeModel` — not the project's admin AWS keys.
   are precautionary checks; calling forty of those "things that need you" is
   the alert fatigue the product exists to prevent.
 - **`short_reason` in list rows**, full `reason` reserved for detail views.
+- **Ask the radar is UI only.** The launcher and panel are built; nothing is
+  sent anywhere and no answer is generated, because answering means an LLM call
+  and that goes through the backend's cost review first (hard rule 4). The
+  panel says so rather than faking a reply. Each card's Ask button opens it
+  scoped to that item.
 - **The feed filters by tier** and opens on "Needs action", so the owner lands
   on the seven items that matter rather than scrolling forty-eight. It falls
   back to "All" when nothing needs action.
