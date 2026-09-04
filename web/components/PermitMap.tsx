@@ -20,7 +20,7 @@ export function PermitMap({ permits }: { permits: Permit[] }) {
     .slice(0, 2);
 
   return (
-    <Card className="w-full min-w-0 gap-3.5 p-4.5 lg:min-h-0 lg:flex-1">
+    <Card className="w-full min-w-0 gap-3.5 p-4.5">
       <div className="flex flex-col gap-1.5">
         <CardTitle>
           Watching {permits.length} nearby {permits.length === 1 ? "site" : "sites"}.
@@ -31,16 +31,11 @@ export function PermitMap({ permits }: { permits: Permit[] }) {
         </CardNote>
       </div>
 
-      {/*
-        The plate had the design's 704/300 ratio, which is short for real
-        tiles and pinned the card's height to its width. It now takes the
-        height the rail has left, with the ratio only as a floor on narrow
-        screens where the rail is not height-bound. PermitMapView already
-        watches its own box and calls invalidateSize, so this is safe.
-      */}
       <PermitMapView
         permits={permits}
-        className="w-full min-h-[180px] overflow-hidden rounded-[9px] border border-line bg-wash [aspect-ratio:704/300] lg:aspect-auto lg:flex-1"
+        // 704x300 was the design's plate; the ratio is kept so the card's
+        // proportions do not change now that real tiles fill it.
+        className="w-full overflow-hidden rounded-[9px] border border-line bg-wash [aspect-ratio:704/300]"
       />
 
       {closest.length > 0 && (
