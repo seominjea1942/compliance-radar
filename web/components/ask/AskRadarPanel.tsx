@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { MdArrowUpward, MdClose, MdErrorOutline } from "react-icons/md";
 import { RadarFace } from "@/components/ui/radar-face";
 import { AnswerText } from "./AnswerText";
@@ -63,10 +63,21 @@ export function AskRadarPanel({
   onClose: () => void;
 }) {
   const [draft, setDraft] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const logRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => inputRef.current?.focus(), []);
+
+  // Grow the box to the text instead of scrolling it sideways. Height is reset
+  // to auto first so the box can shrink again when the draft gets shorter, and
+  // measured from scrollHeight so wrapping follows the rendered glyphs rather
+  // than a character count. CSS caps it; past the cap the textarea scrolls.
+  useLayoutEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [draft]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -180,17 +191,19 @@ export function AskRadarPanel({
         }}
         className="flex flex-col gap-2 border-t border-line px-4 pt-3 pb-4"
       >
-        <div className="flex items-center gap-2.5 rounded-[10px] border border-line-strong bg-shell px-3 py-2.5 focus-within:border-green">
-          <input
+        <div className="flex items-end gap-2.5 rounded-[10px] border border-line-strong bg-shell px-3 py-2.5 focus-within:border-green">
+          <textarea
             ref={inputRef}
+            rows={1}
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => {
-              // Enter submits explicitly rather than relying on the form's
-              // implicit submission, and never mid-IME-composition: the owner
-              // typing a name in Korean or Japanese would otherwise send the
-              // question on the keystroke that only confirms a character.
-              if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+              // A textarea takes Enter as a newline, so submitting is explicit.
+              // Shift+Enter keeps the newline for a deliberate multi-line
+              // question, and composition is never interrupted: the owner
+              // typing in Korean or Japanese would otherwise send the question
+              // on the keystroke that only confirms a character.
+              if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
                 e.preventDefault();
                 send(draft);
               }
@@ -198,7 +211,7 @@ export function AskRadarPanel({
             disabled={pending}
             placeholder={pending ? "Waiting for an answer…" : "Ask a follow-up…"}
             aria-label="Ask a follow-up"
-            className="min-w-0 flex-1 bg-transparent text-[13.5px] text-ink placeholder:text-monoink focus:outline-none disabled:cursor-not-allowed"
+            className="max-h-[7.5rem] min-w-0 flex-1 resize-none bg-transparent text-[13.5px]/relaxed text-ink placeholder:text-monoink focus:outline-none disabled:cursor-not-allowed"
           />
           <button
             type="submit"
