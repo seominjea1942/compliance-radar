@@ -13,7 +13,7 @@ import {
 } from "react-icons/md";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardActions } from "@/components/ui/card";
+import { ItemCard } from "@/components/ui/item-card";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useAskRadar } from "@/components/ask/ask-radar-context";
 import { cardCode } from "@/lib/format";
@@ -79,11 +79,8 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
   const needsAction = item.severity === "act";
 
   return (
-    <Card
-      tone="inset"
-      className={`gap-3.5 transition-opacity duration-300 ${done ? "opacity-55" : "opacity-100"}`}
-    >
-      <div className="flex flex-wrap items-center gap-2.5">
+    <ItemCard dimmed={done}>
+      <ItemCard.Chips>
         <Badge>{item.sourceLabel}</Badge>
         {ACTION_LABEL[item.severity] && (
           <Badge variant={needsAction ? "outlineAlert" : "outline"}>
@@ -111,11 +108,11 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
             </Badge>
           </Tooltip>
         )}
-      </div>
+      </ItemCard.Chips>
 
       {needsAction && <UrgentBanner reason={item.shortReason} />}
 
-      <div className="flex flex-col gap-2.5">
+      <ItemCard.Body>
         {event.isGroup ? (
           /* Headline carries firm, count and hazard, so the card states what
              the event is even when the urgent banner is showing above it. */
@@ -210,9 +207,9 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
             )}
           </div>
         )}
-      </div>
+      </ItemCard.Body>
 
-      <CardActions>
+      <ItemCard.Actions>
         <Button
           variant="cardAction"
           size="action"
@@ -248,7 +245,7 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
         <Button variant="cardAction" size="action" className="ml-auto text-[15px] text-ghost">
           ···
         </Button>
-      </CardActions>
+      </ItemCard.Actions>
 
       {resolving && <ResolveDialog event={event} onClose={() => setResolving(false)} />}
 
@@ -258,6 +255,6 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
           <span className="text-sm text-green">Resolved. It will drop out of the feed.</span>
         </div>
       )}
-    </Card>
+    </ItemCard>
   );
 }

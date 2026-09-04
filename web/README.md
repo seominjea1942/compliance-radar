@@ -23,6 +23,7 @@ Primitives live in `components/ui/`:
 | `Avatar` | initials tile (`square` store, `round` owner) |
 | `NavItem` | a row in the left rail |
 | `Tooltip` | designed hover/focus bubble, Radix-backed |
+| `ItemCard` | shared shell for one decision: overview feed and log |
 | `FilterPills` | segmented control for filtering a list in place |
 | `RadarFace` | the radar mark, used by the Ask launcher and panel |
 

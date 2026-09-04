@@ -5,67 +5,74 @@ import { useState } from "react";
 import { MdCheck, MdOutlineNotificationsActive } from "react-icons/md";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ItemCard } from "@/components/ui/item-card";
 import { OverturnDialog } from "./OverturnDialog";
 import type { LogRow } from "@/lib/queries";
 
 /**
- * Log rows lead with the reason, not the title.
+ * Log entries use the same card shell as the overview feed, so the two screens
+ * read as one product.
  *
- * The reason is the product here: the owner is auditing judgment calls, so the
- * sentence explaining the call outranks the source document's headline.
+ * The body order differs on purpose: the overview leads with the product,
+ * because the question there is "what do I do about this". The log leads with
+ * the reason, because the question there is "was that call right", and the
+ * reason is the thing being audited.
  */
 export function LogRows({ rows }: { rows: LogRow[] }) {
   const [overturning, setOverturning] = useState<LogRow | null>(null);
 
   if (rows.length === 0) {
     return (
-      <p className="py-10 text-center text-[14px] text-faint">
-        Nothing here with these filters.
-      </p>
+      <p className="py-10 text-center text-[14px] text-faint">Nothing here with these filters.</p>
     );
   }
 
   return (
     <>
-      <ul className="m-0 flex list-none flex-col gap-px overflow-hidden rounded-lg border border-line bg-line p-0">
+      <div className="flex flex-col gap-3.5">
         {rows.map((row) => (
-          <li key={row.decisionId} className="flex flex-col gap-2.5 bg-paper px-4 py-3.5">
-            <div className="flex flex-wrap items-center gap-2">
+          <ItemCard key={row.decisionId} dimmed={row.overturned}>
+            <ItemCard.Chips>
               <Badge>{row.sourceLabel}</Badge>
               {row.overturned && (
-                <span className="inline-flex items-center gap-1 text-[11.5px] font-medium text-green">
+                <Badge variant="outline" className="gap-1.5 border-green-tint-line text-green">
                   <MdCheck className="size-3.5" aria-hidden />
                   Overturned
-                </span>
+                </Badge>
               )}
-            </div>
+            </ItemCard.Chips>
 
-            <Link
-              href={`/item/${row.decisionId}`}
-              className="m-0 text-pretty text-[14.5px]/relaxed text-ink no-underline hover:underline"
-            >
-              {row.shortReason}
-            </Link>
+            <ItemCard.Body>
+              <p className="m-0 max-w-[740px] font-serif text-[17px]/normal text-body md:text-[19px]">
+                {row.shortReason}
+              </p>
+              <Link
+                href={`/item/${row.decisionId}`}
+                className="max-w-[740px] text-pretty text-[12.5px] text-faint no-underline hover:underline"
+              >
+                {row.title}
+              </Link>
+              <div className="text-[12.5px] text-faint">{row.postedLabel}</div>
+            </ItemCard.Body>
 
-            <p className="m-0 text-pretty text-[12px] text-faint">
-              {row.title} · {row.postedLabel}
-            </p>
-
-            {!row.overturned && (
-              <div className="flex">
-                <Button
-                  variant="cardAction"
-                  size="action"
-                  onClick={() => setOverturning(row)}
-                >
+            <ItemCard.Actions>
+              {!row.overturned && (
+                <Button variant="cardAction" size="action" onClick={() => setOverturning(row)}>
                   <MdOutlineNotificationsActive className="size-[15px]" aria-hidden />
                   Should have shown me
                 </Button>
-              </div>
-            )}
-          </li>
+              )}
+              <Button
+                variant="cardAction"
+                size="action"
+                className="ml-auto text-[15px] text-ghost"
+              >
+                ···
+              </Button>
+            </ItemCard.Actions>
+          </ItemCard>
         ))}
-      </ul>
+      </div>
 
       {overturning && (
         <OverturnDialog row={overturning} onClose={() => setOverturning(null)} />
