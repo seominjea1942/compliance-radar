@@ -180,7 +180,9 @@ for Vercel; AGENT_RUNTIME_ARN included). Payloads:
   `{"status":"ok","answer":"<markdown-lite text>"}`. Session history lives
   server-side keyed by session_id (bounded sliding window); pass the same
   session_id for follow-ups. Also pass the SAME value as the
-  runtimeSessionId invoke parameter. Latency 3-8s warm; answers may contain
+  runtimeSessionId invoke parameter (NOTE: AWS requires runtimeSessionId to
+  be at least 33 characters; a uuid4 hex with a prefix works). Latency 3-8s
+  warm; answers may contain
   **bold** markdown. The agent has tools over the live DB (decision lookup,
   filtered log, open items, semantic search), so the three suggested prompts
   in the design all work as-is.
