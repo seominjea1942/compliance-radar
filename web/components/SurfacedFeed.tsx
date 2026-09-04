@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { FilterPills, type FilterOption } from "@/components/ui/filter-pills";
 import { SurfacedCard } from "@/components/SurfacedCard";
+import { count } from "@/lib/format";
 import type { Severity, SurfacedEvent } from "@/lib/queries";
 
 type Filter = "act" | "check" | "file" | "all";
@@ -15,7 +16,33 @@ const MATCHES: Record<Filter, (s: Severity) => boolean> = {
   all: () => true,
 };
 
-export function SurfacedFeed({ events }: { events: SurfacedEvent[] }) {
+/**
+ * Headline copy per filter. The heading answers the question the selected
+ * group asks, so it changes with the pills rather than always reporting on
+ * whether anything needs action.
+ */
+const HEADING: Record<Filter, (n: number) => string> = {
+  act: (n) =>
+    n === 0
+      ? "Nothing needs action this week."
+      : `${count(n)} ${n === 1 ? "thing needs" : "things need"} action.`,
+  check: (n) =>
+    n === 0 ? "Nothing to check this week." : `${count(n)} ${n === 1 ? "item" : "items"} to check.`,
+  file: (n) =>
+    n === 0
+      ? "Nothing for the file this week."
+      : `${count(n)} ${n === 1 ? "item" : "items"} for the file.`,
+  all: (n) =>
+    n === 0 ? "Nothing surfaced this week." : `${count(n)} ${n === 1 ? "item" : "items"} surfaced.`,
+};
+
+export function SurfacedFeed({
+  events,
+  reviewed,
+}: {
+  events: SurfacedEvent[];
+  reviewed: number;
+}) {
   // Counts are per card, because that is what the pills navigate. The
   // per-item totals stay on the topic table and the weekly strip.
   const counts = useMemo(
@@ -28,9 +55,13 @@ export function SurfacedFeed({ events }: { events: SurfacedEvent[] }) {
     [events],
   );
 
-  // Open on what needs acting on. Landing on all 48 is the scroll problem the
-  // filter exists to solve; fall back to "all" only when nothing needs action.
-  const [filter, setFilter] = useState<Filter>(counts.act > 0 ? "act" : "all");
+  /*
+   * Open on the most urgent group that actually has something in it, so the
+   * screen never opens on an empty list while work sits one tab away.
+   */
+  const [filter, setFilter] = useState<Filter>(() =>
+    counts.act > 0 ? "act" : counts.check > 0 ? "check" : counts.file > 0 ? "file" : "all",
+  );
 
   const options: FilterOption<Filter>[] = [
     { value: "act", label: "Needs action", count: counts.act },
@@ -42,7 +73,16 @@ export function SurfacedFeed({ events }: { events: SurfacedEvent[] }) {
   const visible = events.filter((e) => MATCHES[filter](e.severity));
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-1.5">
+        <h1 className="text-[20px]/tight font-semibold tracking-[-0.01em] text-ink md:text-[23px]">
+          {HEADING[filter](counts[filter])}
+        </h1>
+        <p className="max-w-[700px] text-[14.5px]/relaxed text-pretty text-body md:text-[15.5px]">
+          {count(reviewed)} items read this week; the rest is in the log.
+        </p>
+      </div>
+
       <FilterPills options={options} value={filter} onChange={setFilter} className="self-start" />
 
       {visible.length === 0 ? (

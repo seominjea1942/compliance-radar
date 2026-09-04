@@ -153,9 +153,10 @@ to `bedrock:InvokeModel` — not the project's admin AWS keys.
   straight away, with "Don't carry" as the second outcome. "Keep open" writes
   nothing. Resolved rows are fetched rather than filtered in SQL, so a card can
   say "1 remaining of 5"; an event with nothing open leaves the feed.
-- **The feed filters by tier** and opens on "Needs action", so the owner lands
-  on the seven items that matter rather than scrolling forty-eight. It falls
-  back to "All" when nothing needs action.
+- **The feed filters by tier**, and the heading follows the selection: "23
+  items to check" rather than a fixed line about whether anything needs action.
+  It opens on the most urgent group that is not empty (act, then check, then
+  file), so the screen never opens on an empty list with work one tab away.
 - **Content column** is capped at 800px and centred, so it does not sprawl on
   wide screens. The topic table and the map each get their own full-width row.
 - **Map plate** carries the same aspect ratio as its viewBox, so the SVG fits
