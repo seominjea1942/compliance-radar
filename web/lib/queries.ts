@@ -157,6 +157,26 @@ const SEVERITY_RANK: Record<Severity, number> = {
   fyi: 3,
 };
 
+/**
+ * Structured product record, extracted at ingest.
+ *
+ * Coverage across surfaced recall rows: product_name and code_info ~93%,
+ * sizes ~85%, brand ~78%, upcs ~59%, containers ~37%. Only the first two are
+ * safe to build layout around; the rest must vanish cleanly when absent.
+ */
+export type ProductRecord = {
+  productName: string | null;
+  brand: string | null;
+  sizes: string[];
+  /** Only verified complete UPCs are stored, so partial ones never appear. */
+  upcs: string[];
+  containers: string[];
+  /** Lot and best-by codes, e.g. "BEST BY: 27 DEC 26". The shelf-check key. */
+  codeInfo: string | null;
+  /** Recall scale, e.g. "3,515 cases (8 units/case)". */
+  quantity: string | null;
+};
+
 export type SurfacedItem = {
   decisionId: string;
   title: string;
@@ -185,6 +205,13 @@ export type SurfacedItem = {
   /** Recalling firm, and the backend's compressed hazard (recall rows only). */
   firm: string | null;
   hazard: string | null;
+  /** Null on non-recall sources. */
+  product: ProductRecord | null;
+  /**
+   * What to show as this row's headline: the extracted product name where the
+   * extraction succeeded, else the source title. Never a truncated guess.
+   */
+  displayTitle: string;
 };
 
 const SOURCE_LABEL: Record<string, string> = {
@@ -227,6 +254,29 @@ function severityOf(
   return classification === "Class I" || PATHOGENS.test(text) ? "priority-verify" : "verify";
 }
 
+function strList(v: unknown): string[] {
+  return Array.isArray(v) ? v.filter((x): x is string => typeof x === "string" && !!x.trim()) : [];
+}
+
+function readProduct(payload: Record<string, unknown>): ProductRecord | null {
+  const p = payload.product as Record<string, unknown> | undefined;
+  const codeInfo = typeof payload.code_info === "string" ? payload.code_info.trim() : null;
+  const quantity =
+    typeof payload.product_quantity === "string" ? payload.product_quantity.trim() : null;
+
+  if (!p && !codeInfo && !quantity) return null;
+
+  return {
+    productName: typeof p?.product_name === "string" ? p.product_name.trim() : null,
+    brand: typeof p?.brand === "string" ? p.brand.trim() : null,
+    sizes: strList(p?.sizes),
+    upcs: strList(p?.upcs),
+    containers: strList(p?.containers),
+    codeInfo: codeInfo || null,
+    quantity: quantity || null,
+  };
+}
+
 /** "20260602" -> "2026-06-02". openFDA packs dates without separators. */
 function fdaDate(v: unknown): string | null {
   return typeof v === "string" && /^\d{8}$/.test(v)
@@ -262,6 +312,7 @@ export async function getSurfaced(): Promise<SurfacedItem[]> {
 
   const items = rows.map((r) => {
     const payload = asJson<Record<string, unknown>>(r.payload) ?? {};
+    const product = readProduct(payload);
     const classification =
       typeof payload.classification === "string" ? payload.classification : null;
 
@@ -294,6 +345,8 @@ export async function getSurfaced(): Promise<SurfacedItem[]> {
       postedLabel: posted(r.created_at),
       eventKey: r.event_key,
       resolution: r.resolution,
+      product,
+      displayTitle: product?.productName || r.title,
       firm: typeof payload.recalling_firm === "string" ? payload.recalling_firm : null,
       // Supplied by the backend, compressed from the record's own wording under
       // a no-invention rule. Null on non-recall sources.
@@ -544,6 +597,8 @@ export async function getFilteredLog(opts: {
 export type DecisionDetail = {
   decisionId: string;
   title: string;
+  /** Extracted product name where available, else the source title. */
+  displayTitle: string;
   source: string;
   sourceLabel: string;
   /** Surfaced items came from v_surfaced_feed; filtered ones from the log. */
@@ -584,9 +639,11 @@ export async function getDecisionDetail(id: string): Promise<DecisionDetail | nu
     const payload = asJson<Record<string, unknown>>(hit.payload) ?? {};
     const classification =
       typeof payload.classification === "string" ? payload.classification : null;
+    const productName = (asJson<Record<string, unknown>>(payload.product) ?? {}).product_name;
     return {
       decisionId: String(hit.decision_id),
       title: hit.title,
+      displayTitle: typeof productName === "string" && productName.trim() ? productName : hit.title,
       source: hit.source,
       sourceLabel: SOURCE_LABEL[hit.source] ?? hit.source,
       surfaced: true,
@@ -619,6 +676,8 @@ export async function getDecisionDetail(id: string): Promise<DecisionDetail | nu
   return {
     decisionId: String(row.decision_id),
     title: row.title,
+    // v_filtered_log carries no payload, so there is no extraction to prefer.
+    displayTitle: row.title,
     source: row.source,
     sourceLabel: SOURCE_LABEL[row.source] ?? row.source,
     surfaced: false,

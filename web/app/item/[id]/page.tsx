@@ -68,7 +68,7 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
               </div>
 
               <h1 className="text-pretty font-serif text-[24px]/tight font-medium text-ink md:text-[30px]">
-                {item.title}
+                {item.displayTitle}
               </h1>
               <p className="m-0 text-[12.5px] text-faint">{item.postedLabel}</p>
             </div>

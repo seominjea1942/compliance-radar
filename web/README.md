@@ -126,6 +126,13 @@ to `bedrock:InvokeModel` — not the project's admin AWS keys.
   are precautionary checks; calling forty of those "things that need you" is
   the alert fatigue the product exists to prevent.
 - **`short_reason` in list rows**, full `reason` reserved for detail views.
+- **Product fields decide layout by coverage.** `product_name` and `code_info`
+  (~93% of surfaced recall rows) can anchor a layout; `sizes` ~85%, `brand`
+  ~78%, `upcs` ~59%, `containers` ~37% are conditional and vanish cleanly.
+  Headlines fall back to the source title when extraction found no name.
+- **Sizes, UPCs and codes are never zipped into columns.** They are parallel
+  but not 1:1 aligned (one row reads "QUART - BEST BY: 24 DEC 26; PINT - BEST
+  BY: 25 DEC 26"), so a grid would mispair a code with the wrong size.
 - **Ask the radar is UI only.** The launcher and panel are built; nothing is
   sent anywhere and no answer is generated, because answering means an LLM call
   and that goes through the backend's cost review first (hard rule 4). The

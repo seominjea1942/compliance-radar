@@ -122,18 +122,31 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
             {event.firm ?? item.sourceLabel}: {event.items.length} products
             {event.hazard ? `, ${event.hazard}` : ""}
           </h3>
-        ) : event.resolvedCount > 0 ? (
-          <h3 className="max-w-[740px] font-serif text-[20px]/tight font-medium md:text-[25px]">
-            <Link href={`/item/${item.decisionId}`} className="text-ink no-underline hover:underline">
-              {item.title}
-            </Link>
-          </h3>
         ) : (
           <h3 className="max-w-[740px] font-serif text-[20px]/tight font-medium md:text-[25px]">
             <Link href={`/item/${item.decisionId}`} className="text-ink no-underline hover:underline">
-              {item.title}
+              {item.displayTitle}
             </Link>
           </h3>
+        )}
+
+        {/* Brand and size only carry meaning next to an extracted name. */}
+        {!event.isGroup && item.product?.productName && (
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12.5px] text-faint">
+            {item.product.brand && <span>{item.product.brand}</span>}
+            {item.product.sizes.length > 0 && (
+              <>
+                {item.product.brand && <span aria-hidden>·</span>}
+                <span>{item.product.sizes.join(" · ")}</span>
+              </>
+            )}
+            {item.product.codeInfo && (
+              <>
+                <span aria-hidden>·</span>
+                <span className="font-mono">{item.product.codeInfo}</span>
+              </>
+            )}
+          </div>
         )}
         <div className="text-[12.5px] text-faint">
           {item.timingLabel ?? item.postedLabel}
@@ -171,13 +184,22 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
             {expanded && (
               <ul className="m-0 flex list-none flex-col gap-px overflow-hidden rounded-lg border border-line bg-line p-0">
                 {event.items.map((member) => (
-                  <li key={member.decisionId} className="bg-paper px-3.5 py-2.5">
+                  <li key={member.decisionId} className="flex flex-col gap-0.5 bg-paper px-3.5 py-2.5">
                     <Link
                       href={`/item/${member.decisionId}`}
-                      className="text-[12.5px]/relaxed text-body no-underline hover:underline"
+                      className="text-[13px]/snug text-ink no-underline hover:underline"
                     >
-                      {member.title}
+                      {member.displayTitle}
                     </Link>
+                    {member.product && (member.product.sizes.length > 0 || member.product.codeInfo) && (
+                      <span className="text-[11.5px] text-faint">
+                        {member.product.sizes.join(" · ")}
+                        {member.product.sizes.length > 0 && member.product.codeInfo ? " · " : ""}
+                        {member.product.codeInfo && (
+                          <span className="font-mono">{member.product.codeInfo}</span>
+                        )}
+                      </span>
+                    )}
                   </li>
                 ))}
               </ul>

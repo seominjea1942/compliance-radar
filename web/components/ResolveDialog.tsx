@@ -84,7 +84,8 @@ export function ResolveDialog({
 
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-3">
           <p className="mt-0 mb-3 text-[12.5px] text-faint">
-            Checked means handled. Uncheck to keep one open and it stays in your feed.
+            Match the codes on the shelf. Checked means handled; uncheck to keep one open and
+            it stays in your feed.
           </p>
 
           <ul className="m-0 flex list-none flex-col gap-px overflow-hidden rounded-lg border border-line bg-line p-0">
@@ -101,13 +102,47 @@ export function ResolveDialog({
                     aria-label={`Handled: ${item.title.slice(0, 60)}`}
                     className="mt-0.5 size-4 flex-none accent-[var(--color-green)] disabled:opacity-40"
                   />
-                  <span
-                    className={`min-w-0 flex-1 text-[13px]/relaxed ${
-                      notCarried ? "text-faint line-through" : "text-ink"
-                    }`}
-                  >
-                    {item.title}
-                  </span>
+                  <div className="flex min-w-0 flex-1 flex-col gap-1">
+                    <span
+                      className={`text-[13.5px]/snug ${
+                        notCarried ? "text-faint line-through" : "text-ink"
+                      }`}
+                    >
+                      {item.displayTitle}
+                    </span>
+
+                    {/*
+                      Sizes, UPCs and codes are parallel but not 1:1 aligned
+                      (one row can be "QUART - BEST BY: 24 DEC 26; PINT - BEST
+                      BY: 25 DEC 26"), so each renders as its own group. Zipping
+                      them into columns would mispair a code with a size.
+                    */}
+                    {item.product && (item.product.sizes.length > 0 || item.product.upcs.length > 0) && (
+                      <span className={`text-[12px] ${notCarried ? "text-ghost" : "text-faint"}`}>
+                        {item.product.sizes.join(" · ")}
+                        {item.product.sizes.length > 0 && item.product.upcs.length > 0 ? " · " : ""}
+                        {item.product.upcs.length > 0 && (
+                          <span className="font-mono">UPC {item.product.upcs.join(", ")}</span>
+                        )}
+                      </span>
+                    )}
+
+                    {/*
+                      The code is what the owner actually matches at the shelf,
+                      so it gets the strongest treatment in the row.
+                    */}
+                    {item.product?.codeInfo && (
+                      <span
+                        className={`self-start rounded border px-1.5 py-0.5 font-mono text-[11.5px] ${
+                          notCarried
+                            ? "border-line bg-shell text-ghost"
+                            : "border-line-strong bg-shell text-ink"
+                        }`}
+                      >
+                        {item.product.codeInfo}
+                      </span>
+                    )}
+                  </div>
                   <button
                     type="button"
                     disabled={pending}

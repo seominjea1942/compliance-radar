@@ -40,7 +40,19 @@ export function Provenance({
   const rows: Row[] = [];
   const push = (label: string, v: string | null) => v && rows.push({ label, value: v });
 
+  const product = (payload.product ?? {}) as Record<string, unknown>;
+  const list = (v: unknown) =>
+    Array.isArray(v) ? v.filter((x): x is string => typeof x === "string" && !!x.trim()) : [];
+
   if (source === "openfda_enforcement" || source === "fda_rss" || source === "fsis_email") {
+    push("Product", text(product.product_name));
+    push("Brand", text(product.brand));
+    push("Size", list(product.sizes).join(" · ") || null);
+    // Only verified complete UPCs are stored, so anything here is trustworthy.
+    push("UPC", list(product.upcs).join(", ") || null);
+    push("Container", list(product.containers).join(", ") || null);
+    push("Lot / best by", text(payload.code_info));
+    push("Quantity recalled", text(payload.product_quantity));
     push("Recalling firm", text(payload.recalling_firm));
     push("Class", text(payload.classification));
     push("Recall number", text(payload.recall_number));
@@ -114,6 +126,17 @@ export function Provenance({
             </div>
           ))}
         </dl>
+      )}
+
+      {source !== "legistar" && source !== "permits" && text(payload.title) && (
+        <details className="group">
+          <summary className="cursor-pointer text-[12.5px] font-medium text-green marker:content-none hover:underline">
+            Show the full product description
+          </summary>
+          <p className="mt-2 mb-0 text-pretty text-[12.5px]/relaxed text-faint">
+            {text(payload.title)}
+          </p>
+        </details>
       )}
 
       {link && (
