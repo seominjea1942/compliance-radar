@@ -42,12 +42,17 @@ export default async function HomePage() {
         />
 
         <main className="min-w-0 flex-1 bg-paper">
-          <div className="mx-auto flex w-full max-w-[800px] flex-col gap-5 px-4 pt-5 pb-10 md:gap-6.5 md:px-12 md:pt-7.5 md:pb-12">
+          {/*
+            Feed on the left, context on the right. The rail is sticky so the
+            weekly numbers and the map stay visible while the feed scrolls,
+            which is the point of splitting them out of the column.
+          */}
+          <div className="mx-auto grid w-full max-w-[1200px] grid-cols-1 gap-5 px-4 pt-5 pb-10 md:px-12 md:pt-7.5 md:pb-12 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-7">
             <Card className="gap-5">
               <SurfacedFeed events={events} reviewed={summary.reviewed} />
             </Card>
 
-            <div className="flex flex-col gap-5 md:gap-6.5">
+            <aside className="flex flex-col gap-5 lg:sticky lg:top-6 lg:self-start">
               <TopicTable
                 reviewed={summary.reviewed}
                 filtered={summary.filtered}
@@ -55,7 +60,7 @@ export default async function HomePage() {
                 topics={topics}
               />
               {permits.length > 0 && <PermitMap permits={permits} />}
-            </div>
+            </aside>
           </div>
         </main>
       </div>
