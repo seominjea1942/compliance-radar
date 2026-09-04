@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 function ItemCard({
   dimmed = false,
   interactive = false,
+  onCardClick,
   className,
   children,
 }: {
@@ -29,17 +30,33 @@ function ItemCard({
    * of being a div with an onClick.
    */
   interactive?: boolean;
+  /**
+   * Click anywhere on the card. Used where there is no single destination to
+   * link to, such as a grouped event that expands in place. Clicks that landed
+   * on a nested link or button are ignored, so the card never hijacks its own
+   * controls; z-index alone would not do that, since events still bubble.
+   */
+  onCardClick?: () => void;
   className?: string;
   children: React.ReactNode;
 }) {
+  const handleClick = onCardClick
+    ? (e: React.MouseEvent<HTMLDivElement>) => {
+        if ((e.target as HTMLElement).closest("a,button,input,[role='dialog']")) return;
+        onCardClick();
+      }
+    : undefined;
+
   return (
     <Card
       tone="inset"
+      onClick={handleClick}
       className={cn(
         "gap-3.5 transition-opacity duration-300",
         dimmed ? "opacity-55" : "opacity-100",
         interactive &&
           "relative transition-colors hover:border-line-strong hover:bg-hover focus-within:border-line-strong",
+        onCardClick && "cursor-pointer",
         className,
       )}
     >

@@ -79,7 +79,13 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
   const needsAction = item.severity === "act";
 
   return (
-    <ItemCard dimmed={done} interactive={!event.isGroup}>
+    <ItemCard
+      dimmed={done}
+      interactive
+      // A group has no page of its own, so the whole card toggles its product
+      // list instead. The expander button stays the keyboard control.
+      onCardClick={event.isGroup ? () => setExpanded((v) => !v) : undefined}
+    >
       <ItemCard.Chips>
         <Badge>{item.sourceLabel}</Badge>
         {ACTION_LABEL[item.severity] && (
