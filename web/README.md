@@ -131,6 +131,15 @@ to `bedrock:InvokeModel` — not the project's admin AWS keys.
   and that goes through the backend's cost review first (hard rule 4). The
   panel says so rather than faking a reply. Each card's Ask button opens it
   scoped to that item.
+- **One card per recall event.** Rows are grouped on the backend's `event_key`
+  and never on titles or firms, so 48 rows render as 32 cards. A row without a
+  key stands alone, which is also what a real single-item event looks like. A
+  group is ranked by its worst member.
+- **Resolve** writes `resolution` + `resolved_at` per product. A group opens the
+  modal (there is a choice to make per product); a single-item card writes
+  straight away, with "Don't carry" as the second outcome. "Keep open" writes
+  nothing. Resolved rows are fetched rather than filtered in SQL, so a card can
+  say "1 remaining of 5"; an event with nothing open leaves the feed.
 - **The feed filters by tier** and opens on "Needs action", so the owner lands
   on the seven items that matter rather than scrolling forty-eight. It falls
   back to "All" when nothing needs action.

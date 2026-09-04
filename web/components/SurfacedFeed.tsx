@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { FilterPills, type FilterOption } from "@/components/ui/filter-pills";
 import { SurfacedCard } from "@/components/SurfacedCard";
-import type { Severity, SurfacedItem } from "@/lib/queries";
+import type { Severity, SurfacedEvent } from "@/lib/queries";
 
 type Filter = "act" | "check" | "file" | "all";
 
@@ -15,15 +15,17 @@ const MATCHES: Record<Filter, (s: Severity) => boolean> = {
   all: () => true,
 };
 
-export function SurfacedFeed({ items }: { items: SurfacedItem[] }) {
+export function SurfacedFeed({ events }: { events: SurfacedEvent[] }) {
+  // Counts are per card, because that is what the pills navigate. The
+  // per-item totals stay on the topic table and the weekly strip.
   const counts = useMemo(
     () => ({
-      act: items.filter((i) => MATCHES.act(i.severity)).length,
-      check: items.filter((i) => MATCHES.check(i.severity)).length,
-      file: items.filter((i) => MATCHES.file(i.severity)).length,
-      all: items.length,
+      act: events.filter((e) => MATCHES.act(e.severity)).length,
+      check: events.filter((e) => MATCHES.check(e.severity)).length,
+      file: events.filter((e) => MATCHES.file(e.severity)).length,
+      all: events.length,
     }),
-    [items],
+    [events],
   );
 
   // Open on what needs acting on. Landing on all 48 is the scroll problem the
@@ -37,7 +39,7 @@ export function SurfacedFeed({ items }: { items: SurfacedItem[] }) {
     { value: "all", label: "All", count: counts.all },
   ];
 
-  const visible = items.filter((i) => MATCHES[filter](i.severity));
+  const visible = events.filter((e) => MATCHES[filter](e.severity));
 
   return (
     <div className="flex flex-col gap-4">
@@ -49,8 +51,8 @@ export function SurfacedFeed({ items }: { items: SurfacedItem[] }) {
         </p>
       ) : (
         <div className="flex flex-col gap-3.5">
-          {visible.map((item) => (
-            <SurfacedCard key={item.decisionId} item={item} />
+          {visible.map((event) => (
+            <SurfacedCard key={event.key} event={event} />
           ))}
         </div>
       )}

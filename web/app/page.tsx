@@ -11,7 +11,8 @@ import {
   getSurfaced,
   getWeeklySummary,
   getWeeklyTopics,
-  type SurfacedItem,
+  groupSurfaced,
+  type SurfacedEvent,
 } from "@/lib/queries";
 import { checkedAt, count } from "@/lib/format";
 
@@ -24,13 +25,13 @@ export const dynamic = "force-dynamic";
  * "things that need you" is the alert fatigue the product exists to prevent.
  */
 function Hero({
-  items,
+  events,
   reviewed,
 }: {
-  items: SurfacedItem[];
+  events: SurfacedEvent[];
   reviewed: number;
 }) {
-  const act = items.filter((i) => i.severity === "act").length;
+  const act = events.filter((e) => e.severity === "act").length;
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -57,6 +58,9 @@ export default async function HomePage() {
       getLastChecked(),
     ]);
 
+  // One card per real-world recall event, grouped on the backend's event_key.
+  const events = groupSurfaced(surfaced);
+
   return (
     <AskRadarProvider>
       <div className="flex min-h-screen flex-col bg-shell md:flex-row">
@@ -69,8 +73,8 @@ export default async function HomePage() {
         <main className="min-w-0 flex-1 bg-paper">
           <div className="mx-auto flex w-full max-w-[800px] flex-col gap-5 px-4 pt-5 pb-10 md:gap-6.5 md:px-12 md:pt-7.5 md:pb-12">
             <Card className="gap-5">
-              <Hero items={surfaced} reviewed={summary.reviewed} />
-              {surfaced.length > 0 && <SurfacedFeed items={surfaced} />}
+              <Hero events={events} reviewed={summary.reviewed} />
+              {events.length > 0 && <SurfacedFeed events={events} />}
             </Card>
 
             <div className="flex flex-col gap-5 md:gap-6.5">

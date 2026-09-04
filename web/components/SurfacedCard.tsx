@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import {
+  MdBlock,
   MdCheck,
   MdInfoOutline,
   MdOutlineChatBubbleOutline,
@@ -15,7 +16,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardActions } from "@/components/ui/card";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useAskRadar } from "@/components/ask/ask-radar-context";
-import type { SurfacedItem } from "@/lib/queries";
+import type { SurfacedEvent } from "@/lib/queries";
+import { resolveItems } from "@/app/actions";
+import { ResolveDialog } from "@/components/ResolveDialog";
+import { MdExpandLess, MdExpandMore } from "react-icons/md";
 
 /**
  * The FDA's own recall severity scale, spelled out for anyone who doesn't read
@@ -45,14 +49,30 @@ function UrgentBanner({ reason }: { reason: string }) {
   );
 }
 
-export function SurfacedCard({ item }: { item: SurfacedItem }) {
+export function SurfacedCard({ event }: { event: SurfacedEvent }) {
+  const item = event.lead;
   /**
    * "Done" is view-only. The data contract allows exactly two writes from the
    * UI (overturns and profile facts), and acknowledging an alert is neither,
    * so this collapses the card for the session and nothing else.
    */
   const [done, setDone] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [resolving, setResolving] = useState(false);
+  const [pending, startTransition] = useTransition();
   const ask = useAskRadar();
+
+  /*
+   * A grouped card resolves through the modal, because there is a choice to
+   * make per product. A single-item card has no such choice, so Resolve writes
+   * `handled` straight away and "Don't carry" writes the other outcome.
+   */
+  function resolveOne(resolution: "handled" | "not_carried") {
+    startTransition(async () => {
+      const res = await resolveItems([{ decisionId: item.decisionId, resolution }]);
+      if (res.ok) setDone(true);
+    });
+  }
   // The banner is for "the store is affected", not "a serious recall exists":
   // a Class I recall of something you don't stock is not an emergency.
   const needsAction = item.severity === "act";
@@ -95,16 +115,71 @@ export function SurfacedCard({ item }: { item: SurfacedItem }) {
       {needsAction && <UrgentBanner reason={item.shortReason} />}
 
       <div className="flex flex-col gap-2.5">
-        <h3 className="max-w-[740px] font-serif text-[20px]/tight font-medium md:text-[25px]">
-          <Link href={`/item/${item.decisionId}`} className="text-ink no-underline hover:underline">
-            {item.title}
-          </Link>
-        </h3>
-        <div className="text-[12.5px] text-faint">{item.timingLabel ?? item.postedLabel}</div>
+        {event.isGroup ? (
+          <h3 className="max-w-[740px] font-serif text-[20px]/tight font-medium text-ink md:text-[25px]">
+            {event.firm ?? item.sourceLabel}: {event.items.length} products
+          </h3>
+        ) : event.resolvedCount > 0 ? (
+          <h3 className="max-w-[740px] font-serif text-[20px]/tight font-medium md:text-[25px]">
+            <Link href={`/item/${item.decisionId}`} className="text-ink no-underline hover:underline">
+              {item.title}
+            </Link>
+          </h3>
+        ) : (
+          <h3 className="max-w-[740px] font-serif text-[20px]/tight font-medium md:text-[25px]">
+            <Link href={`/item/${item.decisionId}`} className="text-ink no-underline hover:underline">
+              {item.title}
+            </Link>
+          </h3>
+        )}
+        <div className="text-[12.5px] text-faint">
+          {item.timingLabel ?? item.postedLabel}
+          {event.resolvedCount > 0 && (
+            <>
+              {" · "}
+              <span className="text-green">
+                {event.items.length} remaining of {event.allItems.length}
+              </span>
+            </>
+          )}
+        </div>
         {!needsAction && (
           <p className="max-w-[740px] font-serif text-[17px]/normal text-body md:text-[19px]">
-            {item.shortReason}
+            {event.isGroup ? (event.hazard ?? item.shortReason) : item.shortReason}
           </p>
+        )}
+
+        {event.isGroup && (
+          <div className="flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={() => setExpanded((v) => !v)}
+              aria-expanded={expanded}
+              className="flex cursor-pointer items-center gap-1 self-start text-[12.5px] font-medium text-green hover:underline"
+            >
+              {expanded ? "Hide the products" : `Show all ${event.items.length} products`}
+              {expanded ? (
+                <MdExpandLess className="size-4" aria-hidden />
+              ) : (
+                <MdExpandMore className="size-4" aria-hidden />
+              )}
+            </button>
+
+            {expanded && (
+              <ul className="m-0 flex list-none flex-col gap-px overflow-hidden rounded-lg border border-line bg-line p-0">
+                {event.items.map((member) => (
+                  <li key={member.decisionId} className="bg-paper px-3.5 py-2.5">
+                    <Link
+                      href={`/item/${member.decisionId}`}
+                      className="text-[12.5px]/relaxed text-body no-underline hover:underline"
+                    >
+                      {member.title}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         )}
       </div>
 
@@ -112,12 +187,23 @@ export function SurfacedCard({ item }: { item: SurfacedItem }) {
         <Button
           variant="cardAction"
           size="action"
-          onClick={() => setDone(true)}
-          disabled={done}
+          disabled={done || pending}
+          onClick={() => (event.isGroup ? setResolving(true) : resolveOne("handled"))}
         >
           <MdCheck className="size-[15px]" aria-hidden />
-          Done
+          {pending ? "Saving…" : "Resolve"}
         </Button>
+        {!event.isGroup && (
+          <Button
+            variant="cardAction"
+            size="action"
+            disabled={done || pending}
+            onClick={() => resolveOne("not_carried")}
+          >
+            <MdBlock className="size-[15px]" aria-hidden />
+            Don&apos;t carry
+          </Button>
+        )}
         <Button variant="cardAction" size="action">
           <MdOutlineMailOutline className="size-[15px]" aria-hidden />
           Share via email
@@ -135,10 +221,12 @@ export function SurfacedCard({ item }: { item: SurfacedItem }) {
         </Button>
       </CardActions>
 
+      {resolving && <ResolveDialog event={event} onClose={() => setResolving(false)} />}
+
       {done && (
         <div className="flex items-center gap-2.5 rounded-lg border border-green-tint-line bg-green-tint px-3.5 py-2.5">
           <MdCheck className="size-3.5 flex-none text-green" aria-hidden />
-          <span className="text-sm text-green">Handled for this session.</span>
+          <span className="text-sm text-green">Resolved. It will drop out of the feed.</span>
         </div>
       )}
     </Card>

@@ -178,6 +178,13 @@ export type SurfacedItem = {
   timingLabel: string | null;
   /** Rendered server-side so SSR and hydration cannot disagree on the clock. */
   postedLabel: string;
+  /** Rows sharing this are one real-world recall event. Never inferred here. */
+  eventKey: string | null;
+  /** handled | not_carried once the owner has closed it; null while open. */
+  resolution: string | null;
+  /** Recalling firm and the FDA's own hazard sentence, when the source has them. */
+  firm: string | null;
+  hazard: string | null;
 };
 
 const SOURCE_LABEL: Record<string, string> = {
@@ -220,6 +227,18 @@ function severityOf(
   return classification === "Class I" || PATHOGENS.test(text) ? "priority-verify" : "verify";
 }
 
+/**
+ * The hazard shown on a grouped card is the FDA's own `reason_for_recall`,
+ * trimmed to its first sentence. Trimming is presentation; paraphrasing it
+ * into a two-word hazard would be putting words in the record's mouth.
+ */
+function firstSentence(v: unknown): string | null {
+  if (typeof v !== "string" || !v.trim()) return null;
+  const t = v.trim();
+  const stop = t.indexOf(". ");
+  return (stop > 0 ? t.slice(0, stop + 1) : t).replace(/\s+/g, " ");
+}
+
 /** "20260602" -> "2026-06-02". openFDA packs dates without separators. */
 function fdaDate(v: unknown): string | null {
   return typeof v === "string" && /^\d{8}$/.test(v)
@@ -240,7 +259,14 @@ export async function getSurfaced(): Promise<SurfacedItem[]> {
     profile_fact_id: string | null;
     created_at: string;
     payload: unknown;
+    event_key: string | null;
+    resolution: string | null;
   }>(
+    /*
+     * Resolved rows are fetched, not filtered out in SQL. A card needs to know
+     * how many of its products the owner already closed in order to say "3 of 5
+     * resolved"; grouping then drops any event with nothing left open.
+     */
     `SELECT * FROM v_surfaced_feed WHERE created_at >= NOW() - INTERVAL ? DAY`,
     [WINDOW_DAYS],
   );
@@ -277,6 +303,10 @@ export async function getSurfaced(): Promise<SurfacedItem[]> {
       classification,
       timingLabel,
       postedLabel: posted(r.created_at),
+      eventKey: r.event_key,
+      resolution: r.resolution,
+      firm: typeof payload.recalling_firm === "string" ? payload.recalling_firm : null,
+      hazard: firstSentence(payload.reason_for_recall),
     };
   });
 
@@ -612,4 +642,78 @@ export async function getDecisionDetail(id: string): Promise<DecisionDetail | nu
     classification: null,
     payload: null,
   };
+}
+
+/* ------------------------------------------------------------------ *
+ * 2b. Event grouping — one card per real-world recall event
+ * ------------------------------------------------------------------ */
+
+export type SurfacedEvent = {
+  /** Stable key for React and for the resolve flow. */
+  key: string;
+  /** Products still open. The card lists these and resolves against them. */
+  items: SurfacedItem[];
+  /** Every product in the event, including ones already closed. */
+  allItems: SurfacedItem[];
+  /** How many the owner has already closed. Drives the "N of M" line. */
+  resolvedCount: number;
+  /** The row whose framing the card borrows: highest tier, then newest. */
+  lead: SurfacedItem;
+  /** Highest tier in the group, so a group is ranked by its worst member. */
+  severity: Severity;
+  isGroup: boolean;
+  firm: string | null;
+  hazard: string | null;
+};
+
+/**
+ * Group the feed on `event_key`.
+ *
+ * Grouping is never inferred from titles or firms: rows without an event_key
+ * stand alone, which is also what a genuine single-item event looks like.
+ */
+export function groupSurfaced(items: SurfacedItem[]): SurfacedEvent[] {
+  const buckets = new Map<string, SurfacedItem[]>();
+
+  for (const item of items) {
+    // No key means "not known to be part of an event", so it gets its own
+    // bucket rather than being lumped in with other keyless rows.
+    const key = item.eventKey ? `e:${item.eventKey}` : `d:${item.decisionId}`;
+    const bucket = buckets.get(key);
+    if (bucket) bucket.push(item);
+    else buckets.set(key, [item]);
+  }
+
+  const events: SurfacedEvent[] = [];
+
+  for (const [key, group] of buckets) {
+    const ranked = [...group].sort((a, b) => {
+      const tier = SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity];
+      return tier !== 0 ? tier : b.createdAtUtc.localeCompare(a.createdAtUtc);
+    });
+
+    const open = ranked.filter((i) => !i.resolution);
+    // Fully resolved events leave the feed entirely.
+    if (open.length === 0) continue;
+
+    const lead = open[0]!;
+
+    events.push({
+      key,
+      items: open,
+      allItems: ranked,
+      resolvedCount: ranked.length - open.length,
+      lead,
+      severity: lead.severity,
+      isGroup: open.length > 1,
+      firm: ranked.find((i) => i.firm)?.firm ?? null,
+      hazard: ranked.find((i) => i.hazard)?.hazard ?? null,
+    });
+  }
+
+  return events.sort((a, b) => {
+    const tier = SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity];
+    if (tier !== 0) return tier;
+    return b.lead.createdAtUtc.localeCompare(a.lead.createdAtUtc);
+  });
 }
