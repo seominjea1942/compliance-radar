@@ -18,7 +18,7 @@ export function Sidebar({
   profile: StoreProfile | null;
   surfacedCount: number;
   filteredCount: number;
-  current?: "overview" | "log" | "profile";
+  current?: "overview" | "log" | "profile" | "about";
 }) {
   const storeName = profile?.storeName ?? "Store";
 
@@ -59,15 +59,15 @@ export function Sidebar({
         <NavItem href="/log" label="Log" meta={count(filteredCount)} active={current === "log"} />
         <NavItem href="/profile" label="Store profile" active={current === "profile"} />
         {/* Ask the radar lives in the floating launcher, reachable with ⌘K. */}
-        <NavItem label="Sources" soon />
-        <NavItem label="Settings" soon />
       </div>
 
-      {profile?.owner && (
-        // The owner block is rail furniture; on the top bar it would push the
-        // nav off-screen, so it is desktop-only.
-        <div className="mt-auto hidden flex-col gap-3 border-t border-line pt-3.5 md:flex">
-          <div className="flex items-center gap-2.5">
+      <div className="flex flex-none flex-col gap-3 md:mt-auto md:border-t md:border-line md:pt-3.5">
+        <NavItem href="/about" label="About this project" active={current === "about"} />
+
+        {profile?.owner && (
+          // The owner block is rail furniture; on the top bar it would push
+          // the nav off-screen, so it is desktop-only.
+          <div className="hidden items-center gap-2.5 md:flex">
             <Avatar name={profile.owner} />
             <div className="flex min-w-0 flex-col gap-px">
               <span className="text-[12.5px] font-medium text-ink">{profile.owner}</span>
@@ -75,8 +75,8 @@ export function Sidebar({
             </div>
             <MdChevronRight className="ml-auto size-4 flex-none text-ghost" aria-hidden />
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </nav>
   );
 }

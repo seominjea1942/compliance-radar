@@ -41,7 +41,7 @@ Note: `text-muted` is the design's muted *ink* (`#6E675C`). shadcn's muted
 
 ## What is implemented
 
-`/` overview, `/log`, `/profile`, `/item/[id]` — reading live TiDB data. No mock data anywhere: if a
+`/` overview, `/log`, `/profile`, `/item/[id]`, `/about` — reading live TiDB data. No mock data anywhere: if a
 value is not in the database, the component omits it rather than inventing one.
 
 Scope is the **current 7-day window**; 90-day totals belong to the log screen.
