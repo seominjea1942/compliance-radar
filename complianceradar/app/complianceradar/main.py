@@ -28,13 +28,20 @@ def handler(payload, context=None):
     if action == "ping":
         return {"status": "ok"}
 
+    def _as_id(v):
+        # decision_ids exceed JS safe integers; accept them as strings
+        try:
+            return int(str(v)) if v is not None else None
+        except (TypeError, ValueError):
+            return None
+
     if action == "ask":
         from radar.ask import ask
         session_id = str((payload or {}).get("session_id") or
                          getattr(context, "session_id", None) or "default")
         answer = ask(question=str(payload.get("question", ""))[:2000],
                      session_id=session_id,
-                     decision_id=payload.get("decision_id"))
+                     decision_id=_as_id(payload.get("decision_id")))
         return {"status": "ok", "answer": answer}
 
     if action == "brief":
@@ -44,7 +51,7 @@ def handler(payload, context=None):
         with conn.cursor() as c:
             c.execute("""SELECT doc.payload, d.reason FROM triage_decisions d
                          JOIN documents doc ON doc.id = d.document_id
-                         WHERE d.id = %s""", (payload.get("decision_id"),))
+                         WHERE d.id = %s""", (_as_id(payload.get("decision_id")),))
             row = c.fetchone()
         conn.close()
         if not row:
