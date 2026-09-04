@@ -56,6 +56,14 @@ def insert_decision(conn, document_id: int, decision: dict, embedding=None) -> i
         return c.lastrowid
 
 
+def get_profile(conn) -> dict | None:
+    """Live store profile from the DB (the UI edits this row); None if missing."""
+    with conn.cursor() as c:
+        c.execute("SELECT profile FROM store_profile WHERE id = 1")
+        row = c.fetchone()
+    return json.loads(row[0]) if row else None
+
+
 def similar_past_decisions(conn, embedding, k: int = 5):
     """Nearest past decisions as triage context.
 

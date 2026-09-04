@@ -107,10 +107,22 @@ def item_key(item):
             or item.get("link") or item.get("title", "")[:180])
 
 
+def load_profile(conn=None) -> dict:
+    """DB profile first (the UI edits it live); packaged file as fallback."""
+    if conn is not None:
+        try:
+            p = db.get_profile(conn)
+            if p:
+                return p
+        except Exception as e:
+            print(f"profile DB read failed, using packaged file: {e}")
+    return json.loads(PROFILE_PATH.read_text())
+
+
 def run(limit=None) -> dict:
-    profile = json.loads(PROFILE_PATH.read_text())
-    agent = make_agent()
     conn = db.connect()
+    profile = load_profile(conn)
+    agent = make_agent()
 
     items = fda_recalls.fetch_items()
     for it in items:
