@@ -45,7 +45,7 @@ export function FilterPills<T extends string>({
             disabled={o.count === 0 && !active}
             onClick={() => onChange(o.value)}
             className={cn(
-              "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] font-medium",
+              "flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] font-medium",
               "transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
               "disabled:cursor-not-allowed disabled:opacity-40",
               active

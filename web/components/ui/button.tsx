@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
  * rather than on every button.
  */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-control transition-colors disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-ring",
+  "inline-flex cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-control transition-colors disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-ring",
   {
     variants: {
       variant: {
