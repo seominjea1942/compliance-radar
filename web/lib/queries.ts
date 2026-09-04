@@ -366,3 +366,103 @@ export async function getStoreProfile(): Promise<StoreProfile | null> {
     location: locationLabel(p.location),
   };
 }
+
+/* ------------------------------------------------------------------ *
+ * 5. v_filtered_log — the log screen
+ * ------------------------------------------------------------------ */
+
+/** Source groups the log filters by, mapped to the DB's source values. */
+export const SOURCE_GROUPS = {
+  recalls: ["openfda_enforcement", "fda_rss", "fsis_email"],
+  council: ["legistar"],
+  permits: ["permits"],
+} as const;
+
+export type SourceGroup = keyof typeof SOURCE_GROUPS;
+export type LogStatus = "all" | "filtered" | "resolved";
+
+export type LogRow = {
+  decisionId: string;
+  title: string;
+  source: string;
+  sourceLabel: string;
+  reason: string;
+  shortReason: string;
+  tags: string[];
+  createdAtUtc: string;
+  postedLabel: string;
+  overturned: boolean;
+};
+
+export type LogPage = {
+  rows: LogRow[];
+  counts: { all: number; filtered: number; resolved: number };
+  hasMore: boolean;
+};
+
+/**
+ * One page of the rejection log.
+ *
+ * Filtering happens in SQL against the view rather than in TS, so "load more"
+ * pages the database instead of shipping 512 rows to the browser to hide most
+ * of them.
+ */
+export async function getFilteredLog(opts: {
+  status?: LogStatus;
+  source?: SourceGroup | "all";
+  limit?: number;
+} = {}): Promise<LogPage> {
+  const status = opts.status ?? "filtered";
+  const source = opts.source ?? "all";
+  const limit = Math.min(Math.max(opts.limit ?? 25, 1), 500);
+
+  const where: string[] = [];
+  const params: unknown[] = [];
+
+  if (status === "filtered") where.push("overturned = 0");
+  if (status === "resolved") where.push("overturned = 1");
+
+  if (source !== "all") {
+    const list = SOURCE_GROUPS[source];
+    where.push(`source IN (${list.map(() => "?").join(",")})`);
+    params.push(...list);
+  }
+
+  const clause = where.length ? `WHERE ${where.join(" AND ")}` : "";
+
+  // One extra row tells us whether a "load more" link is warranted.
+  const rows = await query<{
+    decision_id: string | number;
+    title: string;
+    source: string;
+    reason: string;
+    short_reason: string | null;
+    tags: unknown;
+    created_at: string;
+    overturned: number;
+  }>(`SELECT * FROM v_filtered_log ${clause} LIMIT ?`, [...params, limit + 1]);
+
+  const [totals] = await query<{ total: number | string; resolved: number | string | null }>(
+    `SELECT COUNT(*) AS total, SUM(overturned = 1) AS resolved FROM v_filtered_log`,
+  );
+
+  const all = Number(totals?.total ?? 0);
+  const resolved = Number(totals?.resolved ?? 0);
+
+  return {
+    rows: rows.slice(0, limit).map((r) => ({
+      decisionId: String(r.decision_id),
+      title: r.title,
+      source: r.source,
+      sourceLabel: SOURCE_LABEL[r.source] ?? r.source,
+      reason: r.reason,
+      shortReason: r.short_reason ?? r.reason,
+      tags: parseTags(r.tags),
+      createdAtUtc: r.created_at,
+      postedLabel: posted(r.created_at),
+      overturned: Number(r.overturned) === 1,
+    })),
+    counts: { all, resolved, filtered: all - resolved },
+    hasMore: rows.length > limit,
+  };
+}

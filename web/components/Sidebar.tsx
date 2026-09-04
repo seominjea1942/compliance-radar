@@ -13,10 +13,12 @@ export function Sidebar({
   profile,
   surfacedCount,
   filteredCount,
+  current = "overview",
 }: {
   profile: StoreProfile | null;
   surfacedCount: number;
   filteredCount: number;
+  current?: "overview" | "log" | "profile";
 }) {
   const storeName = profile?.storeName ?? "Store";
 
@@ -53,9 +55,9 @@ export function Sidebar({
       </button>
 
       <div className="flex flex-none flex-row gap-1 md:flex-col md:gap-0.5">
-        <NavItem href="/" label="Overview" meta={count(surfacedCount)} active />
-        <NavItem href="/log" label="Log" meta={count(filteredCount)} />
-        <NavItem href="/profile" label="Store profile" />
+        <NavItem href="/" label="Overview" meta={count(surfacedCount)} active={current === "overview"} />
+        <NavItem href="/log" label="Log" meta={count(filteredCount)} active={current === "log"} />
+        <NavItem href="/profile" label="Store profile" active={current === "profile"} />
         <NavItem href="/ask" label="Ask the radar" meta={<span className="font-sans">⌘K</span>} />
         <NavItem href="/sources" label="Sources" />
         <NavItem href="/settings" label="Settings" />
