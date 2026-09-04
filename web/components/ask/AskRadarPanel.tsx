@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { MdArrowUpward, MdClose, MdErrorOutline } from "react-icons/md";
-import { RadarFace } from "@/components/ui/radar-face";
+import { RadarCharacter } from "./RadarCharacter";
 import { AnswerText } from "./AnswerText";
 import type { SurfacedItem } from "@/lib/queries";
 
@@ -106,7 +106,7 @@ export function AskRadarPanel({
       className="fixed inset-x-0 bottom-0 z-40 flex h-[min(640px,88vh)] flex-col overflow-hidden border border-line-strong bg-paper shadow-[0_8px_28px_rgba(24,24,27,0.16)] sm:inset-x-auto sm:right-6 sm:bottom-24 sm:w-[340px] sm:rounded-card"
     >
       <header className="flex items-center gap-2.5 border-b border-line px-4 py-3.5">
-        <RadarFace className="size-8 flex-none" />
+        <RadarCharacter className="size-8 flex-none" />
         <span className="flex-1 font-serif text-[15px] font-semibold text-ink">Ask the radar</span>
         <button
           type="button"
