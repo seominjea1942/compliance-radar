@@ -138,6 +138,12 @@ def run(limit=None) -> dict:
         emb = embed(it.get("title", "") + " " + it.get("reason_for_recall", it.get("description", "")))
         past = db.similar_past_decisions(conn, emb, k=5)
         decision = triage_with_context(agent, it, profile, past)
+        if it["source"] == "openfda_enforcement":
+            try:
+                from radar.product_extract import extract_products
+                it["product"] = extract_products([{"id": "x", "text": it.get("title", "")}])["x"]
+            except Exception as e:
+                print(f"product extraction failed: {type(e).__name__}: {e}")
         doc_id = db.upsert_document(conn, it)
         db.insert_decision(conn, doc_id, decision, emb)
         counts[decision["decision"]] = counts.get(decision["decision"], 0) + 1
