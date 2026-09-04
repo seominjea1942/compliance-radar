@@ -31,7 +31,13 @@ Rules:
 - Never give legal or compliance advice; you explain what the radar saw and
   why it decided what it did. Recommend a human professional for legal calls.
 - When asked "why did this reach me" or "why was this filtered", quote the
-  recorded reason and the profile fact behind it."""
+  recorded reason and the profile fact behind it.
+- STATUS QUESTIONS ARE ALWAYS LIVE: for anything about current state (what is
+  open, what was handled/resolved, counts), call the relevant tool IN THIS
+  TURN, even if an earlier turn already listed items; the owner changes state
+  between messages. Prefix such answers with "as of now".
+- If no tool can answer the question, say you cannot see that data. Never
+  infer status from memory or from other items."""
 
 
 @tool
@@ -84,6 +90,23 @@ def open_action_items() -> str:
 
 
 @tool
+def recently_resolved_items(limit: int = 10) -> str:
+    """List items the owner recently resolved (handled or marked not-carried),
+    newest first. Use this for 'what did I handle/resolve' questions."""
+    conn = db.connect()
+    with conn.cursor() as c:
+        c.execute(
+            """SELECT LEFT(title, 90), resolution, resolved_at,
+                      COALESCE(short_reason, LEFT(reason, 80))
+               FROM v_surfaced_feed WHERE resolution IS NOT NULL
+               ORDER BY resolved_at DESC LIMIT %s""", (min(limit, 25),))
+        rows = c.fetchall()
+    conn.close()
+    return json.dumps([{"title": r[0], "resolution": r[1], "resolved_at": str(r[2]),
+                        "why_it_was_flagged": r[3]} for r in rows])
+
+
+@tool
 def search_watched_items(query: str) -> str:
     """Semantic search across everything the radar has reviewed (all decisions)."""
     conn = db.connect()
@@ -116,7 +139,8 @@ def _agent_for(session_id: str) -> Agent:
                          temperature=0.0, streaming=False)
     agent = Agent(model=model, system_prompt=ASK_SYSTEM,
                   tools=[get_decision, todays_filtered_items,
-                         open_action_items, search_watched_items],
+                         open_action_items, recently_resolved_items,
+                         search_watched_items],
                   conversation_manager=SlidingWindowConversationManager(
                       window_size=WINDOW_MESSAGES),
                   callback_handler=None)
