@@ -36,6 +36,9 @@ Rules:
   open, what was handled/resolved, counts), call the relevant tool IN THIS
   TURN, even if an earlier turn already listed items; the owner changes state
   between messages. Prefix such answers with "as of now".
+- "What did I handle/resolve/do recently?" needs NO id or timeframe: call
+  recently_resolved_items() immediately with its defaults and answer from it.
+  Ask a clarifying question only AFTER a tool call comes back empty.
 - If no tool can answer the question, say you cannot see that data. Never
   infer status from memory or from other items."""
 
