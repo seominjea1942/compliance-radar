@@ -70,13 +70,16 @@ def fetch_enforcement_items(days_back: int = 30, max_pages: int = 1) -> list[dic
             # one real-world recall event spans many product rows; openFDA's
             # event_id groups them (fallback: firm+initiation date)
             "event_key": rec.get("event_id") or f"evt-{firm[:40]}-{init}".replace(" ", "_"),
-            "title": rec.get("product_description", "")[:200],
+            # full description: truncating here once cost us complete UPCs
+            "title": rec.get("product_description", "")[:1800],
             "reason_for_recall": rec.get("reason_for_recall", ""),
             "classification": rec.get("classification", ""),
             "distribution_pattern": rec.get("distribution_pattern", ""),
             "recall_initiation_date": rec.get("recall_initiation_date", ""),
             "recalling_firm": rec.get("recalling_firm", ""),
             "recall_number": rec.get("recall_number", ""),
+            "code_info": rec.get("code_info", "")[:1500],
+            "product_quantity": rec.get("product_quantity", ""),
         })
     return items
 

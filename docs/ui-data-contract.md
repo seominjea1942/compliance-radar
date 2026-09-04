@@ -126,6 +126,27 @@ UPDATE triage_decisions SET resolution=%s, resolved_at=NOW() WHERE id=%s
 "Keep open" rows: write nothing. Resolution is independent of the overturn
 flow (overturns belong to REJECT rows).
 
+### payload.product — structured product fields (added 2026-09-04)
+openFDA recall documents now carry `payload.product` (extraction, not
+invention: strings copied from the description, UPCs regex-validated;
+missing = null/[]), plus repaired full-length titles and two new payload
+fields. Fill rates so the design knows what it can rely on:
+
+| field | surfaced rows (38) | all openFDA (360) | notes |
+|---|---|---|---|
+| product.product_name | 100% | 100% | design anchor: always present |
+| product.brand | 84% | 74% | fall back to recalling_firm |
+| product.sizes[] | 92% | 67% | |
+| product.upcs[] | 63% | 29% | digits-only, validated; NEVER render a partial |
+| product.containers[] | 39% | 32% | garnish only |
+| code_info (lot/best-by) | 100% | 100% | e.g. "BEST BY: 27 DEC 26" — gold for the Resolve checklist |
+| product_quantity | 100% | 100% | e.g. "637 cases (6 units/case)" |
+
+Design guidance: build the card on product_name + brand + sizes + hazard,
+show UPC and code_info when present, and keep the full `title` reachable
+(detail view) as ground truth. Titles are no longer truncated at ingest
+(old 200-char cap removed; 359 payloads repaired from openFDA).
+
 ## Store profile (profile screen, editable)
 
 Table `store_profile`, single row id=1, column `profile` (JSON):
