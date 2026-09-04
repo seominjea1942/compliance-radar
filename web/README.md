@@ -56,7 +56,7 @@ Scope is the **current 7-day window**; 90-day totals belong to the log screen.
 | Nearby permits map | `v_nearby_permits` |
 | Sidebar store/owner | `store_profile` row `id = 1` |
 | Log | `v_filtered_log` (status/source/paging in the URL) |
-| Profile | `store_profile` facts + carry_list |
+| Profile | `store_profile` facts + carry_list (both writable) |
 | Item detail | `v_surfaced_feed`, falling back to `v_filtered_log` |
 
 Shapes follow `../docs/ui-data-contract.md`. The views are the query layer: TS
@@ -114,9 +114,11 @@ to `bedrock:InvokeModel` — not the project's admin AWS keys.
   The contract describes them as serialized strings (true of pymysql); HTTP
   drivers hand back parsed values. `asJson()` in `lib/queries.ts` accepts both,
   and any new query touching a JSON column must go through it.
-- **Writes.** None. The contract permits exactly two write paths (overturns and
-  profile facts) and the home screen needs neither. "Done" is session-local
-  view state, not persistence.
+- **Writes.** Overturns, resolutions, profile facts and carry-list entries.
+  Carry-list editing was unfrozen by owner sign-off on 2026-09-05; the runtime
+  reads the profile from the DB, so an edit changes how FUTURE items are
+  triaged and never rewrites a past decision. The save dialog says so, and
+  notes that Ask the radar sees the change before the next daily check does.
 - **Feed order** comes from the backend's `action_type`: act, then priority
   verify, then verify, then fyi, newest within a tier. The promotion inside
   `verify` uses `payload.classification` plus a narrow pathogen term list,

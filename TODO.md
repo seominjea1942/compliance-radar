@@ -44,7 +44,7 @@
 - [ ] Carry-list entries carry only {category, brands, carries}. The profile
       reference also shows a Categories column and a "prep only" qualifier;
       both are omitted rather than invented. Wants `categories[]` and an
-      optional qualifier per entry.
+      optional qualifier per entry. (Editing itself is unfrozen and wired.)
 - [ ] 20 of 41 surfaced recall titles are still at the old 200-char cap (max is
       now 542), so the untruncate/refetch repair looks partially applied.
 - [ ] A pathogen flag on the decision would replace the narrow keyword list the

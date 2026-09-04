@@ -1,15 +1,20 @@
 "use client";
 
-import { useState } from "react";
-import { MdAdd, MdClose, MdLockOutline } from "react-icons/md";
+import { useEffect, useState, useTransition } from "react";
+import { MdAdd, MdClose, MdScheduleSend } from "react-icons/md";
+import {
+  addCarryEntry,
+  editCarryEntry,
+  removeCarryEntry,
+} from "@/app/profile/carry-actions";
 import { Button } from "@/components/ui/button";
+import { nextCheckLabel } from "@/lib/next-check";
 import type { CarryEntry } from "@/lib/queries";
 
 /**
- * The carry list drives every recall match, and it is FROZEN: the contract
- * allows the UI to render an edit experience but requires human signoff before
- * anything writes to `carry_list`. Every affordance here opens the same
- * explanation rather than pretending to save.
+ * The carry list drives every recall match. Editing is live as of the owner's
+ * 2026-09-05 sign-off: the runtime reads this profile from the DB, so a change
+ * here changes how future items are triaged. Past decisions never change.
  */
 export function CarryList({
   entries,
@@ -132,7 +137,39 @@ function CarryDialog({
   const [item, setItem] = useState(entry?.category ?? "");
   const [brands, setBrands] = useState<string[]>(entry?.brands ?? []);
   const [brandDraft, setBrandDraft] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
   const showBrands = mode !== "not-carried";
+
+  // Rendered after mount: the label depends on the reader's clock, and
+  // computing it during SSR would risk a hydration mismatch at 6 AM.
+  const [nextCheck, setNextCheck] = useState<string | null>(null);
+  useEffect(() => setNextCheck(nextCheckLabel()), []);
+
+  function save() {
+    setError(null);
+    const category = item.trim();
+    if (!category) {
+      setError("Name the item first.");
+      return;
+    }
+    // A brand typed but not yet committed with Enter should still count.
+    const draft = brandDraft.trim();
+    const allBrands = draft && !brands.includes(draft) ? [...brands, draft] : brands;
+
+    startTransition(async () => {
+      const payload = {
+        category,
+        carries: mode !== "not-carried",
+        brands: showBrands ? allBrands : [],
+      };
+      const res = entry
+        ? await editCarryEntry(entry.category, payload)
+        : await addCarryEntry(payload);
+      if (res.ok) onClose();
+      else setError(res.error);
+    });
+  }
 
   function addBrand() {
     const b = brandDraft.trim();
@@ -222,22 +259,53 @@ function CarryDialog({
             </div>
           )}
 
-          {/* Not a soft warning: this flow genuinely cannot save yet. */}
+          {/*
+            The exact semantics the contract requires: when it takes effect,
+            what does not change, and why the chat agent may be ahead of it.
+          */}
           <div className="flex items-start gap-2.5 rounded-lg border border-line bg-shell px-3.5 py-3">
-            <MdLockOutline className="mt-px size-4 flex-none text-faint" aria-hidden />
-            <p className="m-0 text-[12.5px]/relaxed text-body">
-              The carry list is frozen. It drives every recall match, so changes need a person to
-              sign off before they go in. Nothing here saves yet.
-            </p>
+            <MdScheduleSend className="mt-px size-4 flex-none text-faint" aria-hidden />
+            <div className="flex flex-col gap-1">
+              <p className="m-0 text-[12.5px]/relaxed text-body">
+                Applies from the next daily check{nextCheck ? ` — ${nextCheck}` : ""}. Today&apos;s
+                list and decisions I have already made stay as they are.
+              </p>
+              <p className="m-0 text-[11.5px]/relaxed text-faint">
+                Ask the radar sees this straight away, so it may mention the change before the
+                next check applies it.
+              </p>
+            </div>
           </div>
 
-          <div className="flex items-center justify-end gap-2">
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button size="sm" disabled title="Carry list writes need human signoff">
-              Save
-            </Button>
+          {error && <p className="m-0 text-[12.5px] text-alert">{error}</p>}
+
+          <div className="flex items-center justify-between gap-2">
+            {entry ? (
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() =>
+                  startTransition(async () => {
+                    const res = await removeCarryEntry(entry.category);
+                    if (res.ok) onClose();
+                    else setError(res.error);
+                  })
+                }
+                className="cursor-pointer rounded-control px-2 py-1.5 text-[13px] text-faint hover:text-alert disabled:opacity-50"
+              >
+                Remove
+              </button>
+            ) : (
+              <span />
+            )}
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={onClose} disabled={pending}>
+                Cancel
+              </Button>
+              <Button size="sm" onClick={save} disabled={pending || !item.trim()}>
+                {pending ? "Saving…" : "Save"}
+              </Button>
+            </div>
           </div>
         </div>
       </div>

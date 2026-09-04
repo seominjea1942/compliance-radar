@@ -6,12 +6,11 @@ import { query } from "@/lib/db";
 type Fact = { id: string; fact: string; implies?: string | null };
 
 /**
- * Facts are the only part of the profile the UI may write.
+ * Facts writes.
  *
- * The contract permits exactly two writes from the UI: overturns and profile
- * FACTS. `carry_list` is frozen until after the demo and needs human signoff,
- * so this reads the row, replaces only `facts`, and writes the object back —
- * every other key is carried through untouched.
+ * Scoped to `facts` on purpose: it reads the row, replaces only that key, and
+ * writes the object back, so a concurrent carry-list edit (see
+ * carry-actions.ts) cannot be clobbered by this path.
  */
 async function updateFacts(mutate: (facts: Fact[]) => Fact[]) {
   const [row] = await query<{ profile: unknown }>(
