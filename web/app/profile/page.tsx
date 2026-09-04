@@ -1,10 +1,10 @@
 import { AskRadarProvider } from "@/components/ask/AskRadarProvider";
 import { CarryList } from "@/components/profile/CarryList";
+import { SectionTabs } from "@/components/profile/SectionTabs";
 import { FactList } from "@/components/profile/FactList";
 import { Sidebar } from "@/components/Sidebar";
-import { Card, CardNote, CardTitle } from "@/components/ui/card";
+import { CardNote, CardTitle } from "@/components/ui/card";
 import { getFilteredLog, getStoreProfileFull, getWeeklySummary } from "@/lib/queries";
-import { count } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -43,20 +43,27 @@ export default async function ProfilePage() {
               </p>
             </div>
 
-            <Card className="gap-4">
+            <SectionTabs
+              sections={[
+                { id: "the-basics", label: "The basics", count: profile.facts.length },
+                { id: "carry-list", label: "Carry list", count: profile.carry.entries.length },
+              ]}
+            />
+
+            <section id="the-basics" className="flex scroll-mt-16 flex-col gap-4">
               <div className="flex flex-col gap-1.5">
-                <CardTitle>The basics · {count(profile.facts.length)}</CardTitle>
+                <CardTitle as="h2">The basics</CardTitle>
                 <CardNote>
                   Background about the store. These shape which city items and permits I read
                   closely.
                 </CardNote>
               </div>
               <FactList facts={profile.facts} />
-            </Card>
+            </section>
 
-            <Card className="gap-4">
+            <section id="carry-list" className="flex scroll-mt-16 flex-col gap-4 border-t border-line-soft pt-6">
               <div className="flex flex-col gap-1.5">
-                <CardTitle>Carry list · {count(profile.carry.entries.length)}</CardTitle>
+                <CardTitle as="h2">Carry list</CardTitle>
                 <CardNote>
                   This is how I decide whether a recall is yours. A recall names a product and a
                   brand, so I match on both.
@@ -66,7 +73,7 @@ export default async function ProfilePage() {
                 entries={profile.carry.entries}
                 granularity={profile.carry.granularity}
               />
-            </Card>
+            </section>
           </div>
         </main>
       </div>
