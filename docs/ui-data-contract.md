@@ -203,13 +203,18 @@ Node route using the least-privilege key in `.vercel-aws-key.local` (env vars
 for Vercel; AGENT_RUNTIME_ARN included). Payloads:
 
 - Chat: `{"action":"ask", "question":"...", "session_id":"<stable per browser
-  chat session>", "decision_id": <int, optional item scope>}` ->
+  chat session>", "decision_id": "<STRING, optional item scope>"}` ->
   `{"status":"ok","answer":"<markdown-lite text>"}`. Session history lives
   server-side keyed by session_id (bounded sliding window); pass the same
   session_id for follow-ups. Also pass the SAME value as the
   runtimeSessionId invoke parameter (NOTE: AWS requires runtimeSessionId to
-  be at least 33 characters; a uuid4 hex with a prefix works). Latency 3-8s
-  warm; answers may contain
+  be at least 33 characters; a uuid4 hex with a prefix works).
+  decision_id MUST be sent as a string end to end: these BIGINTs exceed
+  Number.MAX_SAFE_INTEGER and Number() silently corrupts them into ids that
+  "don't exist" (measured 2026-09-04); the runtime accepts string ids.
+  Latency: typically 3-8s warm, but vague questions can tool-thrash; measured
+  worst case 121.9s before a 3-tool-call budget was added. Keep the FE 55s
+  abort with a friendly message (Vercel maxDuration 60 ceiling); answers may contain
   **bold** markdown. The agent has tools over the live DB (decision lookup,
   filtered log, open items, semantic search), so the three suggested prompts
   in the design all work as-is.
