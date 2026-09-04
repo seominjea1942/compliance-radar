@@ -113,6 +113,12 @@ generate both fields at triage time.
   otherwise). Group feed cards on it. Verified groupings include Straus (5
   rows), Zapp's/Dirty chips (6 rows, genuinely one openFDA event), Boichik (3).
 - `resolution` (`handled` | `not_carried` | NULL=open), `resolved_at` (UTC).
+- `hazard` (str|NULL, added 2026-09-04): max-5-word hazard compressed from the
+  record's own reason_for_recall, never invented (e.g. "foreign metal
+  pieces"). Recall rows only; use it for the group-card hazard line instead of
+  trimming reason_for_recall client-side. Single-item Resolve confirmed: no
+  modal; Resolve writes `handled`, the secondary "Don't carry" action writes
+  `not_carried`.
 Write path for Save (per selected row):
 ```sql
 UPDATE triage_decisions SET resolution=%s, resolved_at=NOW() WHERE id=%s
@@ -180,7 +186,9 @@ for Vercel; AGENT_RUNTIME_ARN included). Payloads:
   `{"status":"ok","answer":"<markdown-lite text>"}`. Session history lives
   server-side keyed by session_id (bounded sliding window); pass the same
   session_id for follow-ups. Also pass the SAME value as the
-  runtimeSessionId invoke parameter. Latency 3-8s warm; answers may contain
+  runtimeSessionId invoke parameter (NOTE: AWS requires runtimeSessionId to
+  be at least 33 characters; a uuid4 hex with a prefix works). Latency 3-8s
+  warm; answers may contain
   **bold** markdown. The agent has tools over the live DB (decision lookup,
   filtered log, open items, semantic search), so the three suggested prompts
   in the design all work as-is.
