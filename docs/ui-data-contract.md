@@ -218,7 +218,7 @@ for Vercel; AGENT_RUNTIME_ARN included). Payloads:
   **bold** markdown. The agent has tools over the live DB (decision lookup,
   filtered log, open items, semantic search), so the three suggested prompts
   in the design all work as-is.
-- Brief: `{"action":"brief", "decision_id": N}` -> `{"status":"ok",
+- Brief: `{"action":"brief", "decision_id": "<STRING, same rule as ask>"}` -> `{"status":"ok",
   "brief":"<plain text>"}` (replaces the earlier make_brief guidance; no
   Bedrock key needed on Vercel anymore, this one key covers both).
 
