@@ -58,9 +58,9 @@ export function Sidebar({
         <NavItem href="/" label="Overview" meta={count(surfacedCount)} active={current === "overview"} />
         <NavItem href="/log" label="Log" meta={count(filteredCount)} active={current === "log"} />
         <NavItem href="/profile" label="Store profile" active={current === "profile"} />
-        <NavItem href="/ask" label="Ask the radar" meta={<span className="font-sans">⌘K</span>} />
-        <NavItem href="/sources" label="Sources" />
-        <NavItem href="/settings" label="Settings" />
+        {/* Ask the radar lives in the floating launcher, reachable with ⌘K. */}
+        <NavItem label="Sources" soon />
+        <NavItem label="Settings" soon />
       </div>
 
       {profile?.owner && (
