@@ -130,6 +130,11 @@ to `bedrock:InvokeModel` — not the project's admin AWS keys.
   (~93% of surfaced recall rows) can anchor a layout; `sizes` ~85%, `brand`
   ~78%, `upcs` ~59%, `containers` ~37% are conditional and vanish cleanly.
   Headlines fall back to the source title when extraction found no name.
+- **Long codes are announced, not truncated.** `code_info` runs from 6 to 692
+  characters (median 37). Cards show it only when it fits at a glance and say
+  "multiple date codes" otherwise, because half a list of sell-by dates reads
+  as the whole list. The full value stays in the Resolve checklist and on the
+  detail page, which is where lots actually get matched.
 - **Sizes, UPCs and codes are never zipped into columns.** They are parallel
   but not 1:1 aligned (one row reads "QUART - BEST BY: 24 DEC 26; PINT - BEST
   BY: 25 DEC 26"), so a grid would mispair a code with the wrong size.

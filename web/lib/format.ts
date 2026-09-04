@@ -41,3 +41,19 @@ export function posted(v: string): string {
 export function count(n: number): string {
   return n.toLocaleString("en-US");
 }
+
+/**
+ * Lot/best-by codes range from "349MCF" to a 692-character list of sell-by
+ * dates. Cards are a scanning surface, so they show a code only when it is
+ * short enough to read at a glance; anything longer is announced rather than
+ * truncated, because half a list of dates is worse than none. The full value
+ * lives in the Resolve checklist and on the detail page, which is where the
+ * owner actually matches lots.
+ */
+const CARD_CODE_MAX = 44;
+
+export function cardCode(codeInfo: string | null | undefined): string | null {
+  const c = codeInfo?.trim();
+  if (!c) return null;
+  return c.length <= CARD_CODE_MAX ? c : "multiple date codes";
+}

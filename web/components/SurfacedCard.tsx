@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardActions } from "@/components/ui/card";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useAskRadar } from "@/components/ask/ask-radar-context";
+import { cardCode } from "@/lib/format";
 import type { SurfacedEvent } from "@/lib/queries";
 import { resolveItems } from "@/app/actions";
 import { ResolveDialog } from "@/components/ResolveDialog";
@@ -140,10 +141,10 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
                 <span>{item.product.sizes.join(" · ")}</span>
               </>
             )}
-            {item.product.codeInfo && (
+            {cardCode(item.product.codeInfo) && (
               <>
                 <span aria-hidden>·</span>
-                <span className="font-mono">{item.product.codeInfo}</span>
+                <span className="font-mono">{cardCode(item.product.codeInfo)}</span>
               </>
             )}
           </div>
@@ -191,15 +192,18 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
                     >
                       {member.displayTitle}
                     </Link>
-                    {member.product && (member.product.sizes.length > 0 || member.product.codeInfo) && (
-                      <span className="text-[11.5px] text-faint">
-                        {member.product.sizes.join(" · ")}
-                        {member.product.sizes.length > 0 && member.product.codeInfo ? " · " : ""}
-                        {member.product.codeInfo && (
-                          <span className="font-mono">{member.product.codeInfo}</span>
-                        )}
-                      </span>
-                    )}
+                    {member.product &&
+                      (member.product.sizes.length > 0 || cardCode(member.product.codeInfo)) && (
+                        <span className="text-[11.5px] text-faint">
+                          {member.product.sizes.join(" · ")}
+                          {member.product.sizes.length > 0 && cardCode(member.product.codeInfo)
+                            ? " · "
+                            : ""}
+                          {cardCode(member.product.codeInfo) && (
+                            <span className="font-mono">{cardCode(member.product.codeInfo)}</span>
+                          )}
+                        </span>
+                      )}
                   </li>
                 ))}
               </ul>
