@@ -169,6 +169,25 @@ cent. Not pre-stored; the UI should call it lazily per surfaced item.
    "watched, quiet this week" states instead of hiding them: the empty rows
    are the product thesis, not missing data.
 
+## Ask the radar + brief (runtime API, added 2026-09-04)
+
+Both run on the deployed AgentCore runtime; call InvokeAgentRuntime from a
+Node route using the least-privilege key in `.vercel-aws-key.local` (env vars
+for Vercel; AGENT_RUNTIME_ARN included). Payloads:
+
+- Chat: `{"action":"ask", "question":"...", "session_id":"<stable per browser
+  chat session>", "decision_id": <int, optional item scope>}` ->
+  `{"status":"ok","answer":"<markdown-lite text>"}`. Session history lives
+  server-side keyed by session_id (bounded sliding window); pass the same
+  session_id for follow-ups. Also pass the SAME value as the
+  runtimeSessionId invoke parameter. Latency 3-8s warm; answers may contain
+  **bold** markdown. The agent has tools over the live DB (decision lookup,
+  filtered log, open items, semantic search), so the three suggested prompts
+  in the design all work as-is.
+- Brief: `{"action":"brief", "decision_id": N}` -> `{"status":"ok",
+  "brief":"<plain text>"}` (replaces the earlier make_brief guidance; no
+  Bedrock key needed on Vercel anymore, this one key covers both).
+
 ## Hard rules from the backend
 
 1. Never re-triage or mutate historical decisions from the UI; the only

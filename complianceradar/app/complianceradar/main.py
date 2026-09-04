@@ -1,10 +1,15 @@
 """Compliance Radar AgentCore Runtime entrypoint.
 
-Invoked by: EventBridge Scheduler -> Lambda -> InvokeAgentRuntime.
-Payloads:
-  {"action": "ping"}                      health check
-  {"action": "daily_run", "limit": N}     full triage pass (limit optional)
+One runtime, two modes:
+  Batch (EventBridge Scheduler -> Lambda -> InvokeAgentRuntime):
+    {"action": "ping"}                      health check
+    {"action": "daily_run", "limit": N}     full triage pass (limit optional)
+  Interactive (web app -> InvokeAgentRuntime with a per-user runtimeSessionId):
+    {"action": "ask", "question": "...", "decision_id": <optional int>,
+     "session_id": "<chat session key>"}    tool-using Q&A over watched data
+    {"action": "brief", "decision_id": N}   forwardable email brief for an item
 """
+import json
 import pathlib
 import sys
 
@@ -22,6 +27,30 @@ def handler(payload, context=None):
     log.info("compliance-radar invoked, action=%s", action)
     if action == "ping":
         return {"status": "ok"}
+
+    if action == "ask":
+        from radar.ask import ask
+        session_id = str((payload or {}).get("session_id") or
+                         getattr(context, "session_id", None) or "default")
+        answer = ask(question=str(payload.get("question", ""))[:2000],
+                     session_id=session_id,
+                     decision_id=payload.get("decision_id"))
+        return {"status": "ok", "answer": answer}
+
+    if action == "brief":
+        from radar import db
+        from radar.brief import make_brief
+        conn = db.connect()
+        with conn.cursor() as c:
+            c.execute("""SELECT doc.payload, d.reason FROM triage_decisions d
+                         JOIN documents doc ON doc.id = d.document_id
+                         WHERE d.id = %s""", (payload.get("decision_id"),))
+            row = c.fetchone()
+        conn.close()
+        if not row:
+            return {"status": "error", "message": "unknown decision_id"}
+        return {"status": "ok",
+                "brief": make_brief(json.loads(row[0]), row[1], "Willow Glen Family Market")}
 
     from radar.pipeline import run  # deferred so ping stays fast
     summary = run(limit=(payload or {}).get("limit"))
