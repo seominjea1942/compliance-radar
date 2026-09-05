@@ -1,52 +1,165 @@
 import { Card, CardNote, CardTitle } from "@/components/ui/card";
 import { PermitMapView } from "@/components/PermitMapView";
-import { type Permit } from "@/lib/queries";
-
-function shortTitle(t: string): string {
-  // Permit titles are "Work type: detail at ADDRESS, CITY ST ZIP".
-  const head = t.split(" at ")[0] ?? t;
-  return head.length > 26 ? head.slice(0, 25).trimEnd() + "…" : head;
-}
+import { plainDate } from "@/lib/format";
+import {
+  activePermits,
+  blockingWork,
+  moratoriumSegments,
+  plannedPaving,
+  type Permit,
+  type StreetWork,
+} from "@/lib/queries";
 
 function metres(d: number | null): string {
   if (d === null) return "";
   return d >= 1000 ? `${(d / 1000).toFixed(1)} km` : `${Math.round(d)} m`;
 }
 
-export function PermitMap({ permits }: { permits: Permit[] }) {
-  const closest = permits
-    .filter((p) => p.distanceM !== null)
-    .sort((a, b) => a.distanceM! - b.distanceM!)
-    .slice(0, 2);
+/** "From Lincoln Ave To Iris Ct" is the useful half of a permit title. */
+function where(w: StreetWork): string {
+  return w.segment ?? w.title;
+}
+
+/**
+ * One row per street, not per permit.
+ *
+ * Several permits can name the same segment, and the backend confirmed they
+ * are genuinely different jobs (separate PG&E bellhole, water and pole work on
+ * one block) rather than duplicates. So the count is real disruption, but the
+ * street is still the thing the owner navigates by.
+ */
+type Segment = {
+  key: string;
+  where: string;
+  distanceM: number | null;
+  onStoreStreet: boolean;
+  latest: StreetWork;
+  count: number;
+};
+
+function bySegment(work: StreetWork[]): Segment[] {
+  const groups = new Map<string, StreetWork[]>();
+  for (const w of work) groups.set(where(w), [...(groups.get(where(w)) ?? []), w]);
+
+  return [...groups.entries()]
+    .map(([key, items]) => ({
+      key,
+      where: key,
+      distanceM: Math.min(...items.map((i) => i.distanceM ?? Infinity)),
+      onStoreStreet: items.some((i) => i.onStoreStreet),
+      latest: [...items].sort((a, b) =>
+        (b.issueDate ?? "").localeCompare(a.issueDate ?? ""),
+      )[0]!,
+      count: items.length,
+    }))
+    .sort((a, b) => {
+      if (a.onStoreStreet !== b.onStoreStreet) return a.onStoreStreet ? -1 : 1;
+      return (a.distanceM ?? Infinity) - (b.distanceM ?? Infinity);
+    });
+}
+
+/**
+ * Is anything about to block the street, the sidewalk or the parking?
+ *
+ * Zero blocking permits is the answer, not an empty state, so the card says so
+ * and then shows what it watched to be able to say it. Building permits are
+ * background pins only: their approval field cannot tell live work from a
+ * finished remodel.
+ */
+export function PermitMap({
+  permits,
+  streetWork,
+}: {
+  permits: Permit[];
+  streetWork: StreetWork[];
+}) {
+  const blocking = blockingWork(streetWork);
+  const active = activePermits(streetWork);
+  const moratorium = moratoriumSegments(streetWork);
+  const planned = plannedPaving(streetWork);
+
+  // With nothing blocking, the nearest active permits are the evidence that
+  // the quiet is real rather than an empty query.
+  const listed = bySegment(blocking.length > 0 ? blocking : active);
+
+  /*
+   * When something is blocking, the list is the warning and earns three rows.
+   * When nothing is, it is only evidence that the quiet was checked, so two
+   * is enough and the card stays inside the rail.
+   */
+  const rowLimit = blocking.length > 0 ? 3 : 2;
+
+  const watched = [
+    active.length > 0 &&
+      `${active.length} active ${active.length === 1 ? "permit" : "permits"}`,
+    moratorium.length > 0 && `${moratorium.length} no-dig segments`,
+    planned.length > 0 &&
+      `${planned.length} planned ${planned.length === 1 ? "repaving" : "repavings"}`,
+  ].filter(Boolean);
 
   return (
-    <Card className="w-full gap-3.5 p-4.5">
+    <Card className="w-full min-w-0 gap-3.5 p-4.5">
       <div className="flex flex-col gap-1.5">
         <CardTitle>
-          Watching {permits.length} nearby {permits.length === 1 ? "site" : "sites"}.
+          {blocking.length === 0
+            ? "No street work blocking your block."
+            : `Street work on ${listed.length} ${
+                listed.length === 1 ? "street" : "streets"
+              } near you.`}
         </CardTitle>
         <CardNote>
-          {permits.length} permits filed within a quarter mile.
-          {closest.length > 0 && ` The closest is ${metres(closest[0]!.distanceM)} away.`}
+          {watched.length > 0 ? `Watching ${watched.join(", ")}. ` : ""}
+          {permits.length > 0 && `${permits.length} building permits shown as background.`}
         </CardNote>
       </div>
 
       <PermitMapView
         permits={permits}
-        // 704x300 was the design's plate; the ratio is kept so the card's
-        // proportions do not change now that real tiles fill it.
+        streetWork={streetWork}
         className="w-full overflow-hidden rounded-[9px] border border-line bg-wash [aspect-ratio:704/300]"
       />
 
-      {closest.length > 0 && (
-        <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
-          {closest.map((p) => (
-            <li key={p.documentId} className="flex items-baseline gap-2 text-[11.5px]">
-              <span className="size-1.5 flex-none translate-y-[-1px] rounded-full bg-pin" />
-              <span className="min-w-0 flex-1 truncate text-muted">{shortTitle(p.title)}</span>
-              <span className="flex-none font-mono text-faint">{metres(p.distanceM)}</span>
+      {listed.length > 0 && (
+        <ul className="m-0 flex list-none flex-col gap-2 p-0">
+          {listed.slice(0, rowLimit).map((seg) => (
+            <li key={seg.key} className="flex items-start gap-2 text-[11.5px]">
+              <span
+                className={`mt-1.5 size-1.5 flex-none rounded-full ${
+                  blocking.length > 0 ? "bg-alert" : "bg-pin"
+                }`}
+              />
+              <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                <span className="truncate text-muted">
+                  {seg.where}
+                  {seg.onStoreStreet && (
+                    <span className="ml-1.5 text-green">your street</span>
+                  )}
+                </span>
+                {/* City text naming the utility and the job, not generated. */}
+                {seg.latest.workDescription && (
+                  <span className="line-clamp-2 text-faint">{seg.latest.workDescription}</span>
+                )}
+                <span className="text-faint">
+                  {[
+                    plainDate(seg.latest.expiryDate) &&
+                      `valid through ${plainDate(seg.latest.expiryDate)}`,
+                    seg.count > 1 && `${seg.count} jobs`,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </span>
+              </span>
+              <span className="mt-px flex-none font-mono text-faint">
+                {metres(seg.distanceM)}
+              </span>
             </li>
           ))}
+          {listed.length > rowLimit && (
+            <li className="text-[11.5px] text-faint">
+              and {listed.length - rowLimit} more{" "}
+              {listed.length - rowLimit === 1 ? "street" : "streets"}
+            </li>
+          )}
         </ul>
       )}
     </Card>

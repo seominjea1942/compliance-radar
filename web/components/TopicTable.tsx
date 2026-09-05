@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { MdArrowForward } from "react-icons/md";
-import { Card, CardNote, CardTitle } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
 import { Tooltip } from "@/components/ui/tooltip";
 import type { TopicRow } from "@/lib/queries";
 import { count } from "@/lib/format";
 
 /** Column widths shared by the header and every row. */
-const COL = { read: "w-16 text-right", forYou: "w-24 text-right" };
+const COL = { read: "w-10 text-right", forYou: "w-14 text-right" };
 
 function Row({ topic }: { topic: TopicRow }) {
   // Nothing arrived on this topic this week. That is the product working, not
@@ -19,13 +19,13 @@ function Row({ topic }: { topic: TopicRow }) {
       // The row reads as "Food recalls 6 1" to a screen reader, which says
       // nothing about where the link goes; the destination is named instead.
       aria-label={`Open the log filtered to ${topic.label}`}
-      className="flex items-baseline gap-4 bg-paper px-4 py-3 no-underline transition-colors hover:bg-hover focus-visible:relative focus-visible:z-[1] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+      className="flex items-baseline gap-3 bg-paper px-4 py-3 no-underline transition-colors hover:bg-hover focus-visible:relative focus-visible:z-[1] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
     >
-      <span className={`flex-1 font-serif text-base ${quiet ? "text-faint" : "text-ink"}`}>
+      <span className={`flex-1 font-serif text-[15px] ${quiet ? "text-faint" : "text-ink"}`}>
         {topic.label}
       </span>
       {quiet ? (
-        <span className="text-[12.5px] text-faint italic">Watched, quiet this week</span>
+        <span className="text-[12px] whitespace-nowrap text-faint italic">Quiet this week</span>
       ) : (
         <>
           <span className={`${COL.read} text-[15px] text-faint`}>{count(topic.read)}</span>
@@ -50,7 +50,8 @@ export function TopicTable({
   topics: TopicRow[];
 }) {
   return (
-    <Card className="w-full min-w-0 gap-4.5">
+    <Card className="w-full min-w-0 gap-4">
+      {/* items-start, not baseline: the icon is a box, not a line of text. */}
       <div className="flex items-start justify-between gap-4">
         <CardTitle>
           {count(reviewed)} items read this week. Filtered {count(filtered)}.
@@ -58,8 +59,8 @@ export function TopicTable({
         {/*
           Icon only, so the title keeps the full width of the card. The label
           it replaces still has to reach anyone not looking at the picture:
-          aria-label names the link, and the tooltip opens on focus as well as
-          hover, so the wording is available from the keyboard too.
+          aria-label names the link, and the tooltip opens on keyboard focus
+          as well as hover, so the wording is available from the keyboard too.
         */}
         <Tooltip content="Open the log">
           <a
@@ -91,8 +92,6 @@ export function TopicTable({
           <Row key={t.id} topic={t} />
         ))}
       </div>
-
-      <CardNote>Every one of them has a reason you can read, and overturn.</CardNote>
     </Card>
   );
 }

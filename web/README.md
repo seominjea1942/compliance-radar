@@ -53,7 +53,8 @@ Scope is the **current 7-day window**; 90-day totals belong to the log screen.
 | Surfaced feed | `v_surfaced_feed`, scoped to 7 days |
 | Topic table | `v_weekly_topics` |
 | "Checked …" stamp | `v_run_status` |
-| Nearby permits map | `v_nearby_permits` |
+| Street work (map card headline) | `v_street_work`, ALERTs within 400m |
+| Nearby permits map (background pins) | `v_nearby_permits` |
 | Sidebar store/owner | `store_profile` row `id = 1` |
 | Log | `v_filtered_log` (status/source/paging in the URL) |
 | Profile | `store_profile` facts + carry_list (both writable) |
@@ -159,8 +160,10 @@ to `bedrock:InvokeModel` — not the project's admin AWS keys.
   items to check" rather than a fixed line about whether anything needs action.
   It opens on the most urgent group that is not empty (act, then check, then
   file), so the screen never opens on an empty list with work one tab away.
-- **Content column** is capped at 800px and centred, so it does not sprawl on
-  wide screens. The topic table and the map each get their own full-width row.
+- **Two columns above `lg`**: the feed on the left, the weekly numbers and map
+  in a sticky right rail, inside a 1200px shell. Below `lg` it stacks, feed
+  first. The rail is 380px because the topic table's longest label
+  ("City programs & fees") and its "For you" header both wrap below that.
 - **Map plate** carries the same aspect ratio as its viewBox, so the SVG fits
   exactly and the roads reach the edges instead of letterboxing into the
   middle. Road positions are fractions of W/H so the plate can be resized.

@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import type { Map as LeafletMap } from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { STORE_ANCHOR, type Permit } from "@/lib/queries";
+import { STORE_ANCHOR, type Permit, type StreetWork } from "@/lib/queries";
 
 /**
  * The real basemap under the permit pins.
@@ -21,9 +21,16 @@ import { STORE_ANCHOR, type Permit } from "@/lib/queries";
  */
 export function PermitMapView({
   permits,
+  streetWork = [],
   className,
 }: {
   permits: Permit[];
+  /**
+   * Street work is the answer this card exists to give, so it is drawn over
+   * the building permits rather than beside them: warm and larger, against
+   * the grey filings that are only context.
+   */
+  streetWork?: StreetWork[];
   className?: string;
 }) {
   const holder = useRef<HTMLDivElement>(null);
@@ -77,6 +84,40 @@ export function PermitMapView({
           );
       }
 
+      /*
+       * Three kinds of street work, three readings. A live dig is the thing
+       * that can block the door. A no-dig moratorium segment is the opposite:
+       * protection, not a warning, so it must not be painted like a hazard.
+       * Planned repaving sits between them, on a horizon of months.
+       */
+      for (const w of streetWork) {
+        const style =
+          w.workType === "pavement_moratorium"
+            ? { radius: 3, fill: "#8fbaa2", weight: 1 }
+            : w.workType.startsWith("pavement_project")
+              ? { radius: 5, fill: "#c8873f", weight: 2 }
+              : { radius: w.decision === "ALERT" ? 6 : 5, fill: "#b42318", weight: 2 };
+
+        L.circleMarker([w.lat, w.lon], {
+          radius: style.radius,
+          weight: style.weight,
+          color: "#ffffff",
+          fillColor: style.fill,
+          fillOpacity: 1,
+        })
+          .addTo(instance)
+          .bindTooltip(
+            [
+              w.segment ?? w.title,
+              w.workType === "pavement_moratorium" ? "recently paved, no digging" : null,
+              w.distanceM === null ? null : `${Math.round(w.distanceM)} m`,
+            ]
+              .filter(Boolean)
+              .join(" · "),
+            { direction: "top" },
+          );
+      }
+
       L.circleMarker([STORE_ANCHOR.lat, STORE_ANCHOR.lon], {
         radius: 7,
         weight: 3,
@@ -94,17 +135,23 @@ export function PermitMapView({
       // unreadable. So the view is fitted to the nearest 90% and the stragglers
       // are simply left off the edge, which is the same call the SVG plate this
       // replaces was already making.
-      if (permits.length) {
+      if (permits.length || streetWork.length) {
         const kx = Math.cos((STORE_ANCHOR.lat * Math.PI) / 180);
-        const radius = (p: Permit) =>
-          Math.hypot((p.lon - STORE_ANCHOR.lon) * kx, p.lat - STORE_ANCHOR.lat);
+        const radius = (pt: { lat: number; lon: number }) =>
+          Math.hypot((pt.lon - STORE_ANCHOR.lon) * kx, pt.lat - STORE_ANCHOR.lat);
 
         const sorted = [...permits].sort((a, b) => radius(a) - radius(b));
         const near = sorted.slice(0, Math.max(1, Math.ceil(sorted.length * 0.9)));
 
-        const bounds = L.latLngBounds(
-          near.map((p) => [p.lat, p.lon] as [number, number]),
-        ).extend([STORE_ANCHOR.lat, STORE_ANCHOR.lon]);
+        // Every street-work marker is kept in frame even if it sits outside
+        // the building-permit cluster: cropping the answer out of the map to
+        // frame the context would defeat the card.
+        const points: [number, number][] = [
+          ...near.map((p) => [p.lat, p.lon] as [number, number]),
+          ...streetWork.map((w) => [w.lat, w.lon] as [number, number]),
+        ];
+
+        const bounds = L.latLngBounds(points).extend([STORE_ANCHOR.lat, STORE_ANCHOR.lon]);
         instance.fitBounds(bounds, { padding: [24, 24], maxZoom: 17 });
       }
 
@@ -124,7 +171,7 @@ export function PermitMapView({
       map.current?.remove();
       map.current = null;
     };
-  }, [permits]);
+  }, [permits, streetWork]);
 
   return (
     <div

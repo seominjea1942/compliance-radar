@@ -57,3 +57,19 @@ export function cardCode(codeInfo: string | null | undefined): string | null {
   if (!c) return null;
   return c.length <= CARD_CODE_MAX ? c : "multiple date codes";
 }
+
+/**
+ * "2025-09-05" -> "5 Sep 2025".
+ *
+ * Date-only strings are formatted from their parts, never through Date():
+ * parsing one yields UTC midnight, which formatting in America/Los_Angeles
+ * would shift back a day and report the wrong date.
+ */
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+export function plainDate(v: string | null | undefined): string | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(v ?? "");
+  if (!m) return null;
+  const [, y, mo, d] = m;
+  return `${Number(d)} ${MONTHS[Number(mo) - 1]} ${y}`;
+}

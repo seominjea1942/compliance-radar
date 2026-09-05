@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { RadarFace } from "@/components/ui/radar-face";
+import { RadarCharacter } from "./RadarCharacter";
 import { AskRadarCtx } from "./ask-radar-context";
 import { AskRadarPanel, type Message } from "./AskRadarPanel";
 import { newSessionId, type AskRequestBody, type AskResult } from "@/lib/ask";
@@ -118,15 +118,18 @@ export function AskRadarProvider({ children }: { children: React.ReactNode }) {
         title="Ask the radar (⌘K)"
         aria-label={isOpen ? "Close ask the radar" : "Ask the radar (⌘K)"}
         className={[
-          "fixed right-6 bottom-6 z-50 size-11 cursor-pointer items-center justify-center",
-          "rounded-full border-[3px] border-paper bg-green shadow-[0_3px_10px_rgba(24,24,27,0.22)]",
-          "transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+          "fixed right-6 bottom-6 z-50 size-14 cursor-pointer items-center justify-center",
+          // The mark draws its own squircle, so the button carries no fill of
+          // its own; the radius is matched here only so the focus ring and the
+          // shadow follow the same silhouette.
+          "rounded-[27%] shadow-[0_6px_18px_rgba(24,24,27,0.24)]",
+          "transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none",
           // The panel is a full-width sheet on small screens, so the launcher
           // would sit on top of its footer. It stays a toggle on desktop.
           isOpen ? "hidden sm:flex" : "flex",
         ].join(" ")}
       >
-        <RadarFace className="size-full" />
+        <RadarCharacter className="size-full" track />
       </button>
 
       {isOpen && (
