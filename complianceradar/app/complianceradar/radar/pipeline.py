@@ -45,6 +45,11 @@ carries", REJECT and say so; reserve "verify" alerts for named products a
 store like this plausibly stocked (carried brand, house/regional supplier
 overlap, or Class I pathogen risk in a carried fresh category).
 Never give legal advice; you flag items for a human to review.
+For BUILDING PERMITS: residential-scale work (single-family, ADU, solar,
+battery, remodel) never ALERTs for street/parking access, whatever the
+distance; only work that states street, sidewalk, lane, or utility impact
+can. Street excavation permits and pavement projects near the store are the
+signals that CAN affect access; weigh their distance and status.
 
 For RECALL items, when the profile includes a carry list ("what we carry"),
 check the recalled product against it and cite the match in your reason:
@@ -134,6 +139,11 @@ def run(limit=None) -> dict:
         # FSIS email channel is additive; a bad email or S3 hiccup must not
         # kill the FDA pass. Surface it in logs only.
         print(f"fsis_email fetch failed: {type(e).__name__}: {e}")
+    try:
+        from radar import street_work
+        items += street_work.fetch_items()
+    except Exception as e:
+        print(f"street_work fetch failed: {type(e).__name__}: {e}")
 
     with conn.cursor() as c:
         c.execute("SELECT source, external_id FROM documents")
