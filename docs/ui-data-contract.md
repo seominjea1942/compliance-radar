@@ -222,24 +222,48 @@ cent. Not pre-stored; the UI should call it lazily per surfaced item.
    zero-count topics as "watched, quiet this week" states instead of hiding
    them: the empty rows are the product thesis, not missing data.
 
-### 8. `v_street_work` — the map card's real answer (added 2026-09-05)
-New source: street work that can actually block the sidewalk/street/parking,
-replacing building permits as the map card's headline data (building permits
-stay as background context only). Two datasets, both verified live city APIs:
-utility street excavation permits (live statuses Issued/Accepted, issued
-within ~13 months; stale applications filtered) and DOT pavement projects
-(future/current). Columns: `document_id` (string!), `title`, `work_type`
-(street_excavation_permit | pavement_project_future | pavement_project_current),
-`status`, `segment` (human street range, e.g. "From Willow St To Minnesota
-Ave"), `issue_date`, `project_year`, `lat`/`lon` (segment midpoint, parseFloat),
-`distance_from_store_m`, `decision`, `action_type`, `short_reason`, `reason`.
-Ordered nearest first. Current data: 32 rows, 11 ALERT/fyi on the delivery
-corridor (nearest 91m, "From Lincoln Ave To Iris Ct", issued 2025-09-05).
-Card guidance: lead with the answer ("N active street-work permits on your
-block" or "No street work near your block"), count ALERTs within ~400m,
-show segment + issue_date, demote everything else to map context. Residential
-building permits can no longer ALERT for street access (triage rule,
-new items).
+### 8. `v_street_work` — the map card's real answer (REVISED 2026-09-05)
+
+Your six questions, answered from the source schema and a 193-permit sample:
+
+1. **Pavement/moratorium**: the earlier 600m box legitimately contained zero
+   pavement projects (not a bug); pavement + moratorium now use a wider
+   ~1.2km box. Current rows: 21 street_excavation_permit, 1
+   pavement_project_future, 40 pavement_moratorium (new work_type:
+   no-dig recently-paved segments, deterministic REJECT context for the map,
+   never LLM-triaged).
+2. **Issued vs Accepted, verified empirically**: 'Accepted' means work
+   COMPLETED and accepted by the city (85/85 sampled had FINALDATE set) —
+   the opposite of active. 'Issued' = authorized/active (23/23 unfinaled).
+   The feed now includes ONLY Issued + unexpired + unfinaled, surfaced as
+   status "Issued (active)". Never render 'Accepted' as current work.
+3. **Dates exist and are now ingested**: `expiry_date` (payload + view) and
+   FINALDATE (used as a filter) are the activity signals; stale-status rows
+   are excluded at ingest. Show "permit valid through {expiry_date}".
+4. **Repeat segments are genuinely different jobs**: `work_description` shows
+   e.g. three separate PG&E bellhole/water/pole jobs on the same block.
+   Grouping by segment in the UI is right; the count is real disruption
+   potential, not paperwork duplication.
+5. **Work description ingested**: `work_description` (from the city's
+   FOLDERDESCRIPTION) names the utility and the job ("PGE TO REPLACE POLE
+   AND OH SERVICE", "FIBER PLACEMENT AND SPLICING"). Use it as the card
+   line; it is city text, not generated.
+6. **Street-name signal added**: `on_store_street` (bool string) = segment or
+   description names Lincoln. Recommended card logic: on_store_street items
+   first, then by distance; radius stays the fallback.
+
+Columns now: `document_id` (string), `title`, `work_type`
+(street_excavation_permit | pavement_project_future |
+pavement_project_current | pavement_moratorium), `status`, `segment`,
+`work_description`, `issue_date`, `expiry_date`, `on_store_street`,
+`project_year`, `lat`/`lon`, `distance_from_store_m`, `decision`,
+`action_type`, `short_reason`, `reason`. Nearest first.
+
+Honest state as of 2026-09-05: ALL 21 active permits REJECTed with reasons
+(parallel streets, pole/vegetation work): the card's truthful headline today
+is "No active street work blocking your block", with the 21 watched items
+and 40 protected segments as proof of watching, and the Rule 20A June-2029
+item as the surfaced longer-horizon story.
 
 ## Ask the radar + brief (runtime API, added 2026-09-04)
 
