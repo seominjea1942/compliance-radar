@@ -27,6 +27,9 @@
       (FE finding 2026-09-05; BE dataset investigation below).
 
 ## Deferred build items
+- [ ] Tag filter indexing: JSON_CONTAINS is a table scan (45ms @ 576 rows,
+      fine for now per FE2 measurement 2026-09-05); if the log grows large,
+      add a generated tag column + index.
 - [ ] Recall expiry by termination status: ingest openFDA `status`
       (Ongoing/Completed/Terminated) and close items when the recall
       terminates, instead of any time-based aging (decided 2026-09-05).
