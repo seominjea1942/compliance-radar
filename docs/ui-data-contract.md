@@ -209,12 +209,17 @@ cent. Not pre-stored; the UI should call it lazily per surfaced item.
    runtime and everything else can be Edge or static. Do NOT put the project's
    admin AWS keys in Vercel: request a least-privilege key (bedrock:InvokeModel
    only) from the backend session, which will provision it.
-4. **Home screen scope = current week, not all-time.** The design's tidy
-   numbers come from time-scoping, not filtering: use the 7-day window
-   (v_weekly_summary semantics) for the home strip and surfaced feed, and put
-   the 90-day totals in the history/log screens. Render zero-count topics as
-   "watched, quiet this week" states instead of hiding them: the empty rows
-   are the product thesis, not missing data.
+4. **Scoping rule (CORRECTED 2026-09-05): stats are weekly, the todo list is
+   not.** The 7-day window applies to activity STATS only: the "read this
+   week" strip, v_weekly_summary, v_weekly_topics. The action tabs
+   (Needs action / To check / For the file) are an OPEN-OBLIGATIONS list:
+   show ALL rows with resolution IS NULL regardless of age: an unchecked
+   recall does not stop needing action after 7 days, and silently aging
+   items out contradicts the product promise. Show age on old items
+   ("flagged 8 days ago") instead of hiding them. (True expiry should come
+   from recall termination status, not time: roadmap, not built.) Render
+   zero-count topics as "watched, quiet this week" states instead of hiding
+   them: the empty rows are the product thesis, not missing data.
 
 ## Ask the radar + brief (runtime API, added 2026-09-04)
 

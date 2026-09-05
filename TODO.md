@@ -19,6 +19,9 @@
       learning signal for now).
 
 ## Deferred build items
+- [ ] Recall expiry by termination status: ingest openFDA `status`
+      (Ongoing/Completed/Terminated) and close items when the recall
+      terminates, instead of any time-based aging (decided 2026-09-05).
 - [ ] Federal Register source (only if screens finish early; first in cut order).
 - [ ] Least-privilege IAM key (bedrock:InvokeModel only) for the Vercel brief
       endpoint, when FE wires it.
