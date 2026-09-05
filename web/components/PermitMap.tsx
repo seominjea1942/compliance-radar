@@ -22,11 +22,18 @@ export function PermitMap({ permits }: { permits: Permit[] }) {
   return (
     <Card className="w-full min-w-0 gap-3.5 p-4.5">
       <div className="flex flex-col gap-1.5">
+        {/*
+          Building permits are background context, not a signal: the ingest
+          queries 1500m and PERMITAPPROVAL has no variance, so this card cannot
+          yet say whether any of them affects the store. The street-work
+          answer arrives with v_street_work; until then this reports what it
+          actually has, at the radius it actually queried.
+        */}
         <CardTitle>
-          Watching {permits.length} nearby {permits.length === 1 ? "site" : "sites"}.
+          {permits.length} building {permits.length === 1 ? "permit" : "permits"} nearby.
         </CardTitle>
         <CardNote>
-          {permits.length} permits filed within a quarter mile.
+          Filed within a mile in the last 90 days.
           {closest.length > 0 && ` The closest is ${metres(closest[0]!.distanceM)} away.`}
         </CardNote>
       </div>
