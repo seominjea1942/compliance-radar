@@ -381,7 +381,15 @@ export type Permit = {
 };
 
 /** Store anchor, per the contract. */
-export const STORE_ANCHOR = { lat: 37.3085, lon: -121.8995 };
+/**
+ * 1287 Lincoln Ave, per the contract (corrected there 2026-09-03).
+ *
+ * The previous value sat 359m north, which the decorative map plate could not
+ * reveal: it had no real geography to be wrong against. Under real tiles the
+ * store pin landed most of a quarter mile from the store, on a card whose own
+ * copy says "within a quarter mile".
+ */
+export const STORE_ANCHOR = { lat: 37.3053, lon: -121.899 };
 
 export async function getNearbyPermits(): Promise<Permit[]> {
   const rows = await query<{
