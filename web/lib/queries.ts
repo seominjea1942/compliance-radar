@@ -775,11 +775,21 @@ export function groupSurfaced(items: SurfacedItem[]): SurfacedEvent[] {
 export type StreetWork = {
   documentId: string;
   title: string;
+  /**
+   * street_excavation_permit is live work (Issued, unexpired, unfinaled).
+   * pavement_moratorium is a recently paved no-dig segment: protective
+   * context, never a warning. pavement_project_* is planned repaving.
+   */
   workType: string;
   status: string | null;
   /** Human street range, e.g. "From Willow St To Minnesota Ave". */
   segment: string | null;
+  /** City text naming the utility and the job. Not generated. */
+  workDescription: string | null;
   issueDate: string | null;
+  expiryDate: string | null;
+  /** Segment or description names the store's own street. */
+  onStoreStreet: boolean;
   projectYear: string | null;
   lat: number;
   lon: number;
@@ -799,7 +809,10 @@ export async function getStreetWork(): Promise<StreetWork[]> {
     work_type: string;
     status: string | null;
     segment: string | null;
+    work_description: string | null;
     issue_date: string | null;
+    expiry_date: string | null;
+    on_store_street: string | boolean | null;
     project_year: string | number | null;
     lat: string | null;
     lon: string | null;
@@ -817,7 +830,11 @@ export async function getStreetWork(): Promise<StreetWork[]> {
       workType: r.work_type,
       status: r.status,
       segment: r.segment,
+      workDescription: r.work_description,
       issueDate: r.issue_date,
+      expiryDate: r.expiry_date,
+      // The view returns this as a string; accept either shape.
+      onStoreStreet: r.on_store_street === true || r.on_store_street === "true",
       projectYear: r.project_year === null ? null : String(r.project_year),
       lat: parseFloat(String(r.lat ?? "")),
       lon: parseFloat(String(r.lon ?? "")),
@@ -828,14 +845,37 @@ export async function getStreetWork(): Promise<StreetWork[]> {
       shortReason: r.short_reason ?? r.reason,
     }))
     .filter((s) => Number.isFinite(s.lat) && Number.isFinite(s.lon))
-    // The contract says nearest first; the view does not currently guarantee
-    // it, and the card's whole claim is about what is closest.
-    .sort((a, b) => (a.distanceM ?? Infinity) - (b.distanceM ?? Infinity));
+    /*
+     * Contract ordering: the store's own street first, then by distance. Work
+     * on Lincoln matters more than work 100m nearer on a parallel street the
+     * deliveries never use.
+     */
+    .sort((a, b) => {
+      if (a.onStoreStreet !== b.onStoreStreet) return a.onStoreStreet ? -1 : 1;
+      return (a.distanceM ?? Infinity) - (b.distanceM ?? Infinity);
+    });
 }
 
-/** Street work close enough, and judged relevant enough, to lead the card. */
-export function onYourBlock(work: StreetWork[]): StreetWork[] {
-  return work.filter(
+/** Live digs. Excludes moratorium segments and planned repaving. */
+export function activePermits(work: StreetWork[]): StreetWork[] {
+  return work.filter((w) => w.workType === "street_excavation_permit");
+}
+
+/** Recently paved, no-dig segments: protective context, never a warning. */
+export function moratoriumSegments(work: StreetWork[]): StreetWork[] {
+  return work.filter((w) => w.workType === "pavement_moratorium");
+}
+
+export function plannedPaving(work: StreetWork[]): StreetWork[] {
+  return work.filter((w) => w.workType.startsWith("pavement_project"));
+}
+
+/**
+ * What the card leads with: work the backend judged actually disruptive and
+ * close enough to matter. Zero of these is the answer, not an empty state.
+ */
+export function blockingWork(work: StreetWork[]): StreetWork[] {
+  return activePermits(work).filter(
     (w) => w.decision === "ALERT" && w.distanceM !== null && w.distanceM <= BLOCK_RADIUS_M,
   );
 }

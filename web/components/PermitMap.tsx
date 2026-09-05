@@ -1,13 +1,14 @@
 import { Card, CardNote, CardTitle } from "@/components/ui/card";
 import { PermitMapView } from "@/components/PermitMapView";
-import { BLOCK_RADIUS_M, onYourBlock, type Permit, type StreetWork } from "@/lib/queries";
 import { plainDate } from "@/lib/format";
-
-/** Pavement projects read differently from a dig permit, so they say so. */
-const WORK_TYPE_LABEL: Record<string, string> = {
-  pavement_project_future: "Repaving planned",
-  pavement_project_current: "Repaving under way",
-};
+import {
+  activePermits,
+  blockingWork,
+  moratoriumSegments,
+  plannedPaving,
+  type Permit,
+  type StreetWork,
+} from "@/lib/queries";
 
 function metres(d: number | null): string {
   if (d === null) return "";
@@ -22,50 +23,48 @@ function where(w: StreetWork): string {
 /**
  * One row per street, not per permit.
  *
- * Four separate permits can name the same segment ("From Willow St To Longley
- * Ave" currently has four), and a list that repeats a street four times reads
- * as four places to worry about. The owner cares which streets are dug up, so
- * rows are grouped by segment and keep the nearest distance and the most
- * recent filing.
+ * Several permits can name the same segment, and the backend confirmed they
+ * are genuinely different jobs (separate PG&E bellhole, water and pole work on
+ * one block) rather than duplicates. So the count is real disruption, but the
+ * street is still the thing the owner navigates by.
  */
 type Segment = {
   key: string;
   where: string;
   distanceM: number | null;
+  onStoreStreet: boolean;
   latest: StreetWork;
   count: number;
 };
 
 function bySegment(work: StreetWork[]): Segment[] {
   const groups = new Map<string, StreetWork[]>();
-  for (const w of work) {
-    const key = where(w);
-    groups.set(key, [...(groups.get(key) ?? []), w]);
-  }
+  for (const w of work) groups.set(where(w), [...(groups.get(where(w)) ?? []), w]);
 
   return [...groups.entries()]
-    .map(([key, items]) => {
-      const latest = [...items].sort((a, b) =>
+    .map(([key, items]) => ({
+      key,
+      where: key,
+      distanceM: Math.min(...items.map((i) => i.distanceM ?? Infinity)),
+      onStoreStreet: items.some((i) => i.onStoreStreet),
+      latest: [...items].sort((a, b) =>
         (b.issueDate ?? "").localeCompare(a.issueDate ?? ""),
-      )[0]!;
-      return {
-        key,
-        where: key,
-        distanceM: Math.min(...items.map((i) => i.distanceM ?? Infinity)),
-        latest,
-        count: items.length,
-      };
-    })
-    .sort((a, b) => (a.distanceM ?? Infinity) - (b.distanceM ?? Infinity));
+      )[0]!,
+      count: items.length,
+    }))
+    .sort((a, b) => {
+      if (a.onStoreStreet !== b.onStoreStreet) return a.onStoreStreet ? -1 : 1;
+      return (a.distanceM ?? Infinity) - (b.distanceM ?? Infinity);
+    });
 }
 
 /**
- * The map card answers one question: is anything about to block the street,
- * the sidewalk or the parking?
+ * Is anything about to block the street, the sidewalk or the parking?
  *
- * Street work is the answer. Building permits are only context: their
- * approval field cannot distinguish active work from a finished kitchen
- * remodel, so they are pins on the map and nothing more.
+ * Zero blocking permits is the answer, not an empty state, so the card says so
+ * and then shows what it watched to be able to say it. Building permits are
+ * background pins only: their approval field cannot tell live work from a
+ * finished remodel.
  */
 export function PermitMap({
   permits,
@@ -74,26 +73,43 @@ export function PermitMap({
   permits: Permit[];
   streetWork: StreetWork[];
 }) {
-  const onBlock = onYourBlock(streetWork);
-  const segments = bySegment(onBlock);
-  const nearest = onBlock[0] ?? streetWork[0];
+  const blocking = blockingWork(streetWork);
+  const active = activePermits(streetWork);
+  const moratorium = moratoriumSegments(streetWork);
+  const planned = plannedPaving(streetWork);
+
+  // With nothing blocking, the nearest active permits are the evidence that
+  // the quiet is real rather than an empty query.
+  const listed = bySegment(blocking.length > 0 ? blocking : active);
+
+  /*
+   * When something is blocking, the list is the warning and earns three rows.
+   * When nothing is, it is only evidence that the quiet was checked, so two
+   * is enough and the card stays inside the rail.
+   */
+  const rowLimit = blocking.length > 0 ? 3 : 2;
+
+  const watched = [
+    active.length > 0 &&
+      `${active.length} active ${active.length === 1 ? "permit" : "permits"}`,
+    moratorium.length > 0 && `${moratorium.length} no-dig segments`,
+    planned.length > 0 &&
+      `${planned.length} planned ${planned.length === 1 ? "repaving" : "repavings"}`,
+  ].filter(Boolean);
 
   return (
     <Card className="w-full min-w-0 gap-3.5 p-4.5">
       <div className="flex flex-col gap-1.5">
         <CardTitle>
-          {segments.length === 0
-            ? `No street work within ${BLOCK_RADIUS_M} m.`
-            : `Street work on ${segments.length} ${
-                segments.length === 1 ? "street" : "streets"
+          {blocking.length === 0
+            ? "No street work blocking your block."
+            : `Street work on ${listed.length} ${
+                listed.length === 1 ? "street" : "streets"
               } near you.`}
         </CardTitle>
         <CardNote>
-          {nearest && `Nearest is ${metres(nearest.distanceM)} away, ${where(nearest)}. `}
-          {permits.length > 0 &&
-            `${permits.length} building ${
-              permits.length === 1 ? "permit" : "permits"
-            } shown as background.`}
+          {watched.length > 0 ? `Watching ${watched.join(", ")}. ` : ""}
+          {permits.length > 0 && `${permits.length} building permits shown as background.`}
         </CardNote>
       </div>
 
@@ -103,19 +119,31 @@ export function PermitMap({
         className="w-full overflow-hidden rounded-[9px] border border-line bg-wash [aspect-ratio:704/300]"
       />
 
-      {segments.length > 0 && (
+      {listed.length > 0 && (
         <ul className="m-0 flex list-none flex-col gap-2 p-0">
-          {segments.slice(0, 3).map((seg) => (
+          {listed.slice(0, rowLimit).map((seg) => (
             <li key={seg.key} className="flex items-start gap-2 text-[11.5px]">
-              <span className="mt-1.5 size-1.5 flex-none rounded-full bg-alert" />
+              <span
+                className={`mt-1.5 size-1.5 flex-none rounded-full ${
+                  blocking.length > 0 ? "bg-alert" : "bg-pin"
+                }`}
+              />
               <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <span className="truncate text-muted">{seg.where}</span>
+                <span className="truncate text-muted">
+                  {seg.where}
+                  {seg.onStoreStreet && (
+                    <span className="ml-1.5 text-green">your street</span>
+                  )}
+                </span>
+                {/* City text naming the utility and the job, not generated. */}
+                {seg.latest.workDescription && (
+                  <span className="line-clamp-2 text-faint">{seg.latest.workDescription}</span>
+                )}
                 <span className="text-faint">
                   {[
-                    WORK_TYPE_LABEL[seg.latest.workType],
-                    seg.latest.status,
-                    plainDate(seg.latest.issueDate),
-                    seg.count > 1 && `${seg.count} permits`,
+                    plainDate(seg.latest.expiryDate) &&
+                      `valid through ${plainDate(seg.latest.expiryDate)}`,
+                    seg.count > 1 && `${seg.count} jobs`,
                   ]
                     .filter(Boolean)
                     .join(" · ")}
@@ -126,10 +154,10 @@ export function PermitMap({
               </span>
             </li>
           ))}
-          {segments.length > 3 && (
+          {listed.length > rowLimit && (
             <li className="text-[11.5px] text-faint">
-              and {segments.length - 3} more {segments.length - 3 === 1 ? "street" : "streets"}{" "}
-              within {BLOCK_RADIUS_M} m
+              and {listed.length - rowLimit} more{" "}
+              {listed.length - rowLimit === 1 ? "street" : "streets"}
             </li>
           )}
         </ul>

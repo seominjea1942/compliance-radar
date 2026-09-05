@@ -84,18 +84,34 @@ export function PermitMapView({
           );
       }
 
+      /*
+       * Three kinds of street work, three readings. A live dig is the thing
+       * that can block the door. A no-dig moratorium segment is the opposite:
+       * protection, not a warning, so it must not be painted like a hazard.
+       * Planned repaving sits between them, on a horizon of months.
+       */
       for (const w of streetWork) {
-        const near = w.decision === "ALERT";
+        const style =
+          w.workType === "pavement_moratorium"
+            ? { radius: 3, fill: "#8fbaa2", weight: 1 }
+            : w.workType.startsWith("pavement_project")
+              ? { radius: 5, fill: "#c8873f", weight: 2 }
+              : { radius: w.decision === "ALERT" ? 6 : 5, fill: "#b42318", weight: 2 };
+
         L.circleMarker([w.lat, w.lon], {
-          radius: near ? 6 : 5,
-          weight: 2,
+          radius: style.radius,
+          weight: style.weight,
           color: "#ffffff",
-          fillColor: near ? "#b42318" : "#d0a08f",
+          fillColor: style.fill,
           fillOpacity: 1,
         })
           .addTo(instance)
           .bindTooltip(
-            [w.segment ?? w.title, w.distanceM === null ? null : `${Math.round(w.distanceM)} m`]
+            [
+              w.segment ?? w.title,
+              w.workType === "pavement_moratorium" ? "recently paved, no digging" : null,
+              w.distanceM === null ? null : `${Math.round(w.distanceM)} m`,
+            ]
               .filter(Boolean)
               .join(" · "),
             { direction: "top" },
