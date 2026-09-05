@@ -53,7 +53,8 @@ Scope is the **current 7-day window**; 90-day totals belong to the log screen.
 | Surfaced feed | `v_surfaced_feed`, scoped to 7 days |
 | Topic table | `v_weekly_topics` |
 | "Checked …" stamp | `v_run_status` |
-| Nearby permits map | `v_nearby_permits` |
+| Street work (map card headline) | `v_street_work`, ALERTs within 400m |
+| Nearby permits map (background pins) | `v_nearby_permits` |
 | Sidebar store/owner | `store_profile` row `id = 1` |
 | Log | `v_filtered_log` (status/source/paging in the URL) |
 | Profile | `store_profile` facts + carry_list (both writable) |

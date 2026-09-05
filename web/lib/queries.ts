@@ -767,3 +767,75 @@ export function groupSurfaced(items: SurfacedItem[]): SurfacedEvent[] {
     return b.lead.createdAtUtc.localeCompare(a.lead.createdAtUtc);
   });
 }
+
+/* ------------------------------------------------------------------ *
+ * 7. v_street_work: what can actually block the block
+ * ------------------------------------------------------------------ */
+
+export type StreetWork = {
+  documentId: string;
+  title: string;
+  workType: string;
+  status: string | null;
+  /** Human street range, e.g. "From Willow St To Minnesota Ave". */
+  segment: string | null;
+  issueDate: string | null;
+  projectYear: string | null;
+  lat: number;
+  lon: number;
+  distanceM: number | null;
+  decision: string;
+  actionType: ActionType | null;
+  shortReason: string;
+};
+
+/** The card counts what is close enough to affect the store's own block. */
+export const BLOCK_RADIUS_M = 400;
+
+export async function getStreetWork(): Promise<StreetWork[]> {
+  const rows = await query<{
+    document_id: string | number;
+    title: string;
+    work_type: string;
+    status: string | null;
+    segment: string | null;
+    issue_date: string | null;
+    project_year: string | number | null;
+    lat: string | null;
+    lon: string | null;
+    distance_from_store_m: string | null;
+    decision: string;
+    action_type: ActionType | null;
+    short_reason: string | null;
+    reason: string;
+  }>(`SELECT * FROM v_street_work`);
+
+  return rows
+    .map((r) => ({
+      documentId: String(r.document_id),
+      title: r.title,
+      workType: r.work_type,
+      status: r.status,
+      segment: r.segment,
+      issueDate: r.issue_date,
+      projectYear: r.project_year === null ? null : String(r.project_year),
+      lat: parseFloat(String(r.lat ?? "")),
+      lon: parseFloat(String(r.lon ?? "")),
+      distanceM:
+        r.distance_from_store_m === null ? null : parseFloat(String(r.distance_from_store_m)),
+      decision: r.decision,
+      actionType: r.action_type,
+      shortReason: r.short_reason ?? r.reason,
+    }))
+    .filter((s) => Number.isFinite(s.lat) && Number.isFinite(s.lon))
+    // The contract says nearest first; the view does not currently guarantee
+    // it, and the card's whole claim is about what is closest.
+    .sort((a, b) => (a.distanceM ?? Infinity) - (b.distanceM ?? Infinity));
+}
+
+/** Street work close enough, and judged relevant enough, to lead the card. */
+export function onYourBlock(work: StreetWork[]): StreetWork[] {
+  return work.filter(
+    (w) => w.decision === "ALERT" && w.distanceM !== null && w.distanceM <= BLOCK_RADIUS_M,
+  );
+}

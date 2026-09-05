@@ -48,12 +48,6 @@
       least-privilege IAM key item above, which Ask now needs as well as brief).
 
 ## Frontend: waiting on backend
-- [ ] `v_street_work` (BE building): live street-excavation permits + pavement
-      future/current + moratorium near the store. The map card then leads with
-      "No active street work on your block" backed by real data, counts only
-      what can affect street access, and demotes the 94 building permits to
-      background pins. Blocked until the view exists; the card currently states
-      only what it has.
 - [ ] `payload` on `v_filtered_log`, or a `v_decision_detail` covering surfaced
       and filtered rows. Without it /item/<id> can show provenance for surfaced
       items but not filtered ones, and log cards cannot show the product line

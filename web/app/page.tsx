@@ -7,6 +7,7 @@ import { TopicTable } from "@/components/TopicTable";
 import {
   getLastChecked,
   getNearbyPermits,
+  getStreetWork,
   getStoreProfile,
   getSurfaced,
   getWeeklySummary,
@@ -19,7 +20,7 @@ import { checkedAt } from "@/lib/format";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [summary, surfaced, permits, profile, topics, lastChecked] =
+  const [summary, surfaced, permits, profile, topics, lastChecked, streetWork] =
     await Promise.all([
       getWeeklySummary(),
       getSurfaced(),
@@ -27,6 +28,7 @@ export default async function HomePage() {
       getStoreProfile(),
       getWeeklyTopics(),
       getLastChecked(),
+      getStreetWork(),
     ]);
 
   // One card per real-world recall event, grouped on the backend's event_key.
@@ -59,7 +61,9 @@ export default async function HomePage() {
                 checked={checkedAt(lastChecked)}
                 topics={topics}
               />
-              {permits.length > 0 && <PermitMap permits={permits} />}
+              {(permits.length > 0 || streetWork.length > 0) && (
+                <PermitMap permits={permits} streetWork={streetWork} />
+              )}
             </aside>
           </div>
         </main>
