@@ -59,9 +59,10 @@ excluded from the learning signal by the backend; the UI just stores them.
 Columns: `document_id` (BIGINT, can exceed JS safe int, treat as STRING),
 `title`, `lat` (str), `lon` (str), `status`, `distance_from_store_m` (str),
 `issue_date`, `decision`, `reason`. lat/lon/distance come back as strings;
-parseFloat them. Store anchor: lat 37.3085, lon -121.8995. 73 rows, nearly
-all REJECT (gray pins); 4 ALERTs are residential items very close by (known
-over-sensitivity; render them as normal alerts or gray, design's call).
+parseFloat them. Store anchor: lat 37.3053, lon -121.8990 (1287 Lincoln Ave;
+updated 2026-09-03). BACKGROUND CONTEXT ONLY since v_street_work landed:
+building permits don't answer the street-access question (see section 8);
+render as gray context pins. The 4 residential ALERTs are fyi: demote.
 
 ### 5. `v_surfaced_feed` — alerts feed (now a real view)
 Columns: `decision_id`, `title`, `source`, `decision`, `action_type`,
