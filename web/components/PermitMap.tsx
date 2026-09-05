@@ -1,6 +1,13 @@
 import { Card, CardNote, CardTitle } from "@/components/ui/card";
 import { PermitMapView } from "@/components/PermitMapView";
 import { BLOCK_RADIUS_M, onYourBlock, type Permit, type StreetWork } from "@/lib/queries";
+import { plainDate } from "@/lib/format";
+
+/** Pavement projects read differently from a dig permit, so they say so. */
+const WORK_TYPE_LABEL: Record<string, string> = {
+  pavement_project_future: "Repaving planned",
+  pavement_project_current: "Repaving under way",
+};
 
 function metres(d: number | null): string {
   if (d === null) return "";
@@ -41,11 +48,11 @@ export function PermitMap({
               } on your block.`}
         </CardTitle>
         <CardNote>
-          {nearest
-            ? `Nearest is ${metres(nearest.distanceM)} away, ${where(nearest)}.`
-            : "Nothing filed nearby."}{" "}
-          {permits.length} building {permits.length === 1 ? "permit" : "permits"} in the
-          background.
+          {nearest && `Nearest is ${metres(nearest.distanceM)} away, ${where(nearest)}. `}
+          {permits.length > 0 &&
+            `${permits.length} building ${
+              permits.length === 1 ? "permit" : "permits"
+            } shown as background.`}
         </CardNote>
       </div>
 
@@ -58,10 +65,17 @@ export function PermitMap({
       {onBlock.length > 0 && (
         <ul className="m-0 flex list-none flex-col gap-2 p-0">
           {onBlock.slice(0, 3).map((w) => (
-            <li key={w.documentId} className="flex items-baseline gap-2 text-[11.5px]">
-              <span className="size-1.5 flex-none translate-y-[-1px] rounded-full bg-alert" />
-              <span className="min-w-0 flex-1 truncate text-muted">{where(w)}</span>
-              <span className="flex-none font-mono text-faint">{metres(w.distanceM)}</span>
+            <li key={w.documentId} className="flex items-start gap-2 text-[11.5px]">
+              <span className="mt-1.5 size-1.5 flex-none rounded-full bg-alert" />
+              <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                <span className="truncate text-muted">{where(w)}</span>
+                <span className="text-faint">
+                  {[WORK_TYPE_LABEL[w.workType], plainDate(w.issueDate) && `issued ${plainDate(w.issueDate)}`]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </span>
+              </span>
+              <span className="mt-px flex-none font-mono text-faint">{metres(w.distanceM)}</span>
             </li>
           ))}
           {onBlock.length > 3 && (
