@@ -1,4 +1,4 @@
-import { Card, CardNote, CardTitle } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
 import type { TopicRow } from "@/lib/queries";
 import { count } from "@/lib/format";
 
@@ -74,7 +74,6 @@ export function TopicTable({
         ))}
       </div>
 
-      <CardNote>Every one of them has a reason you can read, and overturn.</CardNote>
     </Card>
   );
 }
