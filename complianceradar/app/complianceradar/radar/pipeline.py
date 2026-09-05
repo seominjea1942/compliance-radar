@@ -167,7 +167,7 @@ def run(limit=None) -> dict:
             except Exception as e:
                 print(f"product extraction failed: {type(e).__name__}: {e}")
         doc_id = db.upsert_document(conn, it)
-        db.insert_decision(conn, doc_id, decision, emb)
+        db.insert_decision(conn, doc_id, decision, emb, source=it["source"])
         counts[decision["decision"]] = counts.get(decision["decision"], 0) + 1
         if decision["decision"] in ("ALERT", "OPPORTUNITY"):
             alerts.append({"title": it.get("title", "")[:150],
