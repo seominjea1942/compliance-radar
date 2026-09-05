@@ -519,7 +519,10 @@ export type LogRow = {
 
 export type LogPage = {
   rows: LogRow[];
+  /** Scoped to the current filters: what the tabs on screen describe. */
   counts: { all: number; filtered: number; resolved: number };
+  /** The whole log, ignoring filters: what the rail's badge describes. */
+  overall: { all: number; filtered: number };
   hasMore: boolean;
 };
 
@@ -533,10 +536,13 @@ export type LogPage = {
 export async function getFilteredLog(opts: {
   status?: LogStatus;
   source?: SourceGroup | "all";
+  /** One of TAGS. Narrows the log to a single topic. */
+  tag?: string | null;
   limit?: number;
 } = {}): Promise<LogPage> {
   const status = opts.status ?? "filtered";
   const source = opts.source ?? "all";
+  const tag = TAGS.some((t) => t.id === opts.tag) ? opts.tag! : null;
   const limit = Math.min(Math.max(opts.limit ?? 25, 1), 500);
 
   const where: string[] = [];
@@ -551,7 +557,29 @@ export async function getFilteredLog(opts: {
     params.push(...list);
   }
 
+  // `tags` is a JSON array on the view, so membership is a JSON predicate
+  // rather than an equality: the tag is passed as a JSON scalar.
+  if (tag) {
+    where.push("JSON_CONTAINS(tags, ?)");
+    params.push(JSON.stringify(tag));
+  }
+
   const clause = where.length ? `WHERE ${where.join(" AND ")}` : "";
+
+  // The tab counts have to answer "of what is on screen". Scoped to the same
+  // topic, or a topic with 3 rows reads "Showing 3 of 514".
+  const totalsWhere: string[] = [];
+  const totalsParams: unknown[] = [];
+  if (source !== "all") {
+    const list = SOURCE_GROUPS[source];
+    totalsWhere.push(`source IN (${list.map(() => "?").join(",")})`);
+    totalsParams.push(...list);
+  }
+  if (tag) {
+    totalsWhere.push("JSON_CONTAINS(tags, ?)");
+    totalsParams.push(JSON.stringify(tag));
+  }
+  const totalsClause = totalsWhere.length ? `WHERE ${totalsWhere.join(" AND ")}` : "";
 
   // One extra row tells us whether a "load more" link is warranted.
   const rows = await query<{
@@ -566,8 +594,19 @@ export async function getFilteredLog(opts: {
   }>(`SELECT * FROM v_filtered_log ${clause} LIMIT ?`, [...params, limit + 1]);
 
   const [totals] = await query<{ total: number | string; resolved: number | string | null }>(
-    `SELECT COUNT(*) AS total, SUM(overturned = 1) AS resolved FROM v_filtered_log`,
+    `SELECT COUNT(*) AS total, SUM(overturned = 1) AS resolved FROM v_filtered_log ${totalsClause}`,
+    totalsParams,
   );
+
+  // The rail's badge counts the whole log, not the slice being viewed: it is
+  // global navigation, and a count that moved every time a filter changed
+  // would be reporting the current screen rather than the destination.
+  const narrowed = source !== "all" || tag !== null;
+  const [everything] = narrowed
+    ? await query<{ total: number | string; resolved: number | string | null }>(
+        `SELECT COUNT(*) AS total, SUM(overturned = 1) AS resolved FROM v_filtered_log`,
+      )
+    : [totals];
 
   const all = Number(totals?.total ?? 0);
   const resolved = Number(totals?.resolved ?? 0);
@@ -586,6 +625,10 @@ export async function getFilteredLog(opts: {
       overturned: Number(r.overturned) === 1,
     })),
     counts: { all, resolved, filtered: all - resolved },
+    overall: {
+      all: Number(everything?.total ?? 0),
+      filtered: Number(everything?.total ?? 0) - Number(everything?.resolved ?? 0),
+    },
     hasMore: rows.length > limit,
   };
 }

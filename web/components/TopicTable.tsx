@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { MdArrowForward } from "react-icons/md";
 import { Card, CardNote, CardTitle } from "@/components/ui/card";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -13,7 +14,13 @@ function Row({ topic }: { topic: TopicRow }) {
   const quiet = topic.read === 0;
 
   return (
-    <div className="flex items-baseline gap-4 bg-paper px-4 py-3">
+    <Link
+      href={`/log?tag=${topic.id}`}
+      // The row reads as "Food recalls 6 1" to a screen reader, which says
+      // nothing about where the link goes; the destination is named instead.
+      aria-label={`Open the log filtered to ${topic.label}`}
+      className="flex items-baseline gap-4 bg-paper px-4 py-3 no-underline transition-colors hover:bg-hover focus-visible:relative focus-visible:z-[1] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+    >
       <span className={`flex-1 font-serif text-base ${quiet ? "text-faint" : "text-ink"}`}>
         {topic.label}
       </span>
@@ -27,7 +34,7 @@ function Row({ topic }: { topic: TopicRow }) {
           </span>
         </>
       )}
-    </div>
+    </Link>
   );
 }
 

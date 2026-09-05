@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MdClose } from "react-icons/md";
 import { AskRadarProvider } from "@/components/ask/AskRadarProvider";
 import { LogRows } from "@/components/log/LogRows";
 import { Sidebar } from "@/components/Sidebar";
@@ -8,6 +9,7 @@ import {
   getFilteredLog,
   getStoreProfile,
   getWeeklySummary,
+  TAGS,
   type LogStatus,
   type SourceGroup,
 } from "@/lib/queries";
@@ -35,10 +37,16 @@ const PAGE = 25;
  * filtering and paging, so a filtered view is shareable and "load more" does
  * not ship 512 rows to the browser to hide most of them.
  */
-function hrefFor(params: { status: LogStatus; source: SourceGroup | "all"; limit: number }) {
+function hrefFor(params: {
+  status: LogStatus;
+  source: SourceGroup | "all";
+  limit: number;
+  tag: string | null;
+}) {
   const q = new URLSearchParams();
   if (params.status !== "filtered") q.set("status", params.status);
   if (params.source !== "all") q.set("source", params.source);
+  if (params.tag) q.set("tag", params.tag);
   if (params.limit !== PAGE) q.set("limit", String(params.limit));
   const s = q.toString();
   return s ? `/log?${s}` : "/log";
@@ -57,9 +65,12 @@ export default async function LogPage({
     | SourceGroup
     | "all";
   const limit = Math.min(Math.max(Number(one("limit")) || PAGE, PAGE), 500);
+  // Validated against the fixed tag set: an unknown ?tag is dropped rather
+  // than narrowing the log to nothing and looking like an empty database.
+  const topic = TAGS.find((t) => t.id === one("tag")) ?? null;
 
   const [log, summary, profile] = await Promise.all([
-    getFilteredLog({ status, source, limit }),
+    getFilteredLog({ status, source, tag: topic?.id ?? null, limit }),
     getWeeklySummary(),
     getStoreProfile(),
   ]);
@@ -76,7 +87,7 @@ export default async function LogPage({
         <Sidebar
           profile={profile}
           surfacedCount={summary.surfaced}
-          filteredCount={log.counts.filtered}
+          filteredCount={log.overall.filtered}
           current="log"
         />
 
@@ -98,7 +109,7 @@ export default async function LogPage({
                 {STATUSES.map((s) => (
                   <Link
                     key={s.value}
-                    href={hrefFor({ status: s.value, source, limit: PAGE })}
+                    href={hrefFor({ status: s.value, source, limit: PAGE, tag: topic?.id ?? null })}
                     aria-current={s.value === status ? "page" : undefined}
                     className={cn(
                       "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] font-medium no-underline transition-colors",
@@ -115,11 +126,33 @@ export default async function LogPage({
                 ))}
               </div>
 
+              {topic && (
+                <div className="flex flex-wrap items-center gap-2 border-t border-line-soft pt-4">
+                  <span className="text-[12.5px] text-faint">Topic</span>
+                  <span className="inline-flex items-center gap-1 rounded-full border border-line-strong bg-shell py-1 pr-1 pl-3 text-[12.5px] font-medium text-ink">
+                    {topic.label}
+                    {/*
+                      Arriving here from the overview means the filter was
+                      applied by a click elsewhere, so it has to be visible and
+                      removable from this screen. Without it a topic with no
+                      log rows just looks like a broken page.
+                    */}
+                    <Link
+                      href={hrefFor({ status, source, limit: PAGE, tag: null })}
+                      aria-label={`Clear the ${topic.label} topic filter`}
+                      className="flex size-5 items-center justify-center rounded-full text-faint no-underline transition-colors hover:bg-hover hover:text-ink focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                    >
+                      <MdClose className="size-3.5" aria-hidden />
+                    </Link>
+                  </span>
+                </div>
+              )}
+
               <div className="flex flex-wrap items-center gap-2 border-t border-line-soft pt-4">
                 {SOURCES.map((s) => (
                   <Link
                     key={s.value}
-                    href={hrefFor({ status, source: s.value, limit: PAGE })}
+                    href={hrefFor({ status, source: s.value, limit: PAGE, tag: topic?.id ?? null })}
                     aria-current={s.value === source ? "true" : undefined}
                     className={cn(
                       "rounded-full border px-3 py-1 text-[12.5px] no-underline transition-colors",
@@ -141,7 +174,7 @@ export default async function LogPage({
                 </span>
                 {log.hasMore && (
                   <Link
-                    href={hrefFor({ status, source, limit: limit + PAGE })}
+                    href={hrefFor({ status, source, limit: limit + PAGE, tag: topic?.id ?? null })}
                     className="font-medium text-green no-underline hover:underline"
                   >
                     Load more
