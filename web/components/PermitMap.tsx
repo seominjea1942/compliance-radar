@@ -20,6 +20,46 @@ function where(w: StreetWork): string {
 }
 
 /**
+ * One row per street, not per permit.
+ *
+ * Four separate permits can name the same segment ("From Willow St To Longley
+ * Ave" currently has four), and a list that repeats a street four times reads
+ * as four places to worry about. The owner cares which streets are dug up, so
+ * rows are grouped by segment and keep the nearest distance and the most
+ * recent filing.
+ */
+type Segment = {
+  key: string;
+  where: string;
+  distanceM: number | null;
+  latest: StreetWork;
+  count: number;
+};
+
+function bySegment(work: StreetWork[]): Segment[] {
+  const groups = new Map<string, StreetWork[]>();
+  for (const w of work) {
+    const key = where(w);
+    groups.set(key, [...(groups.get(key) ?? []), w]);
+  }
+
+  return [...groups.entries()]
+    .map(([key, items]) => {
+      const latest = [...items].sort((a, b) =>
+        (b.issueDate ?? "").localeCompare(a.issueDate ?? ""),
+      )[0]!;
+      return {
+        key,
+        where: key,
+        distanceM: Math.min(...items.map((i) => i.distanceM ?? Infinity)),
+        latest,
+        count: items.length,
+      };
+    })
+    .sort((a, b) => (a.distanceM ?? Infinity) - (b.distanceM ?? Infinity));
+}
+
+/**
  * The map card answers one question: is anything about to block the street,
  * the sidewalk or the parking?
  *
@@ -35,17 +75,18 @@ export function PermitMap({
   streetWork: StreetWork[];
 }) {
   const onBlock = onYourBlock(streetWork);
+  const segments = bySegment(onBlock);
   const nearest = onBlock[0] ?? streetWork[0];
 
   return (
     <Card className="w-full min-w-0 gap-3.5 p-4.5">
       <div className="flex flex-col gap-1.5">
         <CardTitle>
-          {onBlock.length === 0
-            ? "No street work on your block."
-            : `${onBlock.length} street-work ${
-                onBlock.length === 1 ? "permit" : "permits"
-              } on your block.`}
+          {segments.length === 0
+            ? `No street work within ${BLOCK_RADIUS_M} m.`
+            : `Street work on ${segments.length} ${
+                segments.length === 1 ? "street" : "streets"
+              } near you.`}
         </CardTitle>
         <CardNote>
           {nearest && `Nearest is ${metres(nearest.distanceM)} away, ${where(nearest)}. `}
@@ -62,25 +103,33 @@ export function PermitMap({
         className="w-full overflow-hidden rounded-[9px] border border-line bg-wash [aspect-ratio:704/300]"
       />
 
-      {onBlock.length > 0 && (
+      {segments.length > 0 && (
         <ul className="m-0 flex list-none flex-col gap-2 p-0">
-          {onBlock.slice(0, 3).map((w) => (
-            <li key={w.documentId} className="flex items-start gap-2 text-[11.5px]">
+          {segments.slice(0, 3).map((seg) => (
+            <li key={seg.key} className="flex items-start gap-2 text-[11.5px]">
               <span className="mt-1.5 size-1.5 flex-none rounded-full bg-alert" />
               <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <span className="truncate text-muted">{where(w)}</span>
+                <span className="truncate text-muted">{seg.where}</span>
                 <span className="text-faint">
-                  {[WORK_TYPE_LABEL[w.workType], plainDate(w.issueDate) && `issued ${plainDate(w.issueDate)}`]
+                  {[
+                    WORK_TYPE_LABEL[seg.latest.workType],
+                    seg.latest.status,
+                    plainDate(seg.latest.issueDate),
+                    seg.count > 1 && `${seg.count} permits`,
+                  ]
                     .filter(Boolean)
                     .join(" · ")}
                 </span>
               </span>
-              <span className="mt-px flex-none font-mono text-faint">{metres(w.distanceM)}</span>
+              <span className="mt-px flex-none font-mono text-faint">
+                {metres(seg.distanceM)}
+              </span>
             </li>
           ))}
-          {onBlock.length > 3 && (
+          {segments.length > 3 && (
             <li className="text-[11.5px] text-faint">
-              and {onBlock.length - 3} more within {BLOCK_RADIUS_M} m
+              and {segments.length - 3} more {segments.length - 3 === 1 ? "street" : "streets"}{" "}
+              within {BLOCK_RADIUS_M} m
             </li>
           )}
         </ul>
