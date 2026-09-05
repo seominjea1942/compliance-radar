@@ -221,6 +221,25 @@ cent. Not pre-stored; the UI should call it lazily per surfaced item.
    zero-count topics as "watched, quiet this week" states instead of hiding
    them: the empty rows are the product thesis, not missing data.
 
+### 8. `v_street_work` — the map card's real answer (added 2026-09-05)
+New source: street work that can actually block the sidewalk/street/parking,
+replacing building permits as the map card's headline data (building permits
+stay as background context only). Two datasets, both verified live city APIs:
+utility street excavation permits (live statuses Issued/Accepted, issued
+within ~13 months; stale applications filtered) and DOT pavement projects
+(future/current). Columns: `document_id` (string!), `title`, `work_type`
+(street_excavation_permit | pavement_project_future | pavement_project_current),
+`status`, `segment` (human street range, e.g. "From Willow St To Minnesota
+Ave"), `issue_date`, `project_year`, `lat`/`lon` (segment midpoint, parseFloat),
+`distance_from_store_m`, `decision`, `action_type`, `short_reason`, `reason`.
+Ordered nearest first. Current data: 32 rows, 11 ALERT/fyi on the delivery
+corridor (nearest 91m, "From Lincoln Ave To Iris Ct", issued 2025-09-05).
+Card guidance: lead with the answer ("N active street-work permits on your
+block" or "No street work near your block"), count ALERTs within ~400m,
+show segment + issue_date, demote everything else to map context. Residential
+building permits can no longer ALERT for street access (triage rule,
+new items).
+
 ## Ask the radar + brief (runtime API, added 2026-09-04)
 
 Both run on the deployed AgentCore runtime; call InvokeAgentRuntime from a

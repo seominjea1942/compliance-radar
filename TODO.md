@@ -18,6 +18,14 @@
 - [ ] Alert-dismissal learning (roadmap; overturned rejections remain the only
       learning signal for now).
 
+## In progress / handoffs
+- [ ] FE: remove the 7-day date filter from the action tabs (Needs action /
+      To check / For the file) per corrected contract rule 2026-09-05; show
+      item age instead. Stats views stay weekly.
+- [ ] Permit map redesign: answer "is anything about to block my
+      sidewalk/street/parking", not "how many permits in a radius"
+      (FE finding 2026-09-05; BE dataset investigation below).
+
 ## Deferred build items
 - [ ] Recall expiry by termination status: ingest openFDA `status`
       (Ongoing/Completed/Terminated) and close items when the recall
