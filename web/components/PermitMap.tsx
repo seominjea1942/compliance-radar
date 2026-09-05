@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { Card, CardNote, CardTitle } from "@/components/ui/card";
 import { PermitMapView } from "@/components/PermitMapView";
 import { plainDate } from "@/lib/format";
@@ -81,6 +84,7 @@ export function PermitMap({
   // With nothing blocking, the nearest active permits are the evidence that
   // the quiet is real rather than an empty query.
   const listed = bySegment(blocking.length > 0 ? blocking : active);
+  const [hovered, setHovered] = useState<StreetWork | null>(null);
 
   /*
    * When something is blocking, the list is the warning and earns three rows.
@@ -108,18 +112,67 @@ export function PermitMap({
               } near you.`}
         </CardTitle>
         <CardNote>
-          {watched.length > 0 ? `Watching ${watched.join(", ")}. ` : ""}
-          {permits.length > 0 && `${permits.length} building permits shown as background.`}
+          {/*
+            Say what it means before saying what was counted. "21 permits
+            watched" is the radar describing its own effort; whether the
+            deliveries get through is the thing the owner actually asked.
+          */}
+          {blocking.length === 0
+            ? "Deliveries and street parking are clear. "
+            : "This can close a lane or a sidewalk near your door. "}
+          {watched.length > 0 && `Watching ${watched.join(", ")}`}
+          {permits.length > 0 && `, plus ${permits.length} building permits`}.
         </CardNote>
       </div>
 
       <PermitMapView
         permits={permits}
         streetWork={streetWork}
-        className="w-full overflow-hidden rounded-[9px] border border-line bg-wash [aspect-ratio:704/300]"
+        onHoverWork={setHovered}
+        className={`w-full overflow-hidden rounded-[9px] border border-line bg-wash ${
+          blocking.length > 0 ? "[aspect-ratio:704/300]" : "[aspect-ratio:704/430]"
+        }`}
       />
 
-      {listed.length > 0 && (
+      {/*
+        Fixed height so the card does not jump as the pointer crosses markers.
+        This is where the detail lives now that the tooltip cannot hold it.
+      */}
+      <div className="flex h-[92px] flex-col justify-center gap-0.5 overflow-hidden rounded-lg border border-line bg-shell px-3 py-2 text-[11.5px]">
+        {hovered ? (
+          hovered.workType === "pavement_moratorium" ? (
+            <>
+              <span className="truncate font-medium text-ink">
+                {hovered.segment ?? hovered.title}
+              </span>
+              <span className="text-faint">Recently paved, no digging allowed here.</span>
+            </>
+          ) : (
+            <>
+              <span className="truncate font-medium text-ink">
+                {hovered.segment ?? hovered.title}
+                {hovered.onStoreStreet && <span className="ml-1.5 text-green">your street</span>}
+              </span>
+              {hovered.workDescription && (
+                <span className="line-clamp-2 text-muted">{hovered.workDescription}</span>
+              )}
+              <span className="text-faint">
+                {[
+                  plainDate(hovered.expiryDate) &&
+                    `valid through ${plainDate(hovered.expiryDate)}`,
+                  hovered.distanceM !== null && `${Math.round(hovered.distanceM)} m away`,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
+            </>
+          )
+        ) : (
+          <span className="text-faint">Hover a marker to see the work.</span>
+        )}
+      </div>
+
+      {blocking.length > 0 && listed.length > 0 && (
         <ul className="m-0 flex list-none flex-col gap-2 p-0">
           {listed.slice(0, rowLimit).map((seg) => (
             <li key={seg.key} className="flex items-start gap-2 text-[11.5px]">

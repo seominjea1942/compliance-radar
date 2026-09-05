@@ -151,3 +151,30 @@
     animation: none;
   }
 }
+
+/*
+ * Street-work tooltips carry the detail the card no longer lists.
+ *
+ * An explicit width, not max-width: the tooltip is absolutely positioned
+ * inside the map pane, so a max-width still shrinks to whatever space is left
+ * between the marker and the map edge, which collapsed it to ~96px on markers
+ * near the right side.
+ */
+.leaflet-tooltip.radar-tip {
+  width: 230px;
+  white-space: normal;
+  line-height: 1.45;
+}
+
+/*
+ * City work descriptions run to a paragraph. Unclamped they made the tooltip
+ * taller than the map, which clips it: Leaflet's "auto" direction flips left
+ * and right but does nothing about vertical overflow.
+ */
+.radar-tip-desc {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}

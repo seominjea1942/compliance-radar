@@ -19,9 +19,17 @@ import { STORE_ANCHOR, type Permit, type StreetWork } from "@/lib/queries";
  * keyless, and the saturation that makes it the loudest thing on an otherwise
  * restrained page is taken back out in CSS below.
  */
+/** A one-line hover label. The full record is rendered by the card. */
+function shortLabel(w: StreetWork): string {
+  const name = w.segment ?? w.title;
+  if (w.workType === "pavement_moratorium") return `${name} · no digging`;
+  return w.distanceM === null ? name : `${name} · ${Math.round(w.distanceM)} m`;
+}
+
 export function PermitMapView({
   permits,
   streetWork = [],
+  onHoverWork,
   className,
 }: {
   permits: Permit[];
@@ -31,10 +39,21 @@ export function PermitMapView({
    * the grey filings that are only context.
    */
   streetWork?: StreetWork[];
+  /**
+   * Hovering a street-work marker reports it upward. The detail is rendered
+   * by the card, not as a Leaflet tooltip: the map is 233px tall inside the
+   * rail, and a tooltip carrying a city work description is taller than that,
+   * so it was clipped by the map's own overflow on most markers.
+   */
+  onHoverWork?: (work: StreetWork | null) => void;
   className?: string;
 }) {
   const holder = useRef<HTMLDivElement>(null);
   const map = useRef<LeafletMap | null>(null);
+
+  // Held in a ref so a changing callback never tears down and rebuilds the map.
+  const onHover = useRef(onHoverWork);
+  onHover.current = onHoverWork;
 
   useEffect(() => {
     let cancelled = false;
@@ -106,16 +125,9 @@ export function PermitMapView({
           fillOpacity: 1,
         })
           .addTo(instance)
-          .bindTooltip(
-            [
-              w.segment ?? w.title,
-              w.workType === "pavement_moratorium" ? "recently paved, no digging" : null,
-              w.distanceM === null ? null : `${Math.round(w.distanceM)} m`,
-            ]
-              .filter(Boolean)
-              .join(" · "),
-            { direction: "top" },
-          );
+          .bindTooltip(shortLabel(w), { direction: "auto" })
+          .on("mouseover", () => onHover.current?.(w))
+          .on("mouseout", () => onHover.current?.(null));
       }
 
       L.circleMarker([STORE_ANCHOR.lat, STORE_ANCHOR.lon], {
