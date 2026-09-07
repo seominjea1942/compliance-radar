@@ -5,7 +5,6 @@ import {
   MdOutlineListAlt,
   MdOutlineStorefront,
 } from "react-icons/md";
-import { Avatar } from "@/components/ui/avatar";
 import { BusinessSwitcher } from "@/components/BusinessSwitcher";
 import { Logo } from "@/components/Logo";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -126,15 +125,6 @@ export function Header({
 
           <BusinessSwitcher storeName={storeName} location={profile?.location} compact />
 
-          {profile?.owner && (
-            // Identity, not a control: there is one account and no menu to
-            // open, so it reads its name on hover and does nothing on click.
-            <Tooltip content={`${profile.owner}, owner`}>
-              <span tabIndex={0} className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                <Avatar name={profile.owner} />
-              </span>
-            </Tooltip>
-          )}
         </div>
       </div>
     </header>
