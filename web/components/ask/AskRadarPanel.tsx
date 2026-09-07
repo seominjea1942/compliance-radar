@@ -123,7 +123,19 @@ export function AskRadarPanel({
       role="dialog"
       aria-modal="false"
       aria-label="Ask the radar"
-      className="fixed inset-x-0 bottom-0 z-40 flex h-[min(640px,88vh)] flex-col overflow-hidden border border-line-strong bg-paper shadow-[0_8px_28px_rgba(24,24,27,0.16)] sm:inset-x-auto sm:right-6 sm:bottom-24 sm:w-[340px] sm:rounded-card"
+      className={[
+        // Below sm it stays a bottom sheet: a side drawer on a phone is the
+        // whole screen anyway, and the thumb is at the bottom.
+        "fixed inset-x-0 bottom-0 z-40 flex h-[min(640px,88vh)] flex-col overflow-hidden",
+        "border border-line-strong bg-paper shadow-[0_8px_28px_rgba(24,24,27,0.16)]",
+        // From sm it docks to the right edge, full height, square, with only
+        // its left border. It used to float above the launcher as a rounded
+        // box, which read as a transient popover; the drawer reads as a place
+        // that stays open while you work, which is what it is.
+        "sm:inset-x-auto sm:inset-y-0 sm:right-0 sm:h-full sm:w-[380px]",
+        "sm:border-0 sm:border-l sm:border-line sm:shadow-[-10px_0_30px_rgba(24,24,27,0.07)]",
+        "radar-drawer",
+      ].join(" ")}
     >
       <header className="flex items-center gap-2.5 border-b border-line px-4 py-3.5">
         <RadarCharacter className="size-8 flex-none" />
@@ -158,7 +170,7 @@ export function AskRadarPanel({
         {messages.map((m) => {
           if (m.from === "user") {
             return (
-              <div key={m.id} className="flex max-w-[250px] flex-col items-end gap-1 self-end">
+              <div key={m.id} className="flex max-w-[86%] flex-col items-end gap-1 self-end">
                 {/* What went with the message, shown on the message it went with. */}
                 {m.attached && (
                   <div className="flex max-w-full items-center gap-1.5 rounded-md border border-line bg-shell px-2 py-1">
@@ -178,7 +190,7 @@ export function AskRadarPanel({
               <div
                 key={m.id}
                 role="alert"
-                className="flex max-w-[280px] items-start gap-2 rounded-xl border border-line bg-shell px-3.5 py-3 text-[13px]/relaxed text-faint"
+                className="flex max-w-[92%] items-start gap-2 rounded-xl border border-line bg-shell px-3.5 py-3 text-[13px]/relaxed text-faint"
               >
                 <MdErrorOutline className="mt-px size-4 flex-none text-monoink" aria-hidden />
                 <span className="text-pretty">{m.text}</span>
@@ -187,7 +199,7 @@ export function AskRadarPanel({
           }
 
           return (
-            <div key={m.id} className="max-w-[290px] text-ink">
+            <div key={m.id} className="max-w-full text-ink">
               <AnswerText text={m.text} />
             </div>
           );

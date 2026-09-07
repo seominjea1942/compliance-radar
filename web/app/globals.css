@@ -142,6 +142,41 @@
   }
 }
 
+/*
+ * The ask drawer's entrance. Slides from the edge it is docked to, so it
+ * reads as arriving from off-screen rather than appearing in place. Below sm
+ * the panel is a bottom sheet, so it rises instead.
+ */
+@keyframes radar-drawer-up {
+  from {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+}
+
+@keyframes radar-drawer-in {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+}
+
+.radar-drawer {
+  animation: radar-drawer-up 180ms ease-out;
+}
+
+@media (min-width: 40rem) {
+  .radar-drawer {
+    animation: radar-drawer-in 200ms ease-out;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radar-drawer {
+    animation: none;
+  }
+}
+
 /* Tooltip entrance. Kept here rather than pulling in an animation plugin. */
 @keyframes radar-tooltip-in {
   from {

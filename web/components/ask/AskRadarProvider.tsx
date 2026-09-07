@@ -115,7 +115,21 @@ export function AskRadarProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AskRadarCtx.Provider value={value}>
-      {children}
+      {/*
+        The page makes room for the drawer instead of sitting under it: the
+        panel is not modal, and half the reason to open it is to read a card
+        while asking about it. Padding on a wrapper rather than a width on the
+        page, so nothing inside has to know the drawer exists. Only from sm,
+        where the panel is a side drawer at all.
+      */}
+      <div
+        className={[
+          "transition-[padding] duration-200 ease-out",
+          isOpen ? "sm:pr-[380px]" : "",
+        ].join(" ")}
+      >
+        {children}
+      </div>
 
       {/*
         The design floats this in the frame's top-right. A fixed bottom-right
@@ -136,8 +150,9 @@ export function AskRadarProvider({ children }: { children: React.ReactNode }) {
           "rounded-[27%] shadow-[0_6px_18px_rgba(24,24,27,0.24)]",
           "transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none",
           // The panel is a full-width sheet on small screens, so the launcher
-          // would sit on top of its footer. It stays a toggle on desktop.
-          isOpen ? "hidden sm:flex" : "flex",
+          // would sit on top of its footer. It stays a toggle on desktop,
+          // stepping left by the drawer's width so it is not behind it.
+          isOpen ? "hidden sm:flex sm:right-[calc(380px+1.5rem)]" : "flex",
         ].join(" ")}
       >
         <RadarCharacter className="size-full" track />
