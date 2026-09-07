@@ -54,7 +54,7 @@ function ItemCard({
       className={cn(
         "gap-3.5 transition-opacity duration-300",
         dimmed ? "opacity-55" : "opacity-100",
-        interactive && stretchedCard,
+        interactive && `${stretchedCard} hover:bg-hover`,
         onCardClick && "cursor-pointer",
         className,
       )}

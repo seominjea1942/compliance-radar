@@ -107,7 +107,7 @@ export function PermitMap({
   ].filter(Boolean);
 
   return (
-    <Card className={`w-full min-w-0 gap-3.5 p-4.5 ${stretchedCard}`}>
+    <Card className={`w-full min-w-0 gap-3.5 p-4.5 hover:bg-hover/42 ${stretchedCard}`}>
       <div className="flex flex-col gap-1.5">
         <CardTitle>
           {/*

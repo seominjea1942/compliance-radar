@@ -19,12 +19,13 @@ import { cn } from "@/lib/utils";
  * would spread its click target over the nearest positioned ancestor instead.
  */
 /*
- * `hover:bg-hover` is deliberately translucent: the cards let the canvas
- * gradient through, and an opaque hover would snap that tint off under the
- * pointer, reading as the card flashing white rather than lighting up.
+ * No hover background here. The two cards using this sit on different
+ * surfaces now: a solid item card wants an opaque hover, and a translucent
+ * panel wants one with the same alpha, or the tint snaps off under the
+ * pointer and reads as the card flashing white. Each supplies its own.
  */
 export const stretchedCard =
-  "relative transition-colors hover:border-line-strong hover:bg-hover/75 focus-within:border-line-strong";
+  "relative transition-colors hover:border-line-strong focus-within:border-line-strong";
 
 /**
  * The card's stretched link: its ::after covers the whole card, so clicking

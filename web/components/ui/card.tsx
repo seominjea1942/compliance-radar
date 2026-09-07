@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
  * There is deliberately no urgent tone. Colouring the whole card border red
  * competed with the alert banner inside it; the banner carries that signal.
  *
- * Both are translucent, so the canvas gradient behind them tints the panel
+ * The outer panel is translucent, so the canvas gradient behind it tints it
  * instead of stopping at its edge. Opaque white cards covered so much of the
  * screen that the wash survived only in the gutters and read as a printing
  * error. The alpha is high enough that ink on these keeps well past the
@@ -34,7 +34,11 @@ function Card({
         // fold. There is also nothing to blur: the backdrop is a smooth
         // gradient, so the filter cost a whole screen to change no pixels.
         tone === "paper" && "rounded-card border-line bg-paper/42 px-6.5 py-5.5",
-        tone === "inset" && "rounded-panel border-line bg-shell/36 px-5.5 py-5",
+        // Solid, not translucent, and white rather than shell. The panel
+        // around it already carries the canvas; a second layer of glass on
+        // top of the first only muddied the tint and left the item, which is
+        // the thing being read, as the least definite surface on the page.
+        tone === "inset" && "rounded-panel border-line bg-paper px-5.5 py-5",
         className,
       )}
       {...props}
