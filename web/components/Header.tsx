@@ -82,20 +82,25 @@ export function Header({
         second that scrolls sideways by itself. Laid out with order rather
         than a second copy of the identity block, so there is one of each.
       */}
-      <div className="mx-auto flex w-full max-w-[1400px] flex-wrap items-stretch gap-x-3 px-4 md:h-14 md:flex-nowrap md:px-6">
-        <div className="order-1 flex h-14 flex-1 items-center">
+      {/* Edge to edge, inset 16px. No max-width: the bar spans the window,
+          and a cap on it put the mark 28px from the edge at 1440 rather than
+          the 16 it is padded by. */}
+      <div className="flex w-full flex-wrap items-center gap-x-3 gap-y-3 p-4 md:flex-nowrap">
+        <div className="order-1 flex flex-1 items-center">
           <Link href="/" aria-label="Compliance Radar, home" className="no-underline">
             <Logo />
           </Link>
         </div>
 
         {/*
-          Full-height items so the active marker can sit on the header's own
-          bottom edge, continuous with the border it interrupts.
+          The active marker sits under its own tab rather than on the
+          header's bottom edge: with the bar inset 16px all round there are
+          16px of padding between the two, and a marker stranded down there
+          would read as belonging to the border, not to the tab.
         */}
         <nav
           aria-label="Sections"
-          className="order-3 flex w-full items-stretch gap-0.5 overflow-x-auto md:order-2 md:w-auto md:overflow-visible"
+          className="order-3 flex w-full items-center gap-0.5 overflow-x-auto md:order-2 md:w-auto md:overflow-visible"
         >
           {tabs.map((t) => {
             const active = t.section === current;
@@ -105,7 +110,7 @@ export function Header({
                 href={t.href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "relative flex items-center gap-2 px-3 text-[13.5px] whitespace-nowrap no-underline transition-colors",
+                  "relative flex items-center gap-2 px-3 py-1 text-[13.5px] whitespace-nowrap no-underline transition-colors",
                   active ? "font-medium text-ink" : "font-normal text-muted hover:text-ink",
                 )}
               >
@@ -123,14 +128,14 @@ export function Header({
                   <span className="font-mono text-[11px] font-medium text-monoink">{t.meta}</span>
                 )}
                 {active && (
-                  <span aria-hidden className="absolute inset-x-2 bottom-0 h-0.5 bg-ink" />
+                  <span aria-hidden className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-ink" />
                 )}
               </Link>
             );
           })}
         </nav>
 
-        <div className="order-2 flex h-14 items-center justify-end gap-1.5 md:order-3 md:h-auto md:flex-1">
+        <div className="order-2 flex items-center justify-end gap-1.5 md:order-3 md:flex-1">
           <Tooltip content="About this project">
             <Link
               href="/about"
