@@ -130,11 +130,15 @@ export function RadarCharacter({
         <ellipse cx="50" cy="70" rx="51" ry="51" fill="#ffffff" filter={`url(#${uid}-soft)`} />
         <ellipse cx="50" cy="72" rx="46" ry="47" fill={`url(#${uid}-body)`} />
 
-        {/* Matched pair, at the larger of the two former sizes: the eyes are
-            what the face is read by, so the bigger one set the size. */}
+        {/*
+          Level, and mirrored about the centre line. The pair was deliberately
+          offset at first, copying the reference art, but at 56px an offset
+          that small stops reading as character and starts reading as a squint.
+          The gap between them is the one they already had.
+        */}
         <g ref={eyesRef} fill={`url(#${uid}-eye)`} filter={`url(#${uid}-eyeDepth)`}>
-          <ellipse cx="39" cy="56" rx="10" ry="12.9" />
-          <ellipse cx="65" cy="52" rx="10" ry="12.9" />
+          <ellipse cx="37" cy="54" rx="10" ry="12.9" />
+          <ellipse cx="63" cy="54" rx="10" ry="12.9" />
         </g>
       </g>
     </svg>
