@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { AskRadarProvider } from "@/components/ask/AskRadarProvider";
 import { PermitMap } from "@/components/PermitMap";
-import { Sidebar } from "@/components/Sidebar";
+import { Header } from "@/components/Header";
 import { SurfacedFeed } from "@/components/SurfacedFeed";
 import { TopicTable } from "@/components/TopicTable";
 import {
@@ -36,8 +36,8 @@ export default async function HomePage() {
 
   return (
     <AskRadarProvider>
-      <div className="flex min-h-screen flex-col bg-shell md:flex-row">
-        <Sidebar
+      <div className="flex min-h-screen flex-col bg-shell">
+        <Header
           profile={profile}
           surfacedCount={summary.surfaced}
           setAsideCount={summary.filtered}

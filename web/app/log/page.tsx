@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { AskRadarProvider } from "@/components/ask/AskRadarProvider";
 import { LogRows } from "@/components/log/LogRows";
-import { Sidebar } from "@/components/Sidebar";
+import { Header } from "@/components/Header";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
@@ -114,8 +114,8 @@ export default async function LogPage({
 
   return (
     <AskRadarProvider>
-      <div className="flex min-h-screen flex-col bg-shell md:flex-row">
-        <Sidebar
+      <div className="flex min-h-screen flex-col bg-shell">
+        <Header
           profile={profile}
           surfacedCount={summary.surfaced}
           setAsideCount={log.overall.setAside}

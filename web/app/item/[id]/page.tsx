@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { MdArrowBack } from "react-icons/md";
 import { AskRadarProvider } from "@/components/ask/AskRadarProvider";
 import { Provenance } from "@/components/item/Provenance";
-import { Sidebar } from "@/components/Sidebar";
+import { Header } from "@/components/Header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardTitle } from "@/components/ui/card";
 import {
@@ -37,8 +37,8 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
 
   return (
     <AskRadarProvider>
-      <div className="flex min-h-screen flex-col bg-shell md:flex-row">
-        <Sidebar
+      <div className="flex min-h-screen flex-col bg-shell">
+        <Header
           profile={profile}
           surfacedCount={summary.surfaced}
           setAsideCount={log.counts.setAside}

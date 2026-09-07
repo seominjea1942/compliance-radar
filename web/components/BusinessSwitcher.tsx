@@ -17,9 +17,16 @@ import { Popover } from "@/components/ui/popover";
 export function BusinessSwitcher({
   storeName,
   location,
+  compact = false,
 }: {
   storeName: string;
   location?: string | null;
+  /**
+   * Avatar only, for the header, where the store's name would compete with
+   * the sections for the middle of the bar. The panel it opens is unchanged
+   * and still names the business in full.
+   */
+  compact?: boolean;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -28,21 +35,31 @@ export function BusinessSwitcher({
       open={open}
       onOpenChange={setOpen}
       side="bottom"
-      align="start"
       className="w-[268px] p-1.5"
+      align={compact ? "end" : "start"}
       trigger={
-        <button
-          type="button"
-          aria-label={`Switch business. Current: ${storeName}`}
-          className="flex max-w-[200px] flex-none cursor-pointer items-center gap-2.5 rounded-[10px] border border-line-card bg-paper px-[11px] py-2.5 text-left transition-colors hover:border-line-strong hover:bg-hover focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none data-[state=open]:border-line-strong data-[state=open]:bg-hover md:max-w-none"
-        >
-          <Avatar name={storeName} shape="square" />
-          <div className="flex min-w-0 flex-col gap-px">
-            <span className="truncate text-[13px]/tight font-semibold">{storeName}</span>
-            {location && <span className="truncate text-[11.5px] text-faint">{location}</span>}
-          </div>
-          <MdUnfoldMore className="ml-auto size-4 flex-none text-ghost" aria-hidden />
-        </button>
+        compact ? (
+          <button
+            type="button"
+            aria-label={`Switch business. Current: ${storeName}`}
+            className="flex flex-none cursor-pointer items-center rounded-[8px] p-0.5 transition-colors hover:bg-hover focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none data-[state=open]:bg-hover"
+          >
+            <Avatar name={storeName} shape="square" />
+          </button>
+        ) : (
+          <button
+            type="button"
+            aria-label={`Switch business. Current: ${storeName}`}
+            className="flex max-w-[200px] flex-none cursor-pointer items-center gap-2.5 rounded-[10px] border border-line-card bg-paper px-[11px] py-2.5 text-left transition-colors hover:border-line-strong hover:bg-hover focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none data-[state=open]:border-line-strong data-[state=open]:bg-hover md:max-w-none"
+          >
+            <Avatar name={storeName} shape="square" />
+            <div className="flex min-w-0 flex-col gap-px">
+              <span className="truncate text-[13px]/tight font-semibold">{storeName}</span>
+              {location && <span className="truncate text-[11.5px] text-faint">{location}</span>}
+            </div>
+            <MdUnfoldMore className="ml-auto size-4 flex-none text-ghost" aria-hidden />
+          </button>
+        )
       }
     >
       <div className="flex flex-col gap-1">

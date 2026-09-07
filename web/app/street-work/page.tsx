@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { MdArrowBack } from "react-icons/md";
 import { AskRadarProvider } from "@/components/ask/AskRadarProvider";
-import { Sidebar } from "@/components/Sidebar";
+import { Header } from "@/components/Header";
 import { StreetWorkDetail } from "@/components/street/StreetWorkDetail";
 import { Card, CardNote, CardTitle } from "@/components/ui/card";
 import {
@@ -35,8 +35,8 @@ export default async function StreetWorkPage() {
 
   return (
     <AskRadarProvider>
-      <div className="flex min-h-screen flex-col bg-shell md:flex-row">
-        <Sidebar
+      <div className="flex min-h-screen flex-col bg-shell">
+        <Header
           profile={profile}
           surfacedCount={summary.surfaced}
           setAsideCount={log.counts.setAside}

@@ -1,6 +1,6 @@
 import { MdOpenInNew } from "react-icons/md";
 import { AskRadarProvider } from "@/components/ask/AskRadarProvider";
-import { Sidebar } from "@/components/Sidebar";
+import { Header } from "@/components/Header";
 import { Card, CardNote, CardTitle } from "@/components/ui/card";
 import { getFilteredLog, getStoreProfile, getWeeklySummary } from "@/lib/queries";
 
@@ -44,8 +44,8 @@ export default async function AboutPage() {
 
   return (
     <AskRadarProvider>
-      <div className="flex min-h-screen flex-col bg-shell md:flex-row">
-        <Sidebar
+      <div className="flex min-h-screen flex-col bg-shell">
+        <Header
           profile={profile}
           surfacedCount={summary.surfaced}
           setAsideCount={log.counts.setAside}

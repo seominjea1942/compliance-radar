@@ -2,7 +2,7 @@ import { AskRadarProvider } from "@/components/ask/AskRadarProvider";
 import { CarryList } from "@/components/profile/CarryList";
 import { SectionTabs } from "@/components/profile/SectionTabs";
 import { FactList } from "@/components/profile/FactList";
-import { Sidebar } from "@/components/Sidebar";
+import { Header } from "@/components/Header";
 import { CardNote, CardTitle } from "@/components/ui/card";
 import { getFilteredLog, getStoreProfileFull, getWeeklySummary } from "@/lib/queries";
 
@@ -23,8 +23,8 @@ export default async function ProfilePage() {
 
   return (
     <AskRadarProvider>
-      <div className="flex min-h-screen flex-col bg-shell md:flex-row">
-        <Sidebar
+      <div className="flex min-h-screen flex-col bg-shell">
+        <Header
           profile={profile}
           surfacedCount={summary.surfaced}
           setAsideCount={log.counts.setAside}
