@@ -149,10 +149,11 @@ export function AskRadarProvider({ children }: { children: React.ReactNode }) {
           // shadow follow the same silhouette.
           "rounded-[27%] shadow-[0_6px_18px_rgba(24,24,27,0.24)]",
           "transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none",
-          // The panel is a full-width sheet on small screens, so the launcher
-          // would sit on top of its footer. It stays a toggle on desktop,
-          // stepping left by the drawer's width so it is not behind it.
-          isOpen ? "hidden sm:flex sm:right-[calc(380px+1.5rem)]" : "flex",
+          // Hidden while the panel is open, at every width. The header's
+          // close button and Escape both shut it, so a launcher parked
+          // beside the drawer is a second close button in a worse place,
+          // and on small screens it sat on top of the sheet's footer.
+          isOpen ? "hidden" : "flex",
         ].join(" ")}
       >
         <RadarCharacter className="size-full" track />

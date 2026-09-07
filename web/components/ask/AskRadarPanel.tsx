@@ -5,7 +5,6 @@ import {
   MdArrowUpward,
   MdClose,
   MdErrorOutline,
-  MdOutlineChatBubbleOutline,
   MdOutlineDescription,
 } from "react-icons/md";
 import { RadarCharacter } from "./RadarCharacter";
@@ -127,13 +126,13 @@ export function AskRadarPanel({
         // Below sm it stays a bottom sheet: a side drawer on a phone is the
         // whole screen anyway, and the thumb is at the bottom.
         "fixed inset-x-0 bottom-0 z-40 flex h-[min(640px,88vh)] flex-col overflow-hidden",
-        "border border-line-strong bg-paper shadow-[0_8px_28px_rgba(24,24,27,0.16)]",
+        "border border-line-strong bg-paper",
         // From sm it docks to the right edge, full height, square, with only
         // its left border. It used to float above the launcher as a rounded
         // box, which read as a transient popover; the drawer reads as a place
         // that stays open while you work, which is what it is.
         "sm:inset-x-auto sm:inset-y-0 sm:right-0 sm:h-full sm:w-[380px]",
-        "sm:border-0 sm:border-l sm:border-line sm:shadow-[-10px_0_30px_rgba(24,24,27,0.07)]",
+        "sm:border-0 sm:border-l sm:border-line",
         "radar-drawer",
       ].join(" ")}
     >
@@ -159,7 +158,12 @@ export function AskRadarPanel({
             someone else's, and every conversation opened the same way.
           */
           <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
-            <MdOutlineChatBubbleOutline className="size-7 text-ghost" aria-hidden />
+            {/*
+              The character rather than a chat glyph: this is the first thing
+              in an empty panel, and it is the same mark as the launcher that
+              opened it, so the panel is visibly that button's room.
+            */}
+            <RadarCharacter className="size-12" />
             <p className="text-[13px]/relaxed text-balance text-ghost">
               Ask about anything I watch: recalls, permits, council agendas, or why something
               was filtered out.
