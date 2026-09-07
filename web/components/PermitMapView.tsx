@@ -14,12 +14,18 @@ import type { HoverTarget } from "@/components/street/MapHoverCard";
  * rather than at module scope: this file is a client component, but Next still
  * renders it on the server first and a top-level import would break the build.
  *
- * Tiles come from OpenStreetMap directly. CARTO's Positron style was the first
- * choice and matched the palette better, but its CDN now stamps every keyless
- * tile with "API KEY REQUIRED" while still returning 200, so the map looked
- * correct to every check that was not a human eye. OSM is unambiguously
- * keyless, and the saturation that makes it the loudest thing on an otherwise
- * restrained page is taken back out in CSS below.
+ * Tiles are Esri's World Light Gray Canvas: keyless, and already the quiet
+ * grey this page wants, so the markers are the only colour on it.
+ *
+ * Two others were tried. CARTO's Positron is the obvious choice and matches
+ * the palette best, but its CDN stamps every keyless tile with "API KEY
+ * REQUIRED" while returning 200, so the map looks correct to every check that
+ * is not a human eye; that is still true. Stadia hosts the same styles and
+ * answers 401 without a key, which at least fails honestly. Plain OSM was
+ * what this used, desaturated in CSS to stop it being the loudest thing on
+ * the page: that filter is gone with it, since the tiles are grey to begin
+ * with and filtering them again only flattened the road hierarchy.
+ *
  */
 export function PermitMapView({
   permits,
@@ -69,12 +75,20 @@ export function PermitMapView({
       });
       map.current = instance;
 
-      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        // Required by the OSM tile usage policy, not decoration.
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      }).addTo(instance);
+      L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+        {
+          maxZoom: 19,
+          // The grey canvas has no tiles past 16: above it Esri answers 200
+          // with a 2.5KB blank square. maxNativeZoom stops at the last real
+          // one and upscales it, so zooming further softens the basemap
+          // instead of emptying it, and the markers stay crisp over it.
+          maxNativeZoom: 16,
+          // Required, not decoration.
+          attribution:
+            'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        },
+      ).addTo(instance);
 
       // Permits first, so the store marker is never buried under a dot.
       for (const p of permits) {
@@ -171,7 +185,7 @@ export function PermitMapView({
         ];
 
         const bounds = L.latLngBounds(points).extend([STORE_ANCHOR.lat, STORE_ANCHOR.lon]);
-        instance.fitBounds(bounds, { padding: [24, 24], maxZoom: 17 });
+        instance.fitBounds(bounds, { padding: [24, 24], maxZoom: 16 });
       }
 
       // Leaflet measures the frame once and lays the tile grid out against
@@ -198,7 +212,7 @@ export function PermitMapView({
       // The filter is scoped to the tile pane so the store pin, the permit
       // dots and the attribution link keep their own colour. Written here
       // rather than in globals.css, which the home-screen session owns.
-      className={`[&_.leaflet-tile-pane]:[filter:saturate(0.32)_contrast(1.04)_brightness(1.03)] ${className ?? ""}`}
+      className={className ?? ""}
       role="img"
       aria-label={`Map of ${permits.length} permits filed near the store`}
     />
