@@ -154,6 +154,18 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
         )}
         <div className="text-[12.5px] text-faint">
           {item.timingLabel ?? item.postedLabel}
+          {/*
+            Older items are no longer hidden from the action tabs, so the card
+            has to say how long one has been waiting. The timing line above
+            reports the event's own date (when the recall was issued), which
+            says nothing about how long it has sat unresolved.
+          */}
+          {item.agedLabel && (
+            <>
+              {" · "}
+              <span className="text-monoink">{item.agedLabel}</span>
+            </>
+          )}
           {event.resolvedCount > 0 && (
             <>
               {" · "}

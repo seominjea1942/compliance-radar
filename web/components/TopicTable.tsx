@@ -1,4 +1,7 @@
+import Link from "next/link";
+import { MdArrowForward } from "react-icons/md";
 import { Card, CardTitle } from "@/components/ui/card";
+import { Tooltip } from "@/components/ui/tooltip";
 import type { TopicRow } from "@/lib/queries";
 import { count } from "@/lib/format";
 
@@ -11,7 +14,13 @@ function Row({ topic }: { topic: TopicRow }) {
   const quiet = topic.read === 0;
 
   return (
-    <div className="flex items-baseline gap-3 bg-paper px-4 py-3">
+    <Link
+      href={`/log?tag=${topic.id}`}
+      // The row reads as "Food recalls 6 1" to a screen reader, which says
+      // nothing about where the link goes; the destination is named instead.
+      aria-label={`Open the log filtered to ${topic.label}`}
+      className="flex items-baseline gap-3 bg-paper px-4 py-3 no-underline transition-colors hover:bg-hover focus-visible:relative focus-visible:z-[1] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+    >
       <span className={`flex-1 font-serif text-[15px] ${quiet ? "text-faint" : "text-ink"}`}>
         {topic.label}
       </span>
@@ -25,7 +34,7 @@ function Row({ topic }: { topic: TopicRow }) {
           </span>
         </>
       )}
-    </div>
+    </Link>
   );
 }
 
@@ -42,16 +51,26 @@ export function TopicTable({
 }) {
   return (
     <Card className="w-full min-w-0 gap-4">
-      <div className="flex items-baseline justify-between gap-4">
+      {/* items-start, not baseline: the icon is a box, not a line of text. */}
+      <div className="flex items-start justify-between gap-4">
         <CardTitle>
           {count(reviewed)} items read this week. Filtered {count(filtered)}.
         </CardTitle>
-        <a
-          href="/log"
-          className="whitespace-nowrap text-[13px] font-medium text-green no-underline hover:underline"
-        >
-          Open the log →
-        </a>
+        {/*
+          Icon only, so the title keeps the full width of the card. The label
+          it replaces still has to reach anyone not looking at the picture:
+          aria-label names the link, and the tooltip opens on keyboard focus
+          as well as hover, so the wording is available from the keyboard too.
+        */}
+        <Tooltip content="Open the log">
+          <a
+            href="/log"
+            aria-label="Open the log"
+            className="flex size-8 flex-none items-center justify-center rounded-control text-green transition-colors hover:bg-hover focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            <MdArrowForward className="size-[18px]" aria-hidden />
+          </a>
+        </Tooltip>
       </div>
 
       {checked && (
@@ -73,7 +92,6 @@ export function TopicTable({
           <Row key={t.id} topic={t} />
         ))}
       </div>
-
     </Card>
   );
 }

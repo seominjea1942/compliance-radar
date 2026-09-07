@@ -8,8 +8,8 @@ import {
   getFilteredLog,
   getStoreProfile,
   getWeeklySummary,
+  TAGS,
   type LogStatus,
-  type SourceGroup,
 } from "@/lib/queries";
 import { count } from "@/lib/format";
 
@@ -21,11 +21,19 @@ const STATUSES: { value: LogStatus; label: string }[] = [
   { value: "filtered", label: "Filtered" },
 ];
 
-const SOURCES: { value: SourceGroup | "all"; label: string }[] = [
-  { value: "all", label: "All sources" },
-  { value: "recalls", label: "Recalls" },
-  { value: "council", label: "Council" },
-  { value: "permits", label: "Permits" },
+/**
+ * The log filters by topic, matching the overview's table exactly, so a row
+ * there and a pill here mean the same thing.
+ *
+ * This replaced a source-group row (Recalls / Council / Permits). Those were
+ * nearly the same idea from the other end - Recalls held precisely the 346
+ * food-recall rows, Permits 73 of the 74 nearby-construction ones - but
+ * Council alone spanned three topics, so a topic could not simply select a
+ * source pill without two different topics landing on one page.
+ */
+const TOPICS: { value: string | null; label: string }[] = [
+  { value: null, label: "All topics" },
+  ...TAGS.map((t) => ({ value: t.id as string | null, label: t.label })),
 ];
 
 const PAGE = 25;
@@ -35,10 +43,10 @@ const PAGE = 25;
  * filtering and paging, so a filtered view is shareable and "load more" does
  * not ship 512 rows to the browser to hide most of them.
  */
-function hrefFor(params: { status: LogStatus; source: SourceGroup | "all"; limit: number }) {
+function hrefFor(params: { status: LogStatus; limit: number; tag: string | null }) {
   const q = new URLSearchParams();
   if (params.status !== "filtered") q.set("status", params.status);
-  if (params.source !== "all") q.set("source", params.source);
+  if (params.tag) q.set("tag", params.tag);
   if (params.limit !== PAGE) q.set("limit", String(params.limit));
   const s = q.toString();
   return s ? `/log?${s}` : "/log";
@@ -53,13 +61,13 @@ export default async function LogPage({
   const one = (k: string) => (Array.isArray(sp[k]) ? sp[k][0] : sp[k]);
 
   const status = (STATUSES.find((s) => s.value === one("status"))?.value ?? "filtered") as LogStatus;
-  const source = (SOURCES.find((s) => s.value === one("source"))?.value ?? "all") as
-    | SourceGroup
-    | "all";
   const limit = Math.min(Math.max(Number(one("limit")) || PAGE, PAGE), 500);
+  // Validated against the fixed tag set: an unknown ?tag is dropped rather
+  // than narrowing the log to nothing and looking like an empty database.
+  const topic = TAGS.find((t) => t.id === one("tag")) ?? null;
 
   const [log, summary, profile] = await Promise.all([
-    getFilteredLog({ status, source, limit }),
+    getFilteredLog({ status, tag: topic?.id ?? null, limit }),
     getWeeklySummary(),
     getStoreProfile(),
   ]);
@@ -76,7 +84,7 @@ export default async function LogPage({
         <Sidebar
           profile={profile}
           surfacedCount={summary.surfaced}
-          filteredCount={log.counts.filtered}
+          filteredCount={log.overall.filtered}
           current="log"
         />
 
@@ -98,7 +106,7 @@ export default async function LogPage({
                 {STATUSES.map((s) => (
                   <Link
                     key={s.value}
-                    href={hrefFor({ status: s.value, source, limit: PAGE })}
+                    href={hrefFor({ status: s.value, limit: PAGE, tag: topic?.id ?? null })}
                     aria-current={s.value === status ? "page" : undefined}
                     className={cn(
                       "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] font-medium no-underline transition-colors",
@@ -116,21 +124,24 @@ export default async function LogPage({
               </div>
 
               <div className="flex flex-wrap items-center gap-2 border-t border-line-soft pt-4">
-                {SOURCES.map((s) => (
-                  <Link
-                    key={s.value}
-                    href={hrefFor({ status, source: s.value, limit: PAGE })}
-                    aria-current={s.value === source ? "true" : undefined}
-                    className={cn(
-                      "rounded-full border px-3 py-1 text-[12.5px] no-underline transition-colors",
-                      s.value === source
-                        ? "border-line-strong bg-shell font-medium text-ink"
-                        : "border-line text-muted hover:border-line-strong hover:text-ink",
-                    )}
-                  >
-                    {s.label}
-                  </Link>
-                ))}
+                {TOPICS.map((t) => {
+                  const active = t.value === (topic?.id ?? null);
+                  return (
+                    <Link
+                      key={t.value ?? "all"}
+                      href={hrefFor({ status, limit: PAGE, tag: t.value })}
+                      aria-current={active ? "true" : undefined}
+                      className={cn(
+                        "rounded-full border px-3 py-1 text-[12.5px] no-underline transition-colors",
+                        active
+                          ? "border-line-strong bg-shell font-medium text-ink"
+                          : "border-line text-muted hover:border-line-strong hover:text-ink",
+                      )}
+                    >
+                      {t.label}
+                    </Link>
+                  );
+                })}
               </div>
 
               <LogRows rows={log.rows} />
@@ -141,7 +152,7 @@ export default async function LogPage({
                 </span>
                 {log.hasMore && (
                   <Link
-                    href={hrefFor({ status, source, limit: limit + PAGE })}
+                    href={hrefFor({ status, limit: limit + PAGE, tag: topic?.id ?? null })}
                     className="font-medium text-green no-underline hover:underline"
                   >
                     Load more

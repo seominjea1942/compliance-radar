@@ -20,20 +20,20 @@ const MATCHES: Record<Filter, (s: Severity) => boolean> = {
  * Headline copy per filter. The heading answers the question the selected
  * group asks, so it changes with the pills rather than always reporting on
  * whether anything needs action.
+ *
+ * None of these say "this week" any more. The tabs list open obligations with
+ * no time bound, so a weekly framing here would describe a scope the numbers
+ * underneath no longer have. The weekly claim belongs to the line below, which
+ * really is a statistic about the week.
  */
 const HEADING: Record<Filter, (n: number) => string> = {
   act: (n) =>
-    n === 0
-      ? "Nothing needs action this week."
-      : `${count(n)} ${n === 1 ? "thing needs" : "things need"} action.`,
+    n === 0 ? "Nothing needs action." : `${count(n)} ${n === 1 ? "thing needs" : "things need"} action.`,
   check: (n) =>
-    n === 0 ? "Nothing to check this week." : `${count(n)} ${n === 1 ? "item" : "items"} to check.`,
+    n === 0 ? "Nothing to check." : `${count(n)} ${n === 1 ? "item" : "items"} to check.`,
   file: (n) =>
-    n === 0
-      ? "Nothing for the file this week."
-      : `${count(n)} ${n === 1 ? "item" : "items"} for the file.`,
-  all: (n) =>
-    n === 0 ? "Nothing surfaced this week." : `${count(n)} ${n === 1 ? "item" : "items"} surfaced.`,
+    n === 0 ? "Nothing for the file." : `${count(n)} ${n === 1 ? "item" : "items"} for the file.`,
+  all: (n) => (n === 0 ? "Nothing open." : `${count(n)} ${n === 1 ? "item" : "items"} open.`),
 };
 
 export function SurfacedFeed({
@@ -86,9 +86,7 @@ export function SurfacedFeed({
       <FilterPills options={options} value={filter} onChange={setFilter} className="self-start" />
 
       {visible.length === 0 ? (
-        <p className="py-6 text-center text-[14px] text-faint">
-          Nothing in this group this week.
-        </p>
+        <p className="py-6 text-center text-[14px] text-faint">Nothing in this group.</p>
       ) : (
         <div className="flex flex-col gap-3.5">
           {visible.map((event) => (

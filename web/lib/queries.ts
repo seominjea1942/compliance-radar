@@ -1,5 +1,5 @@
 import { query } from "./db";
-import { posted } from "./format";
+import { flagged, posted, utc } from "./format";
 
 /**
  * Home-screen reads.
@@ -9,7 +9,10 @@ import { posted } from "./format";
  * query the contract sanctions (section 5). Anything needing a different shape
  * belongs in a new view, not in a bespoke join here.
  *
- * Scope is the current 7-day window (recommendation 4). The 90-day totals
+ * Scope: the 7-day window applies to the activity statistics (the weekly
+ * strip, the topic table). It deliberately does NOT apply to the surfaced
+ * feed, which is a list of open obligations rather than a report on the week
+ * (contract rec #4). The 90-day totals
  * belong to the log/history screens.
  */
 
@@ -198,6 +201,12 @@ export type SurfacedItem = {
   timingLabel: string | null;
   /** Rendered server-side so SSR and hydration cannot disagree on the clock. */
   postedLabel: string;
+  /**
+   * "Flagged 8 days ago", only on items older than the activity window; null
+   * on recent ones, where it would be noise. The card's timing line reports
+   * the event's own date, which says nothing about how long this has waited.
+   */
+  agedLabel: string | null;
   /** Rows sharing this are one real-world recall event. Never inferred here. */
   eventKey: string | null;
   /** handled | not_carried once the owner has closed it; null while open. */
@@ -306,8 +315,15 @@ export async function getSurfaced(): Promise<SurfacedItem[]> {
      * how many of its products the owner already closed in order to say "3 of 5
      * resolved"; grouping then drops any event with nothing left open.
      */
-    `SELECT * FROM v_surfaced_feed WHERE created_at >= NOW() - INTERVAL ? DAY`,
-    [WINDOW_DAYS],
+    /*
+     * Deliberately not time-scoped. The action tabs are a list of open
+     * obligations, not an activity report: an unresolved item does not stop
+     * needing attention because a week passed. Applying the weekly window here
+     * made 45 of 48 open items vanish once the backfill's dates aged out.
+     * The window still governs the "read this week" strip and the topic table,
+     * which really are weekly statistics (contract rec #4).
+     */
+    `SELECT * FROM v_surfaced_feed`,
   );
 
   const items = rows.map((r) => {
@@ -343,6 +359,9 @@ export async function getSurfaced(): Promise<SurfacedItem[]> {
       classification,
       timingLabel,
       postedLabel: posted(r.created_at),
+      agedLabel: Date.now() - utc(r.created_at).getTime() > WINDOW_DAYS * 86_400_000
+        ? flagged(r.created_at)
+        : null,
       eventKey: r.event_key,
       resolution: r.resolution,
       product,
@@ -381,7 +400,15 @@ export type Permit = {
 };
 
 /** Store anchor, per the contract. */
-export const STORE_ANCHOR = { lat: 37.3085, lon: -121.8995 };
+/**
+ * 1287 Lincoln Ave, per the contract (corrected there 2026-09-03).
+ *
+ * The previous value sat 359m north, which the decorative map plate could not
+ * reveal: it had no real geography to be wrong against. Under real tiles the
+ * store pin landed most of a quarter mile from the store, on a card whose own
+ * copy says "within a quarter mile".
+ */
+export const STORE_ANCHOR = { lat: 37.3053, lon: -121.899 };
 
 export async function getNearbyPermits(): Promise<Permit[]> {
   const rows = await query<{
@@ -519,7 +546,10 @@ export type LogRow = {
 
 export type LogPage = {
   rows: LogRow[];
+  /** Scoped to the current filters: what the tabs on screen describe. */
   counts: { all: number; filtered: number; resolved: number };
+  /** The whole log, ignoring filters: what the rail's badge describes. */
+  overall: { all: number; filtered: number };
   hasMore: boolean;
 };
 
@@ -533,10 +563,13 @@ export type LogPage = {
 export async function getFilteredLog(opts: {
   status?: LogStatus;
   source?: SourceGroup | "all";
+  /** One of TAGS. Narrows the log to a single topic. */
+  tag?: string | null;
   limit?: number;
 } = {}): Promise<LogPage> {
   const status = opts.status ?? "filtered";
   const source = opts.source ?? "all";
+  const tag = TAGS.some((t) => t.id === opts.tag) ? opts.tag! : null;
   const limit = Math.min(Math.max(opts.limit ?? 25, 1), 500);
 
   const where: string[] = [];
@@ -551,7 +584,29 @@ export async function getFilteredLog(opts: {
     params.push(...list);
   }
 
+  // `tags` is a JSON array on the view, so membership is a JSON predicate
+  // rather than an equality: the tag is passed as a JSON scalar.
+  if (tag) {
+    where.push("JSON_CONTAINS(tags, ?)");
+    params.push(JSON.stringify(tag));
+  }
+
   const clause = where.length ? `WHERE ${where.join(" AND ")}` : "";
+
+  // The tab counts have to answer "of what is on screen". Scoped to the same
+  // topic, or a topic with 3 rows reads "Showing 3 of 514".
+  const totalsWhere: string[] = [];
+  const totalsParams: unknown[] = [];
+  if (source !== "all") {
+    const list = SOURCE_GROUPS[source];
+    totalsWhere.push(`source IN (${list.map(() => "?").join(",")})`);
+    totalsParams.push(...list);
+  }
+  if (tag) {
+    totalsWhere.push("JSON_CONTAINS(tags, ?)");
+    totalsParams.push(JSON.stringify(tag));
+  }
+  const totalsClause = totalsWhere.length ? `WHERE ${totalsWhere.join(" AND ")}` : "";
 
   // One extra row tells us whether a "load more" link is warranted.
   const rows = await query<{
@@ -566,8 +621,19 @@ export async function getFilteredLog(opts: {
   }>(`SELECT * FROM v_filtered_log ${clause} LIMIT ?`, [...params, limit + 1]);
 
   const [totals] = await query<{ total: number | string; resolved: number | string | null }>(
-    `SELECT COUNT(*) AS total, SUM(overturned = 1) AS resolved FROM v_filtered_log`,
+    `SELECT COUNT(*) AS total, SUM(overturned = 1) AS resolved FROM v_filtered_log ${totalsClause}`,
+    totalsParams,
   );
+
+  // The rail's badge counts the whole log, not the slice being viewed: it is
+  // global navigation, and a count that moved every time a filter changed
+  // would be reporting the current screen rather than the destination.
+  const narrowed = source !== "all" || tag !== null;
+  const [everything] = narrowed
+    ? await query<{ total: number | string; resolved: number | string | null }>(
+        `SELECT COUNT(*) AS total, SUM(overturned = 1) AS resolved FROM v_filtered_log`,
+      )
+    : [totals];
 
   const all = Number(totals?.total ?? 0);
   const resolved = Number(totals?.resolved ?? 0);
@@ -586,6 +652,10 @@ export async function getFilteredLog(opts: {
       overturned: Number(r.overturned) === 1,
     })),
     counts: { all, resolved, filtered: all - resolved },
+    overall: {
+      all: Number(everything?.total ?? 0),
+      filtered: Number(everything?.total ?? 0) - Number(everything?.resolved ?? 0),
+    },
     hasMore: rows.length > limit,
   };
 }
