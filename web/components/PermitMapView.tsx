@@ -75,6 +75,11 @@ export function PermitMapView({
       });
       map.current = instance;
 
+      // The tile credit is required; Leaflet's own "Leaflet" prefix is not.
+      // Leaflet is BSD-2-Clause and its docs ask for the flag as a courtesy
+      // rather than a condition, so it goes and the credit stays.
+      instance.attributionControl.setPrefix(false);
+
       L.tileLayer(
         "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
         {
@@ -84,9 +89,14 @@ export function PermitMapView({
           // one and upscales it, so zooming further softens the basemap
           // instead of emptying it, and the markers stay crisp over it.
           maxNativeZoom: 16,
-          // Required, not decoration.
+          /*
+           * Required, not decoration: Esri's terms ask for it and the OSM
+           * data under it is ODbL. Taken verbatim from the service's own
+           * copyrightText rather than typed from memory, which had this
+           * layer credited to DeLorme and NAVTEQ, who are not in it.
+           */
           attribution:
-            'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            'Esri, HERE, Garmin, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         },
       ).addTo(instance);
 
