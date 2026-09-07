@@ -116,6 +116,15 @@ export function RadarCharacter({
 
         <filter id={`${uid}-soft`} x="-40%" y="-40%" width="180%" height="180%">
           <feGaussianBlur stdDeviation="6" />
+          {/*
+            Brightens the rim without tightening it. A blur this wide spreads
+            the white thin, so the alpha is lifted after the fact: the falloff
+            keeps its shape and the glow just carries more light. Reducing the
+            blur would have brightened it too, at the cost of the soft crest.
+          */}
+          <feComponentTransfer>
+            <feFuncA type="linear" slope="1.5" />
+          </feComponentTransfer>
         </filter>
 
         {/* A touch of blur on the body itself, so its crest is not a hard edge
