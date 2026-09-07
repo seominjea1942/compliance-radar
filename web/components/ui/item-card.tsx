@@ -1,6 +1,6 @@
-import Link from "next/link";
 import * as React from "react";
 import { Card, CardActions } from "@/components/ui/card";
+import { Above, StretchedLink, stretchedCard } from "@/components/ui/stretched";
 import { cn } from "@/lib/utils";
 
 /**
@@ -54,8 +54,7 @@ function ItemCard({
       className={cn(
         "gap-3.5 transition-opacity duration-300",
         dimmed ? "opacity-55" : "opacity-100",
-        interactive &&
-          "relative transition-colors hover:border-line-strong hover:bg-hover focus-within:border-line-strong",
+        interactive && stretchedCard,
         onCardClick && "cursor-pointer",
         className,
       )}
@@ -63,27 +62,6 @@ function ItemCard({
       {children}
     </Card>
   );
-}
-
-/**
- * The card's stretched link: its ::after covers the whole card, so clicking
- * anywhere that is not another control follows this link.
- */
-function StretchedLink({
-  className,
-  ...props
-}: React.ComponentProps<typeof Link>) {
-  return (
-    <Link
-      className={cn("no-underline after:absolute after:inset-0 after:content-['']", className)}
-      {...props}
-    />
-  );
-}
-
-/** Sits above the stretched link so nested controls stay clickable. */
-function Above({ className, children }: { className?: string; children: React.ReactNode }) {
-  return <div className={cn("relative z-[1]", className)}>{children}</div>;
 }
 
 function Chips({ children }: { children: React.ReactNode }) {
