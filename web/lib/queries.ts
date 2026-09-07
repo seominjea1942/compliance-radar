@@ -217,6 +217,12 @@ export type SurfacedItem = {
   /** Null on non-recall sources. */
   product: ProductRecord | null;
   /**
+   * FDA's own product photos, thumbnails, absolute URLs. Only `fda_rss` rows
+   * carry these: an openFDA enforcement report has no press page to scrape,
+   * so an empty list is the normal case, not a gap.
+   */
+  images: string[];
+  /**
    * What to show as this row's headline: the extracted product name where the
    * extraction succeeded, else the source title. Never a truncated guess.
    */
@@ -359,6 +365,7 @@ export async function getSurfaced(): Promise<SurfacedItem[]> {
       classification,
       timingLabel,
       postedLabel: posted(r.created_at),
+      images: strList(payload.images),
       agedLabel: Date.now() - utc(r.created_at).getTime() > WINDOW_DAYS * 86_400_000
         ? flagged(r.created_at)
         : null,

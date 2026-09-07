@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ItemCard } from "@/components/ui/item-card";
 import { Tooltip } from "@/components/ui/tooltip";
+import { ItemMedia } from "@/components/ui/item-media";
 import { useAskRadar } from "@/components/ask/ask-radar-context";
 import { cardCode } from "@/lib/format";
 import type { SurfacedEvent } from "@/lib/queries";
@@ -111,7 +112,17 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
       {needsAction && <UrgentBanner reason={item.shortReason} />}
 
       <ItemCard.Body>
-        {event.isGroup ? (
+        <div className="flex items-start gap-4">
+          {/* Only the first photo here; the rest belong to the detail gallery. */}
+          <ItemMedia
+            image={item.images[0]}
+            upc={item.product?.upcs[0]}
+            alt={`Recall photo: ${item.displayTitle}`}
+            className="mt-0.5 aspect-square w-20 flex-none md:w-24"
+          />
+
+          <div className="flex min-w-0 flex-1 flex-col gap-2.5">
+            {event.isGroup ? (
           /* Headline carries firm, count and hazard, so the card states what
              the event is even when the urgent banner is showing above it. */
           <h3 className="max-w-[740px] text-[20px]/tight font-medium text-ink md:text-[25px]">
@@ -144,6 +155,9 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
             )}
           </div>
         )}
+          </div>
+        </div>
+
         <div className="text-[12.5px] text-faint">
           {item.timingLabel ?? item.postedLabel}
           {/*
