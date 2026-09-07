@@ -35,10 +35,8 @@
   --color-ink-soft: #27272a;
   --color-body: #3f3f46;
   --color-muted: #52525b;
-  /* Both were #71717a, which is 4.9:1 on white and so had no room left the
-     moment the cards stopped being white. One step darker buys the glass. */
-  --color-faint: #67676f;
-  --color-monoink: #67676f;
+  --color-faint: #71717a;
+  --color-monoink: #71717a;
   --color-ghost: #a1a1aa;
 
   /* Accent */
@@ -138,94 +136,6 @@
   }
   body {
     @apply bg-background text-foreground font-sans;
-  }
-}
-
-/*
- * The canvas the cards float on.
- *
- * One fixed layer behind the whole app rather than a background on each
- * page's wrapper: the pools have to move, and a moving background-position
- * repaints the full viewport every frame. As their own elements they move by
- * transform instead, which the compositor handles without repainting
- * anything, so a 7,000px log still scrolls clean while they drift.
- *
- * It sits at z-index -1, above the body's background and below every piece of
- * page content, so the translucent cards read it through themselves. Nothing
- * between it and them may paint an opaque background.
- *
- * Blue carries less luminance than green at the same alpha (0.07 of it
- * against 0.72 in the sRGB weighting), so these alphas are lower than the
- * green build's and were set by measuring, not by eye.
- */
-.canvas-layer {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  overflow: hidden;
-  pointer-events: none;
-  background-image: linear-gradient(158deg, #fbfdff 0%, #f2f7fd 44%, #e7eff9 100%);
-}
-
-/*
- * Two pools, oversized so no edge can drift into frame, and offset from each
- * other in period and direction. Matched periods would read as one object
- * sliding; mismatched ones never repeat the same arrangement twice, which is
- * what makes it read as light rather than as an animation.
- *
- * Slow enough to stay ambient, far enough to be seen: about 240px of travel
- * over 41 seconds, or six pixels a second. The first pass ran at one pixel a
- * second, which was past ambient and into nothing happening at all.
- */
-.canvas-pool {
-  position: absolute;
-  inset: -30%;
-  will-change: transform;
-}
-
-.canvas-pool-deep {
-  /* Top right, matching the static build's 88% 2%. */
-  background-image: radial-gradient(
-    46% 42% at 68% 24%,
-    rgba(38, 78, 128, 0.2) 0%,
-    rgba(38, 78, 128, 0) 100%
-  );
-  animation: canvas-drift-a 41s ease-in-out infinite alternate;
-}
-
-.canvas-pool-soft {
-  /* Bottom left, clear of the rail's smallest text: at the corner its deepest
-     tint measured 2.9:1 behind that label. */
-  background-image: radial-gradient(
-    44% 44% at 40% 80%,
-    rgba(126, 162, 208, 0.26) 0%,
-    rgba(126, 162, 208, 0) 100%
-  );
-  animation: canvas-drift-b 53s ease-in-out infinite alternate;
-}
-
-@keyframes canvas-drift-a {
-  from {
-    transform: translate3d(-4.8%, 3.2%, 0) scale(1);
-  }
-  to {
-    transform: translate3d(5.2%, -4%, 0) scale(1.1);
-  }
-}
-
-@keyframes canvas-drift-b {
-  from {
-    transform: translate3d(4.4%, -3.6%, 0) scale(1.08);
-  }
-  to {
-    transform: translate3d(-5%, 4.4%, 0) scale(1);
-  }
-}
-
-/* Ambient decoration is exactly what this setting is for. */
-@media (prefers-reduced-motion: reduce) {
-  .canvas-pool {
-    animation: none;
   }
 }
 

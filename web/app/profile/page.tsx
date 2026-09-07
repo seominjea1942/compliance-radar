@@ -23,7 +23,7 @@ export default async function ProfilePage() {
 
   return (
     <AskRadarProvider>
-      <div className="flex min-h-screen flex-col md:flex-row">
+      <div className="flex min-h-screen flex-col bg-shell md:flex-row">
         <Sidebar
           profile={profile}
           surfacedCount={summary.surfaced}
@@ -31,7 +31,7 @@ export default async function ProfilePage() {
           current="profile"
         />
 
-        <main className="min-w-0 flex-1">
+        <main className="min-w-0 flex-1 bg-paper">
           <div className="mx-auto flex w-full max-w-[800px] flex-col gap-5 px-4 pt-5 pb-10 md:gap-6.5 md:px-12 md:pt-7.5 md:pb-12">
             <div className="flex flex-col gap-1.5">
               <h1 className="text-[20px]/tight font-semibold tracking-[-0.01em] text-ink md:text-[23px]">

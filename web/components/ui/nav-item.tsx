@@ -52,10 +52,7 @@ function NavItem({
     >
       <span className="whitespace-nowrap">{label}</span>
       {meta !== undefined && (
-        // text-muted, not text-monoink: these counts sit on the bare
-        // canvas, whose tint drifts, and #71717a is marginal there even
-        // before it moves. Measured at 4.45:1 at one end of the drift.
-        <span className="font-mono text-[11px] font-medium text-muted">{meta}</span>
+        <span className="font-mono text-[11px] font-medium text-monoink">{meta}</span>
       )}
     </a>
   );

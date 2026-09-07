@@ -32,17 +32,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${display.variable} ${ui.variable} ${mono.variable}`}>
-      <body>
-        {/*
-          The ambient canvas, once for the whole app. Decorative and inert:
-          aria-hidden, no pointer events, and behind everything at z -1.
-        */}
-        <div className="canvas-layer" aria-hidden>
-          <div className="canvas-pool canvas-pool-soft" />
-          <div className="canvas-pool canvas-pool-deep" />
-        </div>
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

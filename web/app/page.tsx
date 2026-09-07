@@ -36,14 +36,14 @@ export default async function HomePage() {
 
   return (
     <AskRadarProvider>
-      <div className="flex min-h-screen flex-col md:flex-row">
+      <div className="flex min-h-screen flex-col bg-shell md:flex-row">
         <Sidebar
           profile={profile}
           surfacedCount={summary.surfaced}
           setAsideCount={summary.filtered}
         />
 
-        <main className="min-w-0 flex-1">
+        <main className="min-w-0 flex-1 bg-paper">
           {/*
             Feed on the left, context on the right. The rail is sticky so the
             weekly numbers and the map stay visible while the feed scrolls,

@@ -18,14 +18,8 @@ import { cn } from "@/lib/utils";
  * `::after` is measured against, so a card that takes these classes without it
  * would spread its click target over the nearest positioned ancestor instead.
  */
-/*
- * No hover background here. The two cards using this sit on different
- * surfaces now: a solid item card wants an opaque hover, and a translucent
- * panel wants one with the same alpha, or the tint snaps off under the
- * pointer and reads as the card flashing white. Each supplies its own.
- */
 export const stretchedCard =
-  "relative transition-colors hover:border-line-strong focus-within:border-line-strong";
+  "relative transition-colors hover:border-line-strong hover:bg-hover focus-within:border-line-strong";
 
 /**
  * The card's stretched link: its ::after covers the whole card, so clicking

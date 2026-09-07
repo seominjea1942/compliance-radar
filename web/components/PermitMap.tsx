@@ -107,12 +107,7 @@ export function PermitMap({
   ].filter(Boolean);
 
   return (
-    <Card // Translucent panels carry no border, so this one's hover cannot
-      // use it. A ring instead of a border: same hairline, no 1px of
-      // layout shift when it appears. The tint alone was a six-point
-      // change on a 42% surface, which is not enough to answer a click
-      // target that covers the whole card.
-      className={`w-full min-w-0 gap-3.5 p-4.5 hover:bg-hover/42 hover:ring-1 hover:ring-line-strong ${stretchedCard}`}>
+    <Card className={`w-full min-w-0 gap-3.5 p-4.5 ${stretchedCard}`}>
       <div className="flex flex-col gap-1.5">
         <CardTitle>
           {/*

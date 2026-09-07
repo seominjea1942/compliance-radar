@@ -7,16 +7,6 @@ import { cn } from "@/lib/utils";
  *
  * There is deliberately no urgent tone. Colouring the whole card border red
  * competed with the alert banner inside it; the banner carries that signal.
- *
- * The outer panel is translucent, so the canvas gradient behind it tints it
- * instead of stopping at its edge. Opaque white cards covered so much of the
- * screen that the wash survived only in the gutters and read as a printing
- * error. The alpha is high enough that ink on these keeps well past the
- * contrast floor. The alphas are set by measurement, not taste. Glass this
- * clear is only affordable because --color-faint moved a step darker with
- * it; at the old #71717a these same alphas put the faintest label in a card
- * at 4.14:1. Measured across all three points of the canvas drift, the
- * worst text on the overview now sits at 4.80:1.
  */
 function Card({
   className,
@@ -27,24 +17,9 @@ function Card({
     <div
       data-slot="card"
       className={cn(
-        "flex flex-col",
-        // No border. A hairline around a pane you can see through draws the
-        // pane rather than what is in it, and the panel already separates
-        // from the canvas by being lighter than it.
-        //
-        // Alpha only, no backdrop-filter either. Blurring the backdrop of
-        // the log page, whose outer panel is one 7,000px card, made the
-        // browser snapshot a layer that size and paint nothing at all below
-        // the fold. There is also nothing to blur: the backdrop is a smooth
-        // gradient, so the filter cost a whole screen to change no pixels.
-        tone === "paper" && "rounded-card bg-paper/42 px-6.5 py-5.5",
-        // Solid, not translucent, and white rather than shell. The panel
-        // around it already carries the canvas; a second layer of glass on
-        // top of the first only muddied the tint and left the item, which is
-        // the thing being read, as the least definite surface on the page.
-        // Opaque, so it keeps its outline: that edge is what separates one
-        // item from the next.
-        tone === "inset" && "rounded-panel border border-line bg-paper px-5.5 py-5",
+        "flex flex-col border",
+        tone === "paper" && "rounded-card border-line bg-paper px-6.5 py-5.5",
+        tone === "inset" && "rounded-panel border-line bg-shell px-5.5 py-5",
         className,
       )}
       {...props}

@@ -27,11 +27,7 @@ export function Sidebar({
   return (
     <nav
       className={[
-        // Opaque on mobile, where the bar is sticky over scrolling
-        // content; transparent on desktop, where it is a flex sibling
-        // and shares the window's canvas gradient. Its right border
-        // does the separating that the flat fill used to.
-        "sticky top-0 z-10 flex flex-none bg-rail md:bg-transparent",
+        "sticky top-0 z-10 flex flex-none bg-rail",
         // Mobile: full-width bar across the top.
         "w-full flex-row items-center gap-3 overflow-x-auto border-b border-line px-4 py-3",
         // Desktop: the design's fixed rail.
@@ -58,13 +54,7 @@ export function Sidebar({
             <Avatar name={profile.owner} />
             <div className="flex min-w-0 flex-col gap-px">
               <span className="text-[12.5px] font-medium text-ink">{profile.owner}</span>
-              {/*
-                text-muted, not text-faint like its siblings: this label
-                sits lowest in the rail, where the canvas gradient is at
-                its deepest. Measured, #71717a lands at 3.8:1 there and
-                #52525b at 4.9:1.
-              */}
-              <span className="text-[11px] text-muted">Owner</span>
+              <span className="text-[11px] text-faint">Owner</span>
             </div>
             <MdChevronRight className="ml-auto size-4 flex-none text-ghost" aria-hidden />
           </div>
