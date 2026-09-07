@@ -107,7 +107,7 @@ export function Header({
                   width={48}
                   height={48}
                   aria-hidden
-                  className="size-6 flex-none"
+                  className="size-9 flex-none"
                 />
                 {t.label}
                 {t.meta !== undefined && (

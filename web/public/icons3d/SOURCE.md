@@ -7,9 +7,9 @@ Three renders from the **3dicons.co v1 collection** by realvjy, released
 | --- | --- | --- |
 | `overview.webp` | Target | Overview |
 | `log.webp` | Notebook | Log |
-| `profile.webp` | Bag | Store profile |
+| `profile.webp` | Toggle | Store profile |
 
-Fetched at 200×200, `dynamic` style, `color` finish:
+Displayed at 36×36. Fetched at 200×200, `dynamic` style, `color` finish:
 `https://3dicons.co/collection/b68cf8-v1`
 
 **These files have no alpha channel.** Their background is opaque white, so
