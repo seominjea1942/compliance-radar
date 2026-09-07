@@ -1,4 +1,3 @@
-import { Card } from "@/components/ui/card";
 import { AskRadarProvider } from "@/components/ask/AskRadarProvider";
 import { PermitMap } from "@/components/PermitMap";
 import { Header } from "@/components/Header";
@@ -48,9 +47,15 @@ export default async function HomePage() {
             which is the point of splitting them out of the column.
           */}
           <div className="mx-auto grid w-full max-w-[1200px] grid-cols-1 gap-5 px-4 pt-5 pb-10 md:px-12 md:pt-7.5 md:pb-12 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-7">
-            <Card className="gap-5">
+            {/*
+              No card around the feed. The item cards are already cards, so the
+              outer one framed a stack of frames and put two borders and two
+              paddings between the page and every headline. The column keeps
+              the same gap, so nothing below it moves.
+            */}
+            <div className="flex flex-col gap-5">
               <SurfacedFeed events={events} reviewed={summary.reviewed} />
-            </Card>
+            </div>
 
             <aside className="flex flex-col gap-5 lg:sticky lg:top-6 lg:self-start">
               <TopicTable
