@@ -130,10 +130,10 @@ export function RadarCharacter({
         <ellipse cx="50" cy="70" rx="51" ry="51" fill="#ffffff" filter={`url(#${uid}-soft)`} />
         <ellipse cx="50" cy="72" rx="46" ry="47" fill={`url(#${uid}-body)`} />
 
-        {/* Slightly mismatched eyes: the perfectly matched pair reads as a
-            diagram, the offset pair reads as a face. */}
+        {/* Matched pair, at the larger of the two former sizes: the eyes are
+            what the face is read by, so the bigger one set the size. */}
         <g ref={eyesRef} fill={`url(#${uid}-eye)`} filter={`url(#${uid}-eyeDepth)`}>
-          <ellipse cx="39" cy="56" rx="9" ry="11.6" />
+          <ellipse cx="39" cy="56" rx="10" ry="12.9" />
           <ellipse cx="65" cy="52" rx="10" ry="12.9" />
         </g>
       </g>
