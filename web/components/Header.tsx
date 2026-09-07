@@ -36,11 +36,11 @@ export function Header({
    * 3dicons.co, v1 collection by realvjy, CC0. Rendered art rather than
    * glyphs, so they are images at a fixed box instead of an icon font.
    *
-   * The files carry no alpha: their background is opaque white. The bar is
-   * not white any more, so they are composited with multiply, which leaves
-   * the backdrop untouched wherever the render is white and drops the square
-   * out. It is why they can sit on a tinted bar at all, and it holds for any
-   * light background; on a dark one they would need real alpha.
+   * The files carry no alpha: their background is opaque white, which is
+   * what the bar is again, so nothing shows. The multiply stays anyway. On
+   * white it changes not one pixel, and it is what let them sit on a tinted
+   * bar while the bar was tinted, so the next background change is free. A
+   * dark one would still need real alpha.
    *
    * `nudge` corrects the art inside the canvas, not the box. Each render is
    * centred differently in its own 200px frame: measuring the bounding box of
@@ -76,7 +76,7 @@ export function Header({
   ];
 
   return (
-    <header className="sticky top-0 z-20 flex-none border-b border-line bg-shell">
+    <header className="sticky top-0 z-20 flex-none border-b border-line bg-paper">
       {/*
         One row above md. Below it the three columns do not fit in 375px, so
         the bar wraps: mark and identities on the first row, sections on a
@@ -112,7 +112,7 @@ export function Header({
                 href={t.href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "relative flex items-center gap-2 px-3 py-1 text-[13.5px] whitespace-nowrap no-underline transition-colors",
+                  "relative flex items-center gap-2 px-3 pt-1 pb-3 text-[13.5px] whitespace-nowrap no-underline transition-colors",
                   active ? "font-medium text-ink" : "font-normal text-muted hover:text-ink",
                 )}
               >
