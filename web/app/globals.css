@@ -123,6 +123,17 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /*
+    Reserve the scrollbar's width whether or not there is one to show.
+    Without this, a filter that leaves one row or none makes the page short
+    enough to lose the scrollbar, the viewport gets wider by its width, and
+    every centred container jumps sideways: the log looked like it was
+    shivering as the filters changed. Browsers with overlay scrollbars
+    reserve nothing here, so this costs them no space.
+  */
+  html {
+    scrollbar-gutter: stable;
+  }
   body {
     @apply bg-background text-foreground font-sans;
   }
