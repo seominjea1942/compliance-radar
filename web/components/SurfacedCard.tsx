@@ -81,7 +81,7 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
       <ItemCard.Chips>
         <Badge>{item.sourceLabel}</Badge>
         {ACTION_LABEL[item.severity] && (
-          <Badge variant={needsAction ? "outlineAlert" : "outline"}>
+          <Badge variant={needsAction ? "solidAlert" : "outline"}>
             {ACTION_LABEL[item.severity]}
           </Badge>
         )}
@@ -97,7 +97,7 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
           >
             {/* tabIndex so the tooltip is reachable by keyboard, not hover only */}
             <Badge
-              variant={needsAction ? "outlineAlert" : "outline"}
+              variant={needsAction ? "solidAlert" : "outline"}
               tabIndex={0}
               className="relative z-[1] cursor-help gap-1.5 outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >

@@ -59,7 +59,7 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
               <div className="flex flex-wrap items-center gap-2.5">
                 <Badge>{item.sourceLabel}</Badge>
                 {item.severity && TIER_LABEL[item.severity] && (
-                  <Badge variant={item.severity === "act" ? "outlineAlert" : "outline"}>
+                  <Badge variant={item.severity === "act" ? "solidAlert" : "outline"}>
                     {TIER_LABEL[item.severity]}
                   </Badge>
                 )}
