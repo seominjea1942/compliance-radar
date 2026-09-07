@@ -80,10 +80,7 @@ export function TopicTable({
 
       {checked && (
         <div className="-mb-2 flex">
-          <span className="inline-flex items-center gap-1.5 text-sm text-faint">
-            {checked}
-            <span className="size-1.5 rounded-full bg-green-soft" />
-          </span>
+          <span className="text-sm text-faint">{checked}</span>
         </div>
       )}
 

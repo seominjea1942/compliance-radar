@@ -51,6 +51,9 @@
   --color-alert-ink: #912018;
   --color-alert-bg: #fef4f2;
   --color-alert-line: #f6d2cd;
+  /* Solid ground for the action/class badges. Darkened from #ce6969 so
+     white text clears 4.5:1 at the badge's 10.5px. */
+  --color-alert-fill: #c65050;
 
   /* Map */
   --color-pin: #a1a1aa;

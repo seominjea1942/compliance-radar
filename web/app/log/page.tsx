@@ -185,7 +185,7 @@ export default async function LogPage({
                         className={cn(
                           "rounded-full border px-3 py-1 text-[12.5px] no-underline transition-colors",
                           active
-                            ? "border-line-strong bg-shell font-medium text-ink"
+                            ? "border-green-soft bg-green-tint font-medium text-green"
                             : "border-line text-muted hover:border-line-strong hover:text-ink",
                         )}
                       >

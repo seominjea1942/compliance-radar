@@ -1,4 +1,10 @@
-import { MdChevronRight } from "react-icons/md";
+import {
+  MdChevronRight,
+  MdInfoOutline,
+  MdOutlineDashboard,
+  MdOutlineListAlt,
+  MdOutlineStorefront,
+} from "react-icons/md";
 import { Avatar } from "@/components/ui/avatar";
 import { BusinessSwitcher } from "@/components/BusinessSwitcher";
 import { NavItem } from "@/components/ui/nav-item";
@@ -38,14 +44,36 @@ export function Sidebar({
       <BusinessSwitcher storeName={storeName} location={profile?.location} />
 
       <div className="flex flex-none flex-row gap-1 md:flex-col md:gap-0.5">
-        <NavItem href="/" label="Overview" meta={count(surfacedCount)} active={current === "overview"} />
-        <NavItem href="/log" label="Log" meta={count(setAsideCount)} active={current === "log"} />
-        <NavItem href="/profile" label="Store profile" active={current === "profile"} />
+        <NavItem
+          href="/"
+          label="Overview"
+          icon={<MdOutlineDashboard className="size-[18px] flex-none" aria-hidden />}
+          meta={count(surfacedCount)}
+          active={current === "overview"}
+        />
+        <NavItem
+          href="/log"
+          label="Log"
+          icon={<MdOutlineListAlt className="size-[18px] flex-none" aria-hidden />}
+          meta={count(setAsideCount)}
+          active={current === "log"}
+        />
+        <NavItem
+          href="/profile"
+          label="Store profile"
+          icon={<MdOutlineStorefront className="size-[18px] flex-none" aria-hidden />}
+          active={current === "profile"}
+        />
         {/* Ask the radar lives in the floating launcher, reachable with ⌘K. */}
       </div>
 
       <div className="flex flex-none flex-col gap-3 md:mt-auto md:border-t md:border-line md:pt-3.5">
-        <NavItem href="/about" label="About this project" active={current === "about"} />
+        <NavItem
+          href="/about"
+          label="About this project"
+          icon={<MdInfoOutline className="size-[18px] flex-none" aria-hidden />}
+          active={current === "about"}
+        />
 
         {profile?.owner && (
           // The owner block is rail furniture; on the top bar it would push

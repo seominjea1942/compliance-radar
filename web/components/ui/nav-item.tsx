@@ -13,6 +13,7 @@ const base =
  */
 function NavItem({
   label,
+  icon,
   meta,
   active = false,
   soon = false,
@@ -20,6 +21,8 @@ function NavItem({
   ...props
 }: React.ComponentProps<"a"> & {
   label: string;
+  /** Sits before the label. Decorative: the label is the accessible name. */
+  icon?: React.ReactNode;
   meta?: React.ReactNode;
   active?: boolean;
   soon?: boolean;
@@ -31,7 +34,10 @@ function NavItem({
         aria-disabled="true"
         className={cn(base, "cursor-default font-normal text-ghost select-none", className)}
       >
-        <span className="whitespace-nowrap">{label}</span>
+        <span className="flex min-w-0 items-center gap-2.5">
+          {icon}
+          <span className="whitespace-nowrap">{label}</span>
+        </span>
         <span className="font-mono text-[10px] tracking-[0.1em] text-ghost uppercase">Soon</span>
       </span>
     );
@@ -50,7 +56,10 @@ function NavItem({
       )}
       {...props}
     >
-      <span className="whitespace-nowrap">{label}</span>
+      <span className="flex min-w-0 items-center gap-2.5">
+        {icon}
+        <span className="whitespace-nowrap">{label}</span>
+      </span>
       {meta !== undefined && (
         <span className="font-mono text-[11px] font-medium text-monoink">{meta}</span>
       )}
