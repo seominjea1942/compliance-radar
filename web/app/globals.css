@@ -64,9 +64,12 @@
   /*
    * Type. app/layout.tsx binds the actual faces to these role variables, so a
    * typeface swap happens there and nowhere else.
-   *   display -> Newsreader   ui -> Inter   mono-ui -> IBM Plex Mono
+   *   ui -> Geist   mono-ui -> IBM Plex Mono
+   *
+   * One face for the interface, no display serif. Newsreader ran on item
+   * titles, reasons and section headers; two voices on a screen this dense
+   * read as two products rather than as emphasis.
    */
-  --font-serif: var(--font-display), Georgia, serif;
   --font-sans: var(--font-ui), system-ui, sans-serif;
   --font-mono: var(--font-mono-ui), ui-monospace, monospace;
 

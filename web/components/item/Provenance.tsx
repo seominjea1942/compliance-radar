@@ -112,7 +112,7 @@ export function Provenance({
 
       {quote && (
         <blockquote className="m-0 border-l-2 border-line-strong pl-3.5">
-          <p className="m-0 font-serif text-[15px]/relaxed text-body">“{quote}”</p>
+          <p className="m-0 text-[15px]/relaxed text-body">“{quote}”</p>
           {pageHint && <cite className="text-[11.5px] text-faint not-italic">{pageHint}</cite>}
         </blockquote>
       )}

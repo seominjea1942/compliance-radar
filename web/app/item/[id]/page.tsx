@@ -67,7 +67,7 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
                 {item.overturned && <Badge variant="outline">Overturned</Badge>}
               </div>
 
-              <h1 className="text-pretty font-serif text-[24px]/tight font-medium text-ink md:text-[30px]">
+              <h1 className="text-pretty text-[24px]/tight font-medium text-ink md:text-[30px]">
                 {item.displayTitle}
               </h1>
               <p className="m-0 text-[12.5px] text-faint">{item.postedLabel}</p>
@@ -77,7 +77,7 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
               <CardTitle as="h2">
                 {item.surfaced ? "Why this reached you" : "Why I set this aside"}
               </CardTitle>
-              <p className="m-0 text-pretty font-serif text-[17px]/relaxed text-body md:text-[19px]">
+              <p className="m-0 text-pretty text-[17px]/relaxed text-body md:text-[19px]">
                 {item.reason}
               </p>
               {item.tags.length > 0 && (

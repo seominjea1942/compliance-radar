@@ -21,7 +21,7 @@ function Row({ topic }: { topic: TopicRow }) {
       aria-label={`Open the log filtered to ${topic.label}`}
       className="flex items-baseline gap-3 bg-paper px-4 py-3 no-underline transition-colors hover:bg-hover focus-visible:relative focus-visible:z-[1] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
     >
-      <span className={`flex-1 font-serif text-[15px] ${quiet ? "text-faint" : "text-ink"}`}>
+      <span className={`flex-1 text-[15px] ${quiet ? "text-faint" : "text-ink"}`}>
         {topic.label}
       </span>
       {quiet ? (

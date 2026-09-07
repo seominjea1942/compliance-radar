@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Newsreader, IBM_Plex_Mono } from "next/font/google";
+import { Geist, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
 /*
@@ -7,13 +7,7 @@ import "./globals.css";
  * changing the import here and nothing else. globals.css maps these onto the
  * Tailwind font utilities.
  */
-const display = Newsreader({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  style: ["normal", "italic"],
-  variable: "--font-display",
-});
-const ui = Inter({
+const ui = Geist({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
   variable: "--font-ui",
@@ -31,7 +25,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${display.variable} ${ui.variable} ${mono.variable}`}>
+    <html lang="en" className={`${ui.variable} ${mono.variable}`}>
       <body>{children}</body>
     </html>
   );
