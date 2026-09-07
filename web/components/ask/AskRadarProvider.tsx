@@ -138,6 +138,7 @@ export function AskRadarProvider({ children }: { children: React.ReactNode }) {
           messages={messages}
           pending={pending}
           onSend={(text) => send(text, scopedTo)}
+          onClearScope={() => setScopedTo(null)}
           onClose={close}
         />
       )}

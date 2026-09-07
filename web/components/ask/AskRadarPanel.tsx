@@ -1,18 +1,18 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { MdArrowUpward, MdClose, MdErrorOutline } from "react-icons/md";
+import {
+  MdArrowUpward,
+  MdClose,
+  MdErrorOutline,
+  MdOutlineChatBubbleOutline,
+  MdOutlineDescription,
+} from "react-icons/md";
 import { RadarCharacter } from "./RadarCharacter";
 import { AnswerText } from "./AnswerText";
 import type { SurfacedItem } from "@/lib/queries";
 
 export type Message = { id: number; from: "user" | "radar" | "error"; text: string };
-
-const SUGGESTIONS = [
-  "Why did this reach me?",
-  "What should I check first?",
-  "Show me what you filtered today",
-];
 
 /** Answers land in 2-9s warm; a tool-heavy question can run far longer. */
 const STILL_WORKING_MS = 12_000;
@@ -54,12 +54,14 @@ export function AskRadarPanel({
   messages,
   pending,
   onSend,
+  onClearScope,
   onClose,
 }: {
   scopedTo: SurfacedItem | null;
   messages: Message[];
   pending: boolean;
   onSend: (text: string) => void;
+  onClearScope: () => void;
   onClose: () => void;
 }) {
   const [draft, setDraft] = useState("");
@@ -68,16 +70,28 @@ export function AskRadarPanel({
 
   useEffect(() => inputRef.current?.focus(), []);
 
-  // Grow the box to the text instead of scrolling it sideways. Height is reset
-  // to auto first so the box can shrink again when the draft gets shorter, and
-  // measured from scrollHeight so wrapping follows the rendered glyphs rather
-  // than a character count. CSS caps it; past the cap the textarea scrolls.
+  // Grow the box to the text instead of scrolling it sideways, measured from
+  // scrollHeight so wrapping follows the rendered glyphs rather than a
+  // character count. CSS caps it; past the cap the textarea scrolls.
+  //
+  // Collapsed to 0 before measuring, not to "auto". Inside the composer's
+  // flex column "auto" leaves the box its laid-out height, so scrollHeight
+  // comes back as whatever it already was and an empty field measured 307px.
+  // From zero, scrollHeight can only be the height of the content.
   useLayoutEffect(() => {
     const el = inputRef.current;
     if (!el) return;
-    el.style.height = "auto";
+    // Empty field: no computed height at all, so rows={1} governs. Measuring
+    // an empty textarea on mount returned 307px inside the composer's flex
+    // column, which the max-height then clamped into a box five lines deep
+    // waiting for its first character.
+    if (!draft) {
+      el.style.height = "";
+      return;
+    }
+    el.style.height = "0px";
     el.style.height = `${el.scrollHeight}px`;
-  }, [draft]);
+  }, [draft, scopedTo]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -119,33 +133,19 @@ export function AskRadarPanel({
       </header>
 
       <div ref={logRef} className="flex min-h-0 flex-1 flex-col gap-3.5 overflow-y-auto p-4">
-        {scopedTo && (
-          <div className="flex items-baseline gap-2 border-b border-line-soft pb-3 text-xs text-faint">
-            <span className="flex-none font-mono text-[10px] font-medium tracking-[0.14em] text-monoink uppercase">
-              About
-            </span>
-            <span className="text-pretty">{scopedTo.title}</span>
-          </div>
-        )}
-
         {messages.length === 0 && !pending && (
-          <div className="flex flex-col gap-2.5 py-1">
-            <p className="text-[13.5px]/relaxed text-faint">
+          /*
+            Centred, and the only thing in the panel until a question is asked.
+            The three canned prompts that used to sit here answered themselves:
+            they taught the shape of a question, then filled the box with
+            someone else's, and every conversation opened the same way.
+          */
+          <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
+            <MdOutlineChatBubbleOutline className="size-7 text-ghost" aria-hidden />
+            <p className="text-[13px]/relaxed text-balance text-ghost">
               Ask about anything I watch: recalls, permits, council agendas, or why something
               was filtered out.
             </p>
-            <div className="flex flex-col items-start gap-1.5">
-              {SUGGESTIONS.map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => send(s)}
-                  className="cursor-pointer rounded-full border border-line bg-shell px-3 py-1.5 text-left text-[12.5px] text-muted transition-colors hover:border-line-strong hover:text-ink focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
           </div>
         )}
 
@@ -191,7 +191,31 @@ export function AskRadarPanel({
         }}
         className="flex flex-col gap-2 border-t border-line px-4 pt-3 pb-4"
       >
-        <div className="flex items-end gap-2.5 rounded-[10px] border border-line-strong bg-shell px-3 py-2.5 focus-within:border-green">
+        <div className="flex flex-col gap-2 rounded-[10px] border border-line-strong bg-shell px-3 py-2.5 focus-within:border-green">
+          {scopedTo && (
+            /*
+              Inside the box the message is written in, not above the
+              transcript. Scope is something being attached to what you are
+              about to send, and it stays attached: the runtime is given this
+              item on every turn until it is removed here.
+            */
+            <div className="flex max-w-full items-center gap-1.5 self-start rounded-md border border-line bg-paper py-1 pr-1 pl-2">
+              <MdOutlineDescription className="size-3.5 flex-none text-monoink" aria-hidden />
+              <span className="min-w-0 truncate text-[12px] text-muted">
+                {scopedTo.displayTitle}
+              </span>
+              <button
+                type="button"
+                onClick={onClearScope}
+                aria-label={`Ask without ${scopedTo.displayTitle} attached`}
+                className="flex size-4 flex-none cursor-pointer items-center justify-center rounded text-ghost transition-colors hover:bg-hover hover:text-ink focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              >
+                <MdClose className="size-3" aria-hidden />
+              </button>
+            </div>
+          )}
+
+          <div className="flex items-end gap-2.5">
           <textarea
             ref={inputRef}
             rows={1}
@@ -221,6 +245,7 @@ export function AskRadarPanel({
           >
             <MdArrowUpward className="size-4" aria-hidden />
           </button>
+          </div>
         </div>
         <p className="text-[11.5px] text-monoink">
           I answer from the same sources I watch, and I&apos;ll tell you when I&apos;m not sure.
