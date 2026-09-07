@@ -38,7 +38,7 @@ const STEPS = [
 export default async function AboutPage() {
   const [summary, log, profile] = await Promise.all([
     getWeeklySummary(),
-    getFilteredLog({ status: "filtered", limit: 1 }),
+    getFilteredLog({ status: "set-aside", limit: 1 }),
     getStoreProfile(),
   ]);
 
@@ -48,7 +48,7 @@ export default async function AboutPage() {
         <Sidebar
           profile={profile}
           surfacedCount={summary.surfaced}
-          filteredCount={log.counts.filtered}
+          setAsideCount={log.counts.setAside}
           current="about"
         />
 

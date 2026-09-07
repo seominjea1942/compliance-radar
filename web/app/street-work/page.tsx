@@ -24,7 +24,7 @@ export default async function StreetWorkPage() {
     getStreetWork(),
     getNearbyPermits(),
     getWeeklySummary(),
-    getFilteredLog({ status: "filtered", limit: 1 }),
+    getFilteredLog({ status: "set-aside", limit: 1 }),
     getStoreProfile(),
   ]);
 
@@ -39,7 +39,7 @@ export default async function StreetWorkPage() {
         <Sidebar
           profile={profile}
           surfacedCount={summary.surfaced}
-          filteredCount={log.counts.filtered}
+          setAsideCount={log.counts.setAside}
         />
 
         <main className="min-w-0 flex-1 bg-paper">

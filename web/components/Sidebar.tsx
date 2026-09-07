@@ -12,12 +12,13 @@ import { count } from "@/lib/format";
 export function Sidebar({
   profile,
   surfacedCount,
-  filteredCount,
+  setAsideCount,
   current = "overview",
 }: {
   profile: StoreProfile | null;
   surfacedCount: number;
-  filteredCount: number;
+  /** Rows in the log: everything the radar set aside. */
+  setAsideCount: number;
   current?: "overview" | "log" | "profile" | "about";
 }) {
   const storeName = profile?.storeName ?? "Store";
@@ -56,7 +57,7 @@ export function Sidebar({
 
       <div className="flex flex-none flex-row gap-1 md:flex-col md:gap-0.5">
         <NavItem href="/" label="Overview" meta={count(surfacedCount)} active={current === "overview"} />
-        <NavItem href="/log" label="Log" meta={count(filteredCount)} active={current === "log"} />
+        <NavItem href="/log" label="Log" meta={count(setAsideCount)} active={current === "log"} />
         <NavItem href="/profile" label="Store profile" active={current === "profile"} />
         {/* Ask the radar lives in the floating launcher, reachable with ⌘K. */}
       </div>

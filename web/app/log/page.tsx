@@ -15,10 +15,19 @@ import { count } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * The two states, then their union.
+ *
+ * "Overturned" replaces "Resolved", which named the wrong thing entirely:
+ * the Resolve flow writes `resolution` on surfaced items and never lands in
+ * the log. "Set aside" replaces "Filtered", which shared a word with the
+ * topic filters sitting directly beneath it, so the state a row was in and
+ * the control that narrowed the list read as the same idea.
+ */
 const STATUSES: { value: LogStatus; label: string }[] = [
   { value: "all", label: "All" },
-  { value: "resolved", label: "Resolved" },
-  { value: "filtered", label: "Filtered" },
+  { value: "set-aside", label: "Set aside" },
+  { value: "overturned", label: "Overturned" },
 ];
 
 /**
@@ -36,6 +45,13 @@ const TOPICS: { value: string | null; label: string }[] = [
   ...TAGS.map((t) => ({ value: t.id as string | null, label: t.label })),
 ];
 
+/** What the scoped indicator is counting, per status tab. */
+const STATUS_NOUN: Record<LogStatus, string> = {
+  all: "items read",
+  "set-aside": "set aside, not surfaced",
+  overturned: "overturned",
+};
+
 const PAGE = 25;
 
 /**
@@ -45,7 +61,7 @@ const PAGE = 25;
  */
 function hrefFor(params: { status: LogStatus; limit: number; tag: string | null }) {
   const q = new URLSearchParams();
-  if (params.status !== "filtered") q.set("status", params.status);
+  if (params.status !== "set-aside") q.set("status", params.status);
   if (params.tag) q.set("tag", params.tag);
   if (params.limit !== PAGE) q.set("limit", String(params.limit));
   const s = q.toString();
@@ -60,7 +76,7 @@ export default async function LogPage({
   const sp = await searchParams;
   const one = (k: string) => (Array.isArray(sp[k]) ? sp[k][0] : sp[k]);
 
-  const status = (STATUSES.find((s) => s.value === one("status"))?.value ?? "filtered") as LogStatus;
+  const status = (STATUSES.find((s) => s.value === one("status"))?.value ?? "set-aside") as LogStatus;
   const limit = Math.min(Math.max(Number(one("limit")) || PAGE, PAGE), 500);
   // Validated against the fixed tag set: an unknown ?tag is dropped rather
   // than narrowing the log to nothing and looking like an empty database.
@@ -74,8 +90,8 @@ export default async function LogPage({
 
   const tabCount: Record<LogStatus, number> = {
     all: log.counts.all,
-    resolved: log.counts.resolved,
-    filtered: log.counts.filtered,
+    "set-aside": log.counts.setAside,
+    overturned: log.counts.overturned,
   };
 
   return (
@@ -84,7 +100,7 @@ export default async function LogPage({
         <Sidebar
           profile={profile}
           surfacedCount={summary.surfaced}
-          filteredCount={log.overall.filtered}
+          setAsideCount={log.overall.setAside}
           current="log"
         />
 
@@ -95,10 +111,17 @@ export default async function LogPage({
                 <h1 className="text-[20px]/tight font-semibold tracking-[-0.01em] text-ink md:text-[23px]">
                   Everything I&apos;ve read
                 </h1>
+                {/*
+                  The whole log, not the current slice. This sentence describes
+                  what the page is; a number that moved every time a pill was
+                  pressed was reporting the filter instead, and read as though
+                  the archive itself had shrunk. The filtered figures live with
+                  the filters, below.
+                */}
                 <p className="max-w-[700px] text-[14.5px]/relaxed text-pretty text-body md:text-[15.5px]">
-                  {count(log.counts.all)} items. Filtered holds what I chose not to surface, each
-                  with a reason. Resolved holds what you brought to a close. If I filtered
-                  something wrongly, flip it and I&apos;ll adjust.
+                  {count(log.overall.all)} items. Set aside holds what I chose not to surface,
+                  each with a reason. Overturned holds the calls you sent back. If I set
+                  something aside wrongly, say so and I&apos;ll adjust.
                 </p>
               </div>
 
@@ -123,42 +146,61 @@ export default async function LogPage({
                 ))}
               </div>
 
-              <div className="flex flex-wrap items-center gap-2 border-t border-line-soft pt-4">
-                {TOPICS.map((t) => {
-                  const active = t.value === (topic?.id ?? null);
-                  return (
-                    <Link
-                      key={t.value ?? "all"}
-                      href={hrefFor({ status, limit: PAGE, tag: t.value })}
-                      aria-current={active ? "true" : undefined}
-                      className={cn(
-                        "rounded-full border px-3 py-1 text-[12.5px] no-underline transition-colors",
-                        active
-                          ? "border-green-soft bg-green-tint font-medium text-green"
-                          : "border-line text-muted hover:border-line-strong hover:text-ink",
-                      )}
-                    >
-                      {t.label}
-                    </Link>
-                  );
-                })}
+              <div className="flex flex-col gap-3 border-t border-line-soft pt-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  {TOPICS.map((t) => {
+                    const active = t.value === (topic?.id ?? null);
+                    return (
+                      <Link
+                        key={t.value ?? "all"}
+                        href={hrefFor({ status, limit: PAGE, tag: t.value })}
+                        aria-current={active ? "true" : undefined}
+                        className={cn(
+                          "rounded-full border px-3 py-1 text-[12.5px] no-underline transition-colors",
+                          active
+                            ? "border-green-soft bg-green-tint font-medium text-green"
+                            : "border-line text-muted hover:border-line-strong hover:text-ink",
+                        )}
+                      >
+                        {t.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+
+                {/*
+                  The count that answers the filters, kept with them. It is
+                  live-region so a screen reader hears the new total after a
+                  pill is pressed, which is the one place the number should
+                  move at all.
+                */}
+                <p
+                  aria-live="polite"
+                  className="m-0 text-[12.5px]/relaxed text-faint"
+                >
+                  <span className="font-mono tabular-nums text-monoink">
+                    {count(tabCount[status])}
+                  </span>{" "}
+                  {STATUS_NOUN[status]}
+                  {topic ? ` in ${topic.label.toLowerCase()}` : " across every topic"}
+                  {log.rows.length < tabCount[status] &&
+                    `, showing ${count(log.rows.length)}`}
+                  .
+                </p>
               </div>
 
               <LogRows rows={log.rows} />
 
-              <div className="flex items-center justify-center gap-2 text-[12.5px] text-faint">
-                <span>
-                  Showing {count(log.rows.length)} of {count(tabCount[status])}
-                </span>
-                {log.hasMore && (
+              {log.hasMore && (
+                <div className="flex items-center justify-center text-[12.5px]">
                   <Link
                     href={hrefFor({ status, limit: limit + PAGE, tag: topic?.id ?? null })}
                     className="font-medium text-green no-underline hover:underline"
                   >
                     Load more
                   </Link>
-                )}
-              </div>
+                </div>
+              )}
             </Card>
           </div>
         </main>

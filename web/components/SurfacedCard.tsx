@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import {
-  MdBlock,
   MdCheck,
   MdInfoOutline,
   MdOutlineChatBubbleOutline,
@@ -18,8 +17,8 @@ import { Tooltip } from "@/components/ui/tooltip";
 import { useAskRadar } from "@/components/ask/ask-radar-context";
 import { cardCode } from "@/lib/format";
 import type { SurfacedEvent } from "@/lib/queries";
-import { resolveItems } from "@/app/actions";
 import { ResolveDialog } from "@/components/ResolveDialog";
+import { ResolveConfirm } from "@/components/ResolveConfirm";
 import { MdExpandLess, MdExpandMore } from "react-icons/md";
 
 /**
@@ -60,20 +59,13 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
   const [done, setDone] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [resolving, setResolving] = useState(false);
-  const [pending, startTransition] = useTransition();
   const ask = useAskRadar();
 
   /*
    * A grouped card resolves through the modal, because there is a choice to
-   * make per product. A single-item card has no such choice, so Resolve writes
-   * `handled` straight away and "Don't carry" writes the other outcome.
+   * make per product. A single-item card confirms in a popover on the button
+   * instead: the same two outcomes, over the codes restated once more.
    */
-  function resolveOne(resolution: "handled" | "not_carried") {
-    startTransition(async () => {
-      const res = await resolveItems([{ decisionId: item.decisionId, resolution }]);
-      if (res.ok) setDone(true);
-    });
-  }
   // The banner is for "the store is affected", not "a serious recall exists":
   // a Class I recall of something you don't stock is not an emergency.
   const needsAction = item.severity === "act";
@@ -228,25 +220,18 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
       </ItemCard.Body>
 
       <ItemCard.Actions>
-        <Button
-          variant="cardAction"
-          size="action"
-          disabled={done || pending}
-          onClick={() => (event.isGroup ? setResolving(true) : resolveOne("handled"))}
-        >
-          <MdCheck className="size-[15px]" aria-hidden />
-          {pending ? "Saving…" : "Resolve"}
-        </Button>
-        {!event.isGroup && (
+        {event.isGroup ? (
           <Button
             variant="cardAction"
             size="action"
-            disabled={done || pending}
-            onClick={() => resolveOne("not_carried")}
+            disabled={done}
+            onClick={() => setResolving(true)}
           >
-            <MdBlock className="size-[15px]" aria-hidden />
-            Don&apos;t carry
+            <MdCheck className="size-[15px]" aria-hidden />
+            Resolve
           </Button>
+        ) : (
+          <ResolveConfirm item={item} disabled={done} onResolved={() => setDone(true)} />
         )}
         <Button variant="cardAction" size="action">
           <MdOutlineMailOutline className="size-[15px]" aria-hidden />

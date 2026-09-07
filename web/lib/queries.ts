@@ -529,7 +529,17 @@ export const SOURCE_GROUPS = {
 } as const;
 
 export type SourceGroup = keyof typeof SOURCE_GROUPS;
-export type LogStatus = "all" | "filtered" | "resolved";
+/**
+ * The two states a rejected item can be in, plus the union of both.
+ *
+ * Both names are the honest ones. "Filtered" collided with the topic
+ * filters on the same screen, so the state and the control that narrows it
+ * shared a word; "set-aside" is what the reason lines have always called it.
+ * "Resolved" was simply wrong: these rows are overturns, and resolution
+ * (handled / not carried) belongs to surfaced items and never reaches the
+ * log at all.
+ */
+export type LogStatus = "all" | "set-aside" | "overturned";
 
 export type LogRow = {
   decisionId: string;
@@ -547,9 +557,9 @@ export type LogRow = {
 export type LogPage = {
   rows: LogRow[];
   /** Scoped to the current filters: what the tabs on screen describe. */
-  counts: { all: number; filtered: number; resolved: number };
+  counts: { all: number; setAside: number; overturned: number };
   /** The whole log, ignoring filters: what the rail's badge describes. */
-  overall: { all: number; filtered: number };
+  overall: { all: number; setAside: number };
   hasMore: boolean;
 };
 
@@ -567,7 +577,7 @@ export async function getFilteredLog(opts: {
   tag?: string | null;
   limit?: number;
 } = {}): Promise<LogPage> {
-  const status = opts.status ?? "filtered";
+  const status = opts.status ?? "set-aside";
   const source = opts.source ?? "all";
   const tag = TAGS.some((t) => t.id === opts.tag) ? opts.tag! : null;
   const limit = Math.min(Math.max(opts.limit ?? 25, 1), 500);
@@ -575,8 +585,8 @@ export async function getFilteredLog(opts: {
   const where: string[] = [];
   const params: unknown[] = [];
 
-  if (status === "filtered") where.push("overturned = 0");
-  if (status === "resolved") where.push("overturned = 1");
+  if (status === "set-aside") where.push("overturned = 0");
+  if (status === "overturned") where.push("overturned = 1");
 
   if (source !== "all") {
     const list = SOURCE_GROUPS[source];
@@ -651,10 +661,10 @@ export async function getFilteredLog(opts: {
       postedLabel: posted(r.created_at),
       overturned: Number(r.overturned) === 1,
     })),
-    counts: { all, resolved, filtered: all - resolved },
+    counts: { all, overturned: resolved, setAside: all - resolved },
     overall: {
       all: Number(everything?.total ?? 0),
-      filtered: Number(everything?.total ?? 0) - Number(everything?.resolved ?? 0),
+      setAside: Number(everything?.total ?? 0) - Number(everything?.resolved ?? 0),
     },
     hasMore: rows.length > limit,
   };

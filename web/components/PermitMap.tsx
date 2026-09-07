@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { MapHoverCard, type HoverTarget } from "@/components/street/MapHoverCard";
 import { MapLegend } from "@/components/street/MapLegend";
 import { STREET_COLORS } from "@/lib/street-colors";
 import { Card, CardNote, CardTitle } from "@/components/ui/card";
+import { Above, StretchedLink, stretchedCard } from "@/components/ui/stretched";
 import { PermitMapView } from "@/components/PermitMapView";
 import { plainDate } from "@/lib/format";
 import {
@@ -107,16 +107,22 @@ export function PermitMap({
   ].filter(Boolean);
 
   return (
-    <Card className="w-full min-w-0 gap-3.5 p-4.5">
+    <Card className={`w-full min-w-0 gap-3.5 p-4.5 ${stretchedCard}`}>
       <div className="flex flex-col gap-1.5">
         <CardTitle>
-          <Link href="/street-work" className="text-ink no-underline hover:underline">
-          {blocking.length === 0
-            ? "No street work blocking your block."
-            : `Street work on ${listed.length} ${
-                listed.length === 1 ? "street" : "streets"
-              } near you.`}
-          </Link>
+          {/*
+            The click target is the card, not the sentence, and the hover is
+            the card's own: the same treatment as an item card. The map and
+            legend are lifted above the overlay so panning, zooming and marker
+            hover still reach Leaflet.
+          */}
+          <StretchedLink href="/street-work" className="text-ink">
+            {blocking.length === 0
+              ? "No street work blocking your block."
+              : `Street work on ${listed.length} ${
+                  listed.length === 1 ? "street" : "streets"
+                } near you.`}
+          </StretchedLink>
         </CardTitle>
         <CardNote>
           {/*
@@ -135,46 +141,48 @@ export function PermitMap({
       <PermitMapView
         permits={permits}
         streetWork={streetWork}
-          onHover={(target, point) => {
-            setHovered(target);
-            setAt(point ?? null);
-          }}
-        className={`w-full overflow-hidden rounded-[9px] border border-line bg-wash ${
+        onHover={(target, point) => {
+          setHovered(target);
+          setAt(point ?? null);
+        }}
+        className={`relative z-[1] w-full overflow-hidden rounded-[9px] border border-line bg-wash ${
           blocking.length > 0 ? "[aspect-ratio:704/300]" : "[aspect-ratio:704/430]"
         }`}
       />
 
-      <MapLegend
-        entries={[
-          {
-            color: STREET_COLORS.active,
-            label: "Street work",
-            count: active.length,
-            explain:
-              "An open utility permit to dig in the road. This is the kind that can close a lane or a sidewalk.",
-          },
-          {
-            color: STREET_COLORS.planned,
-            label: "Repaving",
-            count: planned.length,
-            explain: "A city paving project scheduled for a future year.",
-          },
-          {
-            color: STREET_COLORS.moratorium,
-            label: "No-dig",
-            count: moratorium.length,
-            explain:
-              "Recently repaved, so the city forbids digging here. Good news: nobody can open this street for now.",
-          },
-          {
-            color: STREET_COLORS.building,
-            label: "Building",
-            count: permits.length,
-            explain:
-              "Building permits nearby, shown for context. They rarely affect street access.",
-          },
-        ]}
-      />
+      <Above>
+        <MapLegend
+          entries={[
+            {
+              color: STREET_COLORS.active,
+              label: "Street work",
+              count: active.length,
+              explain:
+                "An open utility permit to dig in the road. This is the kind that can close a lane or a sidewalk.",
+            },
+            {
+              color: STREET_COLORS.planned,
+              label: "Repaving",
+              count: planned.length,
+              explain: "A city paving project scheduled for a future year.",
+            },
+            {
+              color: STREET_COLORS.moratorium,
+              label: "No-dig",
+              count: moratorium.length,
+              explain:
+                "Recently repaved, so the city forbids digging here. Good news: nobody can open this street for now.",
+            },
+            {
+              color: STREET_COLORS.building,
+              label: "Building",
+              count: permits.length,
+              explain:
+                "Building permits nearby, shown for context. They rarely affect street access.",
+            },
+          ]}
+        />
+      </Above>
 
       <MapHoverCard target={hovered} at={at} />
 

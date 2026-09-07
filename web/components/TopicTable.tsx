@@ -54,7 +54,12 @@ export function TopicTable({
       {/* items-start, not baseline: the icon is a box, not a line of text. */}
       <div className="flex items-start justify-between gap-4">
         <CardTitle>
-          {count(reviewed)} items read this week. Filtered {count(filtered)}.
+          {/*
+            "Set aside", not "Filtered": the log calls the state that, and
+            the word "filter" belongs to the controls that narrow a list.
+            The prop keeps the view's own column name, `filtered`.
+          */}
+          {count(reviewed)} items read this week. Set aside {count(filtered)}.
         </CardTitle>
         {/*
           Icon only, so the title keeps the full width of the card. The label
