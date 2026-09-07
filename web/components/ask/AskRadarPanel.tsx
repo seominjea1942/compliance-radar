@@ -136,8 +136,9 @@ export function AskRadarPanel({
         "radar-drawer",
       ].join(" ")}
     >
+      {/* No character here. It leads the empty state one row below, and twice
+          in the same 380px column read as two of it rather than one. */}
       <header className="flex items-center gap-2.5 border-b border-line px-4 py-3.5">
-        <RadarCharacter className="size-8 flex-none" />
         <span className="flex-1 font-serif text-[15px] font-semibold text-ink">Ask the radar</span>
         <button
           type="button"
