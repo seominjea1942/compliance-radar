@@ -1,5 +1,6 @@
-import { MdChevronRight, MdUnfoldMore } from "react-icons/md";
+import { MdChevronRight } from "react-icons/md";
 import { Avatar } from "@/components/ui/avatar";
+import { BusinessSwitcher } from "@/components/BusinessSwitcher";
 import { NavItem } from "@/components/ui/nav-item";
 import type { StoreProfile } from "@/lib/queries";
 import { count } from "@/lib/format";
@@ -34,26 +35,7 @@ export function Sidebar({
         "md:self-start md:overflow-visible md:border-r md:border-b-0 md:px-3.5 md:py-4",
       ].join(" ")}
     >
-      {/*
-        Business switcher. Rendered as a menu trigger so it reads as one:
-        the store list itself is not built yet, so it currently opens nothing.
-      */}
-      <button
-        type="button"
-        aria-haspopup="menu"
-        aria-expanded={false}
-        aria-label={`Switch business. Current: ${storeName}`}
-        className="flex max-w-[200px] flex-none cursor-pointer items-center gap-2.5 rounded-[10px] border border-line-card bg-paper px-[11px] py-2.5 text-left transition-colors hover:border-line-strong hover:bg-hover focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none md:max-w-none"
-      >
-        <Avatar name={storeName} shape="square" />
-        <div className="flex min-w-0 flex-col gap-px">
-          <span className="truncate text-[13px]/tight font-semibold">{storeName}</span>
-          {profile?.location && (
-            <span className="truncate text-[11.5px] text-faint">{profile.location}</span>
-          )}
-        </div>
-        <MdUnfoldMore className="ml-auto size-4 flex-none text-ghost" aria-hidden />
-      </button>
+      <BusinessSwitcher storeName={storeName} location={profile?.location} />
 
       <div className="flex flex-none flex-row gap-1 md:flex-col md:gap-0.5">
         <NavItem href="/" label="Overview" meta={count(surfacedCount)} active={current === "overview"} />
