@@ -6,8 +6,14 @@
  * the thing lives entirely in this arithmetic.
  */
 
-/** How far the eyes travel from centre, in viewBox units. */
-export const EYE_TRAVEL = 3.4;
+/**
+ * How far the pupils travel from centre, in viewBox units.
+ *
+ * Bounded by how much white is left around them: at a pupil 73% of the sclera
+ * there are 3.2 units of room, so 2.4 keeps a rim of white on the tight side
+ * at full deflection instead of letting the pupil sit against the edge.
+ */
+export const EYE_TRAVEL = 2.4;
 /** Distance at which the gaze is fully committed toward the pointer. */
 export const FULL_GAZE_PX = 260;
 

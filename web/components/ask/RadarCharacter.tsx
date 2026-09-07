@@ -23,14 +23,14 @@ const FACE = "#4a90d9";
  * Big, and set close together with only a few units between them: that
  * spacing is most of what reads as cute rather than merely as two eyes.
  */
-const EYE_RX = 11;
-const EYE_RY = 12;
-const PUPIL_RX = 6.5;
-const PUPIL_RY = 7.2;
+const EYE_RX = 12;
+const EYE_RY = 12.6;
+const PUPIL_RX = 8.8;
+const PUPIL_RY = 9.2;
 /** Centred on the circle, not on the frame, since the circle sits off-centre. */
 const EYES = [
-  { cx: 44, cy: 58 },
-  { cx: 70, cy: 58 },
+  { cx: 43, cy: 58 },
+  { cx: 69, cy: 58 },
 ];
 
 export function RadarCharacter({
@@ -104,7 +104,7 @@ export function RadarCharacter({
           it read as a shape placed inside a frame; offset, it reads as one
           that carries on past it.
         */}
-        <circle cx="57" cy="60" r="47" fill={FACE} />
+        <circle cx="56" cy="58" r="52" fill={FACE} />
 
         {EYES.map((e, i) => (
           <ellipse key={i} cx={e.cx} cy={e.cy} rx={EYE_RX} ry={EYE_RY} fill="#ffffff" />
