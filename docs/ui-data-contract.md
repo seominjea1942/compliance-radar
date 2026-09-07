@@ -134,6 +134,16 @@ UPDATE triage_decisions SET resolution=%s, resolved_at=NOW() WHERE id=%s
 "Keep open" rows: write nothing. Resolution is independent of the overturn
 flow (overturns belong to REJECT rows).
 
+### payload.images — official recall product photos (added 2026-09-07)
+`fda_rss` documents now carry `payload.images`: up to 4 absolute URLs of the
+official product photos scraped from the FDA press-release page (path pattern
+`fda.gov/files/styles/recall_image_small/...`). Coverage: 27 of 31 fda_rss
+docs. These are FDA's own images: hotlink them with a graceful onerror-hide
+fallback (a page occasionally has none, and openFDA-only rows like Straus
+have no press page, hence no photos). For rows WITHOUT photos, the honest
+visual is a client-rendered barcode from `payload.product.upcs[0]`
+(e.g. JsBarcode): it is real data drawn as a graphic, not decoration.
+
 ### payload.product — structured product fields (added 2026-09-04)
 openFDA recall documents now carry `payload.product` (extraction, not
 invention: strings copied from the description, UPCs regex-validated;
