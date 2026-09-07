@@ -1,10 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
-import {
-  MdInfoOutline,
-  MdOutlineDashboard,
-  MdOutlineListAlt,
-  MdOutlineStorefront,
-} from "react-icons/md";
+import { MdInfoOutline } from "react-icons/md";
 import { BusinessSwitcher } from "@/components/BusinessSwitcher";
 import { Logo } from "@/components/Logo";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -36,27 +32,36 @@ export function Header({
 }) {
   const storeName = profile?.storeName ?? "Store";
 
+  /*
+   * 3dicons.co, v1 collection by realvjy, CC0. Rendered art rather than
+   * glyphs, so they are images at a fixed box instead of an icon font.
+   *
+   * The files carry no alpha: their background is opaque white, which is what
+   * the header is, so they sit flush on it. That is a constraint on the bar,
+   * not a detail. Anything behind a tab that is not white, a hover fill
+   * included, would show as a square around the icon.
+   */
   const tabs = [
     {
       href: "/",
       label: "Overview",
       section: "overview" as const,
       meta: count(surfacedCount),
-      icon: <MdOutlineDashboard className="size-[18px] flex-none" aria-hidden />,
+      icon: "/icons3d/overview.webp",
     },
     {
       href: "/log",
       label: "Log",
       section: "log" as const,
       meta: count(setAsideCount),
-      icon: <MdOutlineListAlt className="size-[18px] flex-none" aria-hidden />,
+      icon: "/icons3d/log.webp",
     },
     {
       href: "/profile",
       label: "Store profile",
       section: "profile" as const,
       meta: undefined,
-      icon: <MdOutlineStorefront className="size-[18px] flex-none" aria-hidden />,
+      icon: "/icons3d/profile.webp",
     },
   ];
 
@@ -95,7 +100,15 @@ export function Header({
                   active ? "font-medium text-ink" : "font-normal text-muted hover:text-ink",
                 )}
               >
-                {t.icon}
+                {/* Decorative: the label beside it is the accessible name. */}
+                <Image
+                  src={t.icon}
+                  alt=""
+                  width={48}
+                  height={48}
+                  aria-hidden
+                  className="size-6 flex-none"
+                />
                 {t.label}
                 {t.meta !== undefined && (
                   <span className="font-mono text-[11px] font-medium text-monoink">{t.meta}</span>
