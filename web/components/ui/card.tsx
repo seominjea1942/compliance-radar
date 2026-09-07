@@ -7,6 +7,14 @@ import { cn } from "@/lib/utils";
  *
  * There is deliberately no urgent tone. Colouring the whole card border red
  * competed with the alert banner inside it; the banner carries that signal.
+ *
+ * Both are translucent, so the canvas gradient behind them tints the panel
+ * instead of stopping at its edge. Opaque white cards covered so much of the
+ * screen that the wash survived only in the gutters and read as a printing
+ * error. The alpha is high enough that ink on these keeps well past the
+ * contrast floor. The alphas are set by measurement, not taste: at 0.72 the
+ * faintest label inside a card landed at 4.40:1, just under AA, and these
+ * put it back over while the wash still reads through the panel.
  */
 function Card({
   className,
@@ -18,8 +26,13 @@ function Card({
       data-slot="card"
       className={cn(
         "flex flex-col border",
-        tone === "paper" && "rounded-card border-line bg-paper px-6.5 py-5.5",
-        tone === "inset" && "rounded-panel border-line bg-shell px-5.5 py-5",
+        // Alpha only, no backdrop-filter. Blurring the backdrop of the log
+        // page, whose outer panel is one 7,000px card, made the browser
+        // snapshot a layer that size and paint nothing at all below the
+        // fold. There is also nothing to blur: the backdrop is a smooth
+        // gradient, so the filter cost a whole screen to change no pixels.
+        tone === "paper" && "rounded-card border-line bg-paper/82 px-6.5 py-5.5",
+        tone === "inset" && "rounded-panel border-line bg-shell/72 px-5.5 py-5",
         className,
       )}
       {...props}

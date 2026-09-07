@@ -18,8 +18,13 @@ import { cn } from "@/lib/utils";
  * `::after` is measured against, so a card that takes these classes without it
  * would spread its click target over the nearest positioned ancestor instead.
  */
+/*
+ * `hover:bg-hover` is deliberately translucent: the cards let the canvas
+ * gradient through, and an opaque hover would snap that tint off under the
+ * pointer, reading as the card flashing white rather than lighting up.
+ */
 export const stretchedCard =
-  "relative transition-colors hover:border-line-strong hover:bg-hover focus-within:border-line-strong";
+  "relative transition-colors hover:border-line-strong hover:bg-hover/75 focus-within:border-line-strong";
 
 /**
  * The card's stretched link: its ::after covers the whole card, so clicking

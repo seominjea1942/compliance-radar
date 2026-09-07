@@ -113,7 +113,7 @@ export default async function LogPage({
 
   return (
     <AskRadarProvider>
-      <div className="flex min-h-screen flex-col bg-shell md:flex-row">
+      <div className="app-canvas flex min-h-screen flex-col md:flex-row">
         <Sidebar
           profile={profile}
           surfacedCount={summary.surfaced}
@@ -121,7 +121,7 @@ export default async function LogPage({
           current="log"
         />
 
-        <main className="min-w-0 flex-1 bg-paper">
+        <main className="min-w-0 flex-1">
           <div className="mx-auto flex w-full max-w-[800px] flex-col gap-5 px-4 pt-5 pb-10 md:gap-6.5 md:px-12 md:pt-7.5 md:pb-12">
             <Card className="gap-5">
               <div className="flex flex-col gap-1.5">

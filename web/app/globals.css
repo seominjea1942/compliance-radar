@@ -139,6 +139,32 @@
   }
 }
 
+/*
+ * The canvas the cards float on.
+ *
+ * Three washes rather than one linear ramp: a single gradient across a page
+ * this tall reads as a colour change halfway down, where two soft pools and a
+ * faint diagonal read as light in a room. The green is the accent already in
+ * the palette (--color-green / --color-green-soft) at single-digit alpha, so
+ * the white cards stay the brightest thing on screen and the ink keeps its
+ * contrast.
+ *
+ * `fixed` attachment pins the wash to the viewport instead of stretching it
+ * over the document. The log runs past 7,000px; stretched, every screen of it
+ * would show one nearly flat slice, and the page would look like it had lost
+ * the gradient rather than scrolled through it.
+ */
+.app-canvas {
+  background-color: var(--color-paper);
+  background-image:
+    radial-gradient(112% 74% at 88% 2%, rgba(47, 106, 79, 0.24) 0%, rgba(47, 106, 79, 0) 58%),
+    /* Centred past the bottom edge, and to the right of the rail: at the
+       corner it put its deepest tint under the rail's smallest text. */
+    radial-gradient(100% 78% at 28% 106%, rgba(89, 154, 120, 0.30) 0%, rgba(89, 154, 120, 0) 62%),
+    linear-gradient(158deg, #fbfefc 0%, #f2f9f5 44%, #e6f2ec 100%);
+  background-attachment: fixed;
+}
+
 /* Tooltip entrance. Kept here rather than pulling in an animation plugin. */
 @keyframes radar-tooltip-in {
   from {
