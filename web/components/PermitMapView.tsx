@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import type { Map as LeafletMap } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { STORE_ANCHOR, type Permit, type StreetWork } from "@/lib/queries";
+import { STREET_COLORS } from "@/lib/street-colors";
 
 /**
  * The real basemap under the permit pins.
@@ -19,13 +20,6 @@ import { STORE_ANCHOR, type Permit, type StreetWork } from "@/lib/queries";
  * keyless, and the saturation that makes it the loudest thing on an otherwise
  * restrained page is taken back out in CSS below.
  */
-/** A one-line hover label. The full record is rendered by the card. */
-function shortLabel(w: StreetWork): string {
-  const name = w.segment ?? w.title;
-  if (w.workType === "pavement_moratorium") return `${name} · no digging`;
-  return w.distanceM === null ? name : `${name} · ${Math.round(w.distanceM)} m`;
-}
-
 export function PermitMapView({
   permits,
   streetWork = [],
@@ -40,12 +34,12 @@ export function PermitMapView({
    */
   streetWork?: StreetWork[];
   /**
-   * Hovering a street-work marker reports it upward. The detail is rendered
-   * by the card, not as a Leaflet tooltip: the map is 233px tall inside the
-   * rail, and a tooltip carrying a city work description is taller than that,
-   * so it was clipped by the map's own overflow on most markers.
+   * Hovering a street-work marker reports it, with the pointer's viewport
+   * position, so the card can render the detail in a portal outside the map.
+   * Anything drawn inside the map is clipped by its overflow, which is what
+   * cut the labels off.
    */
-  onHoverWork?: (work: StreetWork | null) => void;
+  onHoverWork?: (work: StreetWork | null, at?: { x: number; y: number }) => void;
   className?: string;
 }) {
   const holder = useRef<HTMLDivElement>(null);
@@ -87,7 +81,7 @@ export function PermitMapView({
           radius: 4,
           weight: 1,
           color: "#71717a",
-          fillColor: "#a1a1aa",
+          fillColor: STREET_COLORS.building,
           fillOpacity: 0.9,
         })
           .addTo(instance)
@@ -112,10 +106,10 @@ export function PermitMapView({
       for (const w of streetWork) {
         const style =
           w.workType === "pavement_moratorium"
-            ? { radius: 3, fill: "#8fbaa2", weight: 1 }
+            ? { radius: 3, fill: STREET_COLORS.moratorium, weight: 1 }
             : w.workType.startsWith("pavement_project")
-              ? { radius: 5, fill: "#c8873f", weight: 2 }
-              : { radius: w.decision === "ALERT" ? 6 : 5, fill: "#b42318", weight: 2 };
+              ? { radius: 5, fill: STREET_COLORS.planned, weight: 2 }
+              : { radius: w.decision === "ALERT" ? 6 : 5, fill: STREET_COLORS.active, weight: 2 };
 
         L.circleMarker([w.lat, w.lon], {
           radius: style.radius,
@@ -125,8 +119,14 @@ export function PermitMapView({
           fillOpacity: 1,
         })
           .addTo(instance)
-          .bindTooltip(shortLabel(w), { direction: "auto" })
-          .on("mouseover", () => onHover.current?.(w))
+          .on("mouseover", (e) => {
+            const ev = e.originalEvent as MouseEvent;
+            onHover.current?.(w, { x: ev.clientX, y: ev.clientY });
+          })
+          .on("mousemove", (e) => {
+            const ev = e.originalEvent as MouseEvent;
+            onHover.current?.(w, { x: ev.clientX, y: ev.clientY });
+          })
           .on("mouseout", () => onHover.current?.(null));
       }
 

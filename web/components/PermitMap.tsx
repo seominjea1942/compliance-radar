@@ -1,6 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
+import { MapHoverCard } from "@/components/street/MapHoverCard";
+import { MapLegend } from "@/components/street/MapLegend";
+import { STREET_COLORS } from "@/lib/street-colors";
 import { Card, CardNote, CardTitle } from "@/components/ui/card";
 import { PermitMapView } from "@/components/PermitMapView";
 import { plainDate } from "@/lib/format";
@@ -85,6 +89,7 @@ export function PermitMap({
   // the quiet is real rather than an empty query.
   const listed = bySegment(blocking.length > 0 ? blocking : active);
   const [hovered, setHovered] = useState<StreetWork | null>(null);
+  const [at, setAt] = useState<{ x: number; y: number } | null>(null);
 
   /*
    * When something is blocking, the list is the warning and earns three rows.
@@ -105,11 +110,13 @@ export function PermitMap({
     <Card className="w-full min-w-0 gap-3.5 p-4.5">
       <div className="flex flex-col gap-1.5">
         <CardTitle>
+          <Link href="/street-work" className="text-ink no-underline hover:underline">
           {blocking.length === 0
             ? "No street work blocking your block."
             : `Street work on ${listed.length} ${
                 listed.length === 1 ? "street" : "streets"
               } near you.`}
+          </Link>
         </CardTitle>
         <CardNote>
           {/*
@@ -128,49 +135,48 @@ export function PermitMap({
       <PermitMapView
         permits={permits}
         streetWork={streetWork}
-        onHoverWork={setHovered}
+        onHoverWork={(w, point) => {
+          setHovered(w);
+          setAt(point ?? null);
+        }}
         className={`w-full overflow-hidden rounded-[9px] border border-line bg-wash ${
           blocking.length > 0 ? "[aspect-ratio:704/300]" : "[aspect-ratio:704/430]"
         }`}
       />
 
-      {/*
-        Fixed height so the card does not jump as the pointer crosses markers.
-        This is where the detail lives now that the tooltip cannot hold it.
-      */}
-      <div className="flex h-[92px] flex-col justify-center gap-0.5 overflow-hidden rounded-lg border border-line bg-shell px-3 py-2 text-[11.5px]">
-        {hovered ? (
-          hovered.workType === "pavement_moratorium" ? (
-            <>
-              <span className="truncate font-medium text-ink">
-                {hovered.segment ?? hovered.title}
-              </span>
-              <span className="text-faint">Recently paved, no digging allowed here.</span>
-            </>
-          ) : (
-            <>
-              <span className="truncate font-medium text-ink">
-                {hovered.segment ?? hovered.title}
-                {hovered.onStoreStreet && <span className="ml-1.5 text-green">your street</span>}
-              </span>
-              {hovered.workDescription && (
-                <span className="line-clamp-2 text-muted">{hovered.workDescription}</span>
-              )}
-              <span className="text-faint">
-                {[
-                  plainDate(hovered.expiryDate) &&
-                    `valid through ${plainDate(hovered.expiryDate)}`,
-                  hovered.distanceM !== null && `${Math.round(hovered.distanceM)} m away`,
-                ]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </span>
-            </>
-          )
-        ) : (
-          <span className="text-faint">Hover a marker to see the work.</span>
-        )}
-      </div>
+      <MapLegend
+        entries={[
+          {
+            color: STREET_COLORS.active,
+            label: "Street work",
+            count: active.length,
+            explain:
+              "An open utility permit to dig in the road. This is the kind that can close a lane or a sidewalk.",
+          },
+          {
+            color: STREET_COLORS.planned,
+            label: "Repaving",
+            count: planned.length,
+            explain: "A city paving project scheduled for a future year.",
+          },
+          {
+            color: STREET_COLORS.moratorium,
+            label: "No-dig",
+            count: moratorium.length,
+            explain:
+              "Recently repaved, so the city forbids digging here. Good news: nobody can open this street for now.",
+          },
+          {
+            color: STREET_COLORS.building,
+            label: "Building",
+            count: permits.length,
+            explain:
+              "Building permits nearby, shown for context. They rarely affect street access.",
+          },
+        ]}
+      />
+
+      <MapHoverCard work={hovered} at={at} />
 
       {blocking.length > 0 && listed.length > 0 && (
         <ul className="m-0 flex list-none flex-col gap-2 p-0">
