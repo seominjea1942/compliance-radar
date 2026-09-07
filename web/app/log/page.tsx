@@ -110,13 +110,24 @@ export default async function LogPage({
                     aria-current={s.value === status ? "page" : undefined}
                     className={cn(
                       "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] font-medium no-underline transition-colors",
+                      /*
+                        Solid rather than tinted. This control sits on the grey
+                        rail (#f4f4f5) and green-tint is #f1f7f3, so a tinted
+                        pill would sit at the same lightness as its own track
+                        and lose the raised reading the white pill had.
+                      */
                       s.value === status
-                        ? "bg-paper text-ink shadow-[0_1px_2px_rgba(24,24,27,0.06)]"
+                        ? "bg-green text-shell shadow-[0_1px_2px_rgba(24,24,27,0.10)]"
                         : "text-muted hover:bg-hover hover:text-ink",
                     )}
                   >
                     {s.label}
-                    <span className="font-mono text-[11px] tabular-nums text-faint">
+                    <span
+                      className={cn(
+                        "font-mono text-[11px] tabular-nums",
+                        s.value === status ? "text-shell/75" : "text-faint",
+                      )}
+                    >
                       {count(tabCount[s.value])}
                     </span>
                   </Link>
@@ -134,7 +145,7 @@ export default async function LogPage({
                       className={cn(
                         "rounded-full border px-3 py-1 text-[12.5px] no-underline transition-colors",
                         active
-                          ? "border-line-strong bg-shell font-medium text-ink"
+                          ? "border-green-soft bg-green-tint font-medium text-green"
                           : "border-line text-muted hover:border-line-strong hover:text-ink",
                       )}
                     >
