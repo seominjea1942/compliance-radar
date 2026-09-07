@@ -157,11 +157,11 @@
 .app-canvas {
   background-color: var(--color-paper);
   background-image:
-    radial-gradient(112% 74% at 88% 2%, rgba(47, 106, 79, 0.24) 0%, rgba(47, 106, 79, 0) 58%),
+    radial-gradient(112% 74% at 88% 2%, rgba(38, 78, 128, 0.20) 0%, rgba(38, 78, 128, 0) 58%),
     /* Centred past the bottom edge, and to the right of the rail: at the
        corner it put its deepest tint under the rail's smallest text. */
-    radial-gradient(100% 78% at 28% 106%, rgba(89, 154, 120, 0.30) 0%, rgba(89, 154, 120, 0) 62%),
-    linear-gradient(158deg, #fbfefc 0%, #f2f9f5 44%, #e6f2ec 100%);
+    radial-gradient(100% 78% at 28% 106%, rgba(126, 162, 208, 0.26) 0%, rgba(126, 162, 208, 0) 62%),
+    linear-gradient(158deg, #fbfdff 0%, #f2f7fd 44%, #e7eff9 100%);
   background-attachment: fixed;
 }
 
