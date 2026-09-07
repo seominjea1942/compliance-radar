@@ -36,10 +36,11 @@ export function Header({
    * 3dicons.co, v1 collection by realvjy, CC0. Rendered art rather than
    * glyphs, so they are images at a fixed box instead of an icon font.
    *
-   * The files carry no alpha: their background is opaque white, which is what
-   * the header is, so they sit flush on it. That is a constraint on the bar,
-   * not a detail. Anything behind a tab that is not white, a hover fill
-   * included, would show as a square around the icon.
+   * The files carry no alpha: their background is opaque white. The bar is
+   * not white any more, so they are composited with multiply, which leaves
+   * the backdrop untouched wherever the render is white and drops the square
+   * out. It is why they can sit on a tinted bar at all, and it holds for any
+   * light background; on a dark one they would need real alpha.
    *
    * `nudge` corrects the art inside the canvas, not the box. Each render is
    * centred differently in its own 200px frame: measuring the bounding box of
@@ -75,17 +76,18 @@ export function Header({
   ];
 
   return (
-    <header className="sticky top-0 z-20 flex-none border-b border-line bg-paper">
+    <header className="sticky top-0 z-20 flex-none border-b border-line bg-shell">
       {/*
         One row above md. Below it the three columns do not fit in 375px, so
         the bar wraps: mark and identities on the first row, sections on a
         second that scrolls sideways by itself. Laid out with order rather
         than a second copy of the identity block, so there is one of each.
       */}
-      {/* Edge to edge, inset 16px. No max-width: the bar spans the window,
-          and a cap on it put the mark 28px from the edge at 1440 rather than
-          the 16 it is padded by. */}
-      <div className="flex w-full flex-wrap items-center gap-x-3 gap-y-3 p-4 md:flex-nowrap">
+      {/* Edge to edge: 32px at the sides from md, 16 top and bottom. No
+          max-width, or the cap decides the inset rather than the padding.
+          Back to 16 at the sides below md, where 32 each way is a sixth of a
+          375px screen and pushes the third tab out of the scroll row. */}
+      <div className="flex w-full flex-wrap items-center gap-x-3 gap-y-3 px-4 py-4 md:flex-nowrap md:px-8">
         <div className="order-1 flex flex-1 items-center">
           <Link href="/" aria-label="Compliance Radar, home" className="no-underline">
             <Logo />
@@ -121,14 +123,14 @@ export function Header({
                   width={48}
                   height={48}
                   aria-hidden
-                  className={cn("size-10 flex-none", t.nudge)}
+                  className={cn("size-10 flex-none mix-blend-multiply", t.nudge)}
                 />
                 {t.label}
                 {t.meta !== undefined && (
                   <span className="font-mono text-[11px] font-medium text-monoink">{t.meta}</span>
                 )}
                 {active && (
-                  <span aria-hidden className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-ink" />
+                  <span aria-hidden className="absolute inset-x-3 bottom-0 h-[3px] rounded-full bg-ink" />
                 )}
               </Link>
             );
