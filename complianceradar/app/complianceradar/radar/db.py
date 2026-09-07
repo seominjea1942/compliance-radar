@@ -98,6 +98,17 @@ def similar_past_decisions(conn, embedding, k: int = 5):
 OVERTURN_REASONS = ("affects_us", "always_show", "curious", "other")
 
 
+def revert_overturn(conn, decision_id: int):
+    """Undo an overturn: the item returns to plain filtered (set-aside) state
+    and drops out of the learning signal."""
+    with conn.cursor() as c:
+        c.execute(
+            """UPDATE triage_decisions
+               SET overturned = FALSE, overturned_at = NULL,
+                   overturn_reason_type = NULL, overturn_note = NULL
+               WHERE id = %s""", (decision_id,))
+
+
 def apply_overturn(conn, decision_id: int, reason_type: str, note: str = None):
     """Owner overturns a rejection. reason_type: affects_us | always_show | curious | other."""
     if reason_type not in OVERTURN_REASONS:
