@@ -6,12 +6,7 @@ import { Provenance } from "@/components/item/Provenance";
 import { Header } from "@/components/Header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardTitle } from "@/components/ui/card";
-import {
-  getDecisionDetail,
-  getFilteredLog,
-  getStoreProfile,
-  getWeeklySummary,
-} from "@/lib/queries";
+import { getDecisionDetail, getStoreProfile } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -24,12 +19,7 @@ const TIER_LABEL: Record<string, string> = {
 export default async function ItemPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const [item, summary, log, profile] = await Promise.all([
-    getDecisionDetail(id),
-    getWeeklySummary(),
-    getFilteredLog({ status: "set-aside", limit: 1 }),
-    getStoreProfile(),
-  ]);
+  const [item, profile] = await Promise.all([getDecisionDetail(id), getStoreProfile()]);
 
   if (!item) notFound();
 
@@ -40,8 +30,6 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
       <div className="flex min-h-screen flex-col bg-shell">
         <Header
           profile={profile}
-          surfacedCount={summary.surfaced}
-          setAsideCount={log.counts.setAside}
           current={item.surfaced ? "overview" : "log"}
         />
 

@@ -4,16 +4,12 @@ import { SectionTabs } from "@/components/profile/SectionTabs";
 import { FactList } from "@/components/profile/FactList";
 import { Header } from "@/components/Header";
 import { CardNote, CardTitle } from "@/components/ui/card";
-import { getFilteredLog, getStoreProfileFull, getWeeklySummary } from "@/lib/queries";
+import { getStoreProfileFull } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
 export default async function ProfilePage() {
-  const [profile, summary, log] = await Promise.all([
-    getStoreProfileFull(),
-    getWeeklySummary(),
-    getFilteredLog({ status: "set-aside", limit: 1 }),
-  ]);
+  const profile = await getStoreProfileFull();
 
   if (!profile) {
     return (
@@ -26,8 +22,6 @@ export default async function ProfilePage() {
       <div className="flex min-h-screen flex-col bg-shell">
         <Header
           profile={profile}
-          surfacedCount={summary.surfaced}
-          setAsideCount={log.counts.setAside}
           current="profile"
         />
 

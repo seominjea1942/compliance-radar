@@ -39,8 +39,6 @@ export default async function HomePage() {
       <div className="flex min-h-screen flex-col bg-shell">
         <Header
           profile={profile}
-          surfacedCount={summary.surfaced}
-          setAsideCount={summary.filtered}
         />
 
         <main className="min-w-0 flex-1 bg-paper">

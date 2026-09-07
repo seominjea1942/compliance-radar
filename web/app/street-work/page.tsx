@@ -7,11 +7,9 @@ import { Card, CardNote, CardTitle } from "@/components/ui/card";
 import {
   activePermits,
   blockingWork,
-  getFilteredLog,
   getNearbyPermits,
   getStoreProfile,
   getStreetWork,
-  getWeeklySummary,
   moratoriumSegments,
   plannedPaving,
 } from "@/lib/queries";
@@ -20,11 +18,9 @@ import { count } from "@/lib/format";
 export const dynamic = "force-dynamic";
 
 export default async function StreetWorkPage() {
-  const [streetWork, permits, summary, log, profile] = await Promise.all([
+  const [streetWork, permits, profile] = await Promise.all([
     getStreetWork(),
     getNearbyPermits(),
-    getWeeklySummary(),
-    getFilteredLog({ status: "set-aside", limit: 1 }),
     getStoreProfile(),
   ]);
 
@@ -38,8 +34,6 @@ export default async function StreetWorkPage() {
       <div className="flex min-h-screen flex-col bg-shell">
         <Header
           profile={profile}
-          surfacedCount={summary.surfaced}
-          setAsideCount={log.counts.setAside}
         />
 
         <main className="min-w-0 flex-1 bg-paper">

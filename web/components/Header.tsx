@@ -9,7 +9,6 @@ import { BusinessSwitcher } from "@/components/BusinessSwitcher";
 import { Logo } from "@/components/Logo";
 import { Tooltip } from "@/components/ui/tooltip";
 import type { StoreProfile } from "@/lib/queries";
-import { count } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export type Section = "overview" | "log" | "profile" | "about";
@@ -24,14 +23,9 @@ export type Section = "overview" | "log" | "profile" | "about";
  */
 export function Header({
   profile,
-  surfacedCount,
-  setAsideCount,
   current = "overview",
 }: {
   profile: StoreProfile | null;
-  surfacedCount: number;
-  /** Rows in the log: everything the radar set aside. */
-  setAsideCount: number;
   current?: Section;
 }) {
   const storeName = profile?.storeName ?? "Store";
@@ -41,21 +35,18 @@ export function Header({
       href: "/",
       label: "Overview",
       section: "overview" as const,
-      meta: count(surfacedCount),
       icon: <MdOutlineDashboard className="size-[18px] flex-none" aria-hidden />,
     },
     {
       href: "/log",
       label: "Log",
       section: "log" as const,
-      meta: count(setAsideCount),
       icon: <MdOutlineListAlt className="size-[18px] flex-none" aria-hidden />,
     },
     {
       href: "/profile",
       label: "Store profile",
       section: "profile" as const,
-      meta: undefined,
       // Settings, not a storefront: the page is a set of switches about
       // what the shop does and does not do.
       icon: <MdOutlineSettings className="size-[18px] flex-none" aria-hidden />,
@@ -105,9 +96,6 @@ export function Header({
               >
                 {t.icon}
                 {t.label}
-                {t.meta !== undefined && (
-                  <span className="font-mono text-[11px] font-medium text-monoink">{t.meta}</span>
-                )}
                 {active && (
                   <span aria-hidden className="absolute inset-x-3 bottom-0 h-[3px] rounded-full bg-ink" />
                 )}

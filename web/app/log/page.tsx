@@ -117,8 +117,6 @@ export default async function LogPage({
       <div className="flex min-h-screen flex-col bg-shell">
         <Header
           profile={profile}
-          surfacedCount={summary.surfaced}
-          setAsideCount={log.overall.setAside}
           current="log"
         />
 

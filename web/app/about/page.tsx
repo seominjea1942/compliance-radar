@@ -2,7 +2,7 @@ import { MdOpenInNew } from "react-icons/md";
 import { AskRadarProvider } from "@/components/ask/AskRadarProvider";
 import { Header } from "@/components/Header";
 import { Card, CardNote, CardTitle } from "@/components/ui/card";
-import { getFilteredLog, getStoreProfile, getWeeklySummary } from "@/lib/queries";
+import { getStoreProfile } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -36,19 +36,13 @@ const STEPS = [
 ];
 
 export default async function AboutPage() {
-  const [summary, log, profile] = await Promise.all([
-    getWeeklySummary(),
-    getFilteredLog({ status: "set-aside", limit: 1 }),
-    getStoreProfile(),
-  ]);
+  const profile = await getStoreProfile();
 
   return (
     <AskRadarProvider>
       <div className="flex min-h-screen flex-col bg-shell">
         <Header
           profile={profile}
-          surfacedCount={summary.surfaced}
-          setAsideCount={log.counts.setAside}
           current="about"
         />
 
