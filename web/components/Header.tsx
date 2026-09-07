@@ -40,6 +40,12 @@ export function Header({
    * the header is, so they sit flush on it. That is a constraint on the bar,
    * not a detail. Anything behind a tab that is not white, a hover fill
    * included, would show as a square around the icon.
+   *
+   * `nudge` corrects the art inside the canvas, not the box. Each render is
+   * centred differently in its own 200px frame: measuring the bounding box of
+   * the non-white pixels puts the target's centre 10px below the middle where
+   * the notebook and the toggle are within 1.5px of it. At a 40px box that is
+   * two visible pixels, which is what made the first tab sit low.
    */
   const tabs = [
     {
@@ -48,6 +54,7 @@ export function Header({
       section: "overview" as const,
       meta: count(surfacedCount),
       icon: "/icons3d/overview.webp",
+      nudge: "-translate-y-[2px]",
     },
     {
       href: "/log",
@@ -55,6 +62,7 @@ export function Header({
       section: "log" as const,
       meta: count(setAsideCount),
       icon: "/icons3d/log.webp",
+      nudge: "",
     },
     {
       href: "/profile",
@@ -62,6 +70,7 @@ export function Header({
       section: "profile" as const,
       meta: undefined,
       icon: "/icons3d/profile.webp",
+      nudge: "",
     },
   ];
 
@@ -107,7 +116,7 @@ export function Header({
                   width={48}
                   height={48}
                   aria-hidden
-                  className="size-9 flex-none"
+                  className={cn("size-10 flex-none", t.nudge)}
                 />
                 {t.label}
                 {t.meta !== undefined && (

@@ -42,14 +42,14 @@ export function BusinessSwitcher({
           <button
             type="button"
             aria-label={`Switch business. Current: ${storeName}`}
-            className="group flex size-10 flex-none cursor-pointer items-center justify-center rounded-[9px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className="group flex size-10 flex-none cursor-pointer items-center justify-center rounded-full focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             {/* The avatar is the whole target, so the hover lands on its own
                 border rather than on a background it would cover. */}
             <Avatar
               name={storeName}
               shape="square"
-              className="size-10 rounded-[9px] text-[13px] transition-colors group-hover:border-ghost group-data-[state=open]:border-ghost"
+              className="size-10 rounded-full text-[13px] transition-colors group-hover:border-ghost group-data-[state=open]:border-ghost"
             />
           </button>
         ) : (
