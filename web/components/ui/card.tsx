@@ -33,8 +33,8 @@ function Card({
         // snapshot a layer that size and paint nothing at all below the
         // fold. There is also nothing to blur: the backdrop is a smooth
         // gradient, so the filter cost a whole screen to change no pixels.
-        tone === "paper" && "rounded-card border-line bg-paper/55 px-6.5 py-5.5",
-        tone === "inset" && "rounded-panel border-line bg-shell/48 px-5.5 py-5",
+        tone === "paper" && "rounded-card border-line bg-paper/42 px-6.5 py-5.5",
+        tone === "inset" && "rounded-panel border-line bg-shell/36 px-5.5 py-5",
         className,
       )}
       {...props}
