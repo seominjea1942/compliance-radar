@@ -4,7 +4,7 @@ import { useEffect, useId, useRef } from "react";
 import { gazeOffset } from "./gaze";
 
 /**
- * The radar's face: a solid yellow circle cropped by a near-black squircle,
+ * The radar's face: a solid blue circle cropped by a near-black squircle,
  * with eyes that follow the pointer.
  *
  * Flat colour, no gradients and no glow. The circle is bigger than the frame
@@ -15,7 +15,7 @@ import { gazeOffset } from "./gaze";
  */
 
 const SHELL = "#151515";
-const FACE = "#f7d94c";
+const FACE = "#4a90d9";
 
 /**
  * Sclera. The pupils move inside these; the whites stay put.
@@ -27,9 +27,10 @@ const EYE_RX = 11;
 const EYE_RY = 12;
 const PUPIL_RX = 6.5;
 const PUPIL_RY = 7.2;
+/** Centred on the circle, not on the frame, since the circle sits off-centre. */
 const EYES = [
-  { cx: 37, cy: 56 },
-  { cx: 63, cy: 56 },
+  { cx: 44, cy: 58 },
+  { cx: 70, cy: 58 },
 ];
 
 export function RadarCharacter({
@@ -97,7 +98,13 @@ export function RadarCharacter({
       <g clipPath={`url(#${uid}-squircle)`}>
         <rect width="100" height="100" fill={SHELL} />
 
-        <circle cx="50" cy="64" r="44" fill={FACE} />
+        {/*
+          Off-centre and oversized: pushed down and to the right so it runs off
+          two edges and leaves a black crescent along the top and left. Centred
+          it read as a shape placed inside a frame; offset, it reads as one
+          that carries on past it.
+        */}
+        <circle cx="57" cy="60" r="47" fill={FACE} />
 
         {EYES.map((e, i) => (
           <ellipse key={i} cx={e.cx} cy={e.cy} rx={EYE_RX} ry={EYE_RY} fill="#ffffff" />
