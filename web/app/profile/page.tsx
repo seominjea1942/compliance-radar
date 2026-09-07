@@ -12,7 +12,7 @@ export default async function ProfilePage() {
   const [profile, summary, log] = await Promise.all([
     getStoreProfileFull(),
     getWeeklySummary(),
-    getFilteredLog({ status: "filtered", limit: 1 }),
+    getFilteredLog({ status: "set-aside", limit: 1 }),
   ]);
 
   if (!profile) {
@@ -27,7 +27,7 @@ export default async function ProfilePage() {
         <Sidebar
           profile={profile}
           surfacedCount={summary.surfaced}
-          filteredCount={log.counts.filtered}
+          setAsideCount={log.counts.setAside}
           current="profile"
         />
 

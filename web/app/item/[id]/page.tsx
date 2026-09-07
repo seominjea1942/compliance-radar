@@ -27,7 +27,7 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
   const [item, summary, log, profile] = await Promise.all([
     getDecisionDetail(id),
     getWeeklySummary(),
-    getFilteredLog({ status: "filtered", limit: 1 }),
+    getFilteredLog({ status: "set-aside", limit: 1 }),
     getStoreProfile(),
   ]);
 
@@ -41,7 +41,7 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
         <Sidebar
           profile={profile}
           surfacedCount={summary.surfaced}
-          filteredCount={log.counts.filtered}
+          setAsideCount={log.counts.setAside}
           current={item.surfaced ? "overview" : "log"}
         />
 

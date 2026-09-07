@@ -15,10 +15,19 @@ import { count } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * The two states, then their union.
+ *
+ * "Overturned" replaces "Resolved", which named the wrong thing entirely:
+ * the Resolve flow writes `resolution` on surfaced items and never lands in
+ * the log. "Set aside" replaces "Filtered", which shared a word with the
+ * topic filters sitting directly beneath it, so the state a row was in and
+ * the control that narrowed the list read as the same idea.
+ */
 const STATUSES: { value: LogStatus; label: string }[] = [
   { value: "all", label: "All" },
-  { value: "resolved", label: "Resolved" },
-  { value: "filtered", label: "Filtered" },
+  { value: "set-aside", label: "Set aside" },
+  { value: "overturned", label: "Overturned" },
 ];
 
 /**
@@ -39,8 +48,8 @@ const TOPICS: { value: string | null; label: string }[] = [
 /** What the scoped indicator is counting, per status tab. */
 const STATUS_NOUN: Record<LogStatus, string> = {
   all: "items read",
-  filtered: "filtered, not surfaced",
-  resolved: "resolved",
+  "set-aside": "set aside, not surfaced",
+  overturned: "overturned",
 };
 
 const PAGE = 25;
@@ -52,7 +61,7 @@ const PAGE = 25;
  */
 function hrefFor(params: { status: LogStatus; limit: number; tag: string | null }) {
   const q = new URLSearchParams();
-  if (params.status !== "filtered") q.set("status", params.status);
+  if (params.status !== "set-aside") q.set("status", params.status);
   if (params.tag) q.set("tag", params.tag);
   if (params.limit !== PAGE) q.set("limit", String(params.limit));
   const s = q.toString();
@@ -67,7 +76,7 @@ export default async function LogPage({
   const sp = await searchParams;
   const one = (k: string) => (Array.isArray(sp[k]) ? sp[k][0] : sp[k]);
 
-  const status = (STATUSES.find((s) => s.value === one("status"))?.value ?? "filtered") as LogStatus;
+  const status = (STATUSES.find((s) => s.value === one("status"))?.value ?? "set-aside") as LogStatus;
   const limit = Math.min(Math.max(Number(one("limit")) || PAGE, PAGE), 500);
   // Validated against the fixed tag set: an unknown ?tag is dropped rather
   // than narrowing the log to nothing and looking like an empty database.
@@ -81,8 +90,8 @@ export default async function LogPage({
 
   const tabCount: Record<LogStatus, number> = {
     all: log.counts.all,
-    resolved: log.counts.resolved,
-    filtered: log.counts.filtered,
+    "set-aside": log.counts.setAside,
+    overturned: log.counts.overturned,
   };
 
   return (
@@ -91,7 +100,7 @@ export default async function LogPage({
         <Sidebar
           profile={profile}
           surfacedCount={summary.surfaced}
-          filteredCount={log.overall.filtered}
+          setAsideCount={log.overall.setAside}
           current="log"
         />
 
@@ -110,9 +119,9 @@ export default async function LogPage({
                   the filters, below.
                 */}
                 <p className="max-w-[700px] text-[14.5px]/relaxed text-pretty text-body md:text-[15.5px]">
-                  {count(log.overall.all)} items. Filtered holds what I chose not to surface, each
-                  with a reason. Resolved holds what you brought to a close. If I filtered
-                  something wrongly, flip it and I&apos;ll adjust.
+                  {count(log.overall.all)} items. Set aside holds what I chose not to surface,
+                  each with a reason. Overturned holds the calls you sent back. If I set
+                  something aside wrongly, say so and I&apos;ll adjust.
                 </p>
               </div>
 

@@ -40,7 +40,7 @@ export default async function HomePage() {
         <Sidebar
           profile={profile}
           surfacedCount={summary.surfaced}
-          filteredCount={summary.filtered}
+          setAsideCount={summary.filtered}
         />
 
         <main className="min-w-0 flex-1 bg-paper">
