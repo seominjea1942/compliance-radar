@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { MapHoverCard } from "@/components/street/MapHoverCard";
+import { MapHoverCard, type HoverTarget } from "@/components/street/MapHoverCard";
 import { MapLegend } from "@/components/street/MapLegend";
 import { STREET_COLORS } from "@/lib/street-colors";
 import { Card, CardNote, CardTitle } from "@/components/ui/card";
@@ -88,7 +88,7 @@ export function PermitMap({
   // With nothing blocking, the nearest active permits are the evidence that
   // the quiet is real rather than an empty query.
   const listed = bySegment(blocking.length > 0 ? blocking : active);
-  const [hovered, setHovered] = useState<StreetWork | null>(null);
+  const [hovered, setHovered] = useState<HoverTarget | null>(null);
   const [at, setAt] = useState<{ x: number; y: number } | null>(null);
 
   /*
@@ -135,10 +135,10 @@ export function PermitMap({
       <PermitMapView
         permits={permits}
         streetWork={streetWork}
-        onHoverWork={(w, point) => {
-          setHovered(w);
-          setAt(point ?? null);
-        }}
+          onHover={(target, point) => {
+            setHovered(target);
+            setAt(point ?? null);
+          }}
         className={`w-full overflow-hidden rounded-[9px] border border-line bg-wash ${
           blocking.length > 0 ? "[aspect-ratio:704/300]" : "[aspect-ratio:704/430]"
         }`}
@@ -176,7 +176,7 @@ export function PermitMap({
         ]}
       />
 
-      <MapHoverCard work={hovered} at={at} />
+      <MapHoverCard target={hovered} at={at} />
 
       {blocking.length > 0 && listed.length > 0 && (
         <ul className="m-0 flex list-none flex-col gap-2 p-0">

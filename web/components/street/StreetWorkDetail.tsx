@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { PermitMapView } from "@/components/PermitMapView";
-import { MapHoverCard } from "@/components/street/MapHoverCard";
+import { MapHoverCard, type HoverTarget } from "@/components/street/MapHoverCard";
 import { MapLegend } from "@/components/street/MapLegend";
 import { Card, CardNote, CardTitle } from "@/components/ui/card";
 import { plainDate } from "@/lib/format";
@@ -28,7 +28,7 @@ export function StreetWorkDetail({
   streetWork: StreetWork[];
   permits: Permit[];
 }) {
-  const [hovered, setHovered] = useState<StreetWork | null>(null);
+  const [hovered, setHovered] = useState<HoverTarget | null>(null);
   const [at, setAt] = useState<{ x: number; y: number } | null>(null);
 
   const active = activePermits(streetWork);
@@ -41,8 +41,8 @@ export function StreetWorkDetail({
         <PermitMapView
           permits={permits}
           streetWork={streetWork}
-          onHoverWork={(w, point) => {
-            setHovered(w);
+          onHover={(target, point) => {
+            setHovered(target);
             setAt(point ?? null);
           }}
           className="w-full overflow-hidden rounded-[9px] border border-line bg-wash [aspect-ratio:16/10]"
@@ -80,7 +80,7 @@ export function StreetWorkDetail({
         />
       </Card>
 
-      <MapHoverCard work={hovered} at={at} />
+      <MapHoverCard target={hovered} at={at} />
 
       {planned.length > 0 && (
         <Section

@@ -5,6 +5,7 @@ import type { Map as LeafletMap } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { STORE_ANCHOR, type Permit, type StreetWork } from "@/lib/queries";
 import { STREET_COLORS } from "@/lib/street-colors";
+import type { HoverTarget } from "@/components/street/MapHoverCard";
 
 /**
  * The real basemap under the permit pins.
@@ -23,7 +24,7 @@ import { STREET_COLORS } from "@/lib/street-colors";
 export function PermitMapView({
   permits,
   streetWork = [],
-  onHoverWork,
+  onHover: onHoverProp,
   className,
 }: {
   permits: Permit[];
@@ -39,15 +40,15 @@ export function PermitMapView({
    * Anything drawn inside the map is clipped by its overflow, which is what
    * cut the labels off.
    */
-  onHoverWork?: (work: StreetWork | null, at?: { x: number; y: number }) => void;
+  onHover?: (target: HoverTarget | null, at?: { x: number; y: number }) => void;
   className?: string;
 }) {
   const holder = useRef<HTMLDivElement>(null);
   const map = useRef<LeafletMap | null>(null);
 
   // Held in a ref so a changing callback never tears down and rebuilds the map.
-  const onHover = useRef(onHoverWork);
-  onHover.current = onHoverWork;
+  const onHover = useRef(onHoverProp);
+  onHover.current = onHoverProp;
 
   useEffect(() => {
     let cancelled = false;
@@ -85,16 +86,17 @@ export function PermitMapView({
           fillOpacity: 0.9,
         })
           .addTo(instance)
-          .bindTooltip(
-            p.distanceM === null
-              ? p.title
-              : `${p.title} · ${
-                  p.distanceM >= 1000
-                    ? `${(p.distanceM / 1000).toFixed(1)} km`
-                    : `${Math.round(p.distanceM)} m`
-                }`,
-            { direction: "top" },
-          );
+          // Reported upward like the street work: these titles run to
+          // hundreds of characters and an in-map tooltip clipped them.
+          .on("mouseover", (e) => {
+            const ev = e.originalEvent as MouseEvent;
+            onHover.current?.({ kind: "permit", permit: p }, { x: ev.clientX, y: ev.clientY });
+          })
+          .on("mousemove", (e) => {
+            const ev = e.originalEvent as MouseEvent;
+            onHover.current?.({ kind: "permit", permit: p }, { x: ev.clientX, y: ev.clientY });
+          })
+          .on("mouseout", () => onHover.current?.(null));
       }
 
       /*
@@ -121,11 +123,11 @@ export function PermitMapView({
           .addTo(instance)
           .on("mouseover", (e) => {
             const ev = e.originalEvent as MouseEvent;
-            onHover.current?.(w, { x: ev.clientX, y: ev.clientY });
+            onHover.current?.({ kind: "work", work: w }, { x: ev.clientX, y: ev.clientY });
           })
           .on("mousemove", (e) => {
             const ev = e.originalEvent as MouseEvent;
-            onHover.current?.(w, { x: ev.clientX, y: ev.clientY });
+            onHover.current?.({ kind: "work", work: w }, { x: ev.clientX, y: ev.clientY });
           })
           .on("mouseout", () => onHover.current?.(null));
       }
@@ -138,7 +140,12 @@ export function PermitMapView({
         fillOpacity: 1,
       })
         .addTo(instance)
-        .bindTooltip("Your store", { direction: "top" });
+        // "Your store" is two words at the map's centre, so Leaflet's own
+        // tooltip cannot clip and is left alone. It still clears the portal
+        // card, or the previous marker's panel hangs behind it.
+        .bindTooltip("Your store", { direction: "top" })
+        .on("mouseover", () => onHover.current?.(null))
+        .on("mouseout", () => onHover.current?.(null));
 
       // Frame the cluster, not the outliers. A few filings sit far from the
       // store, and fitting the view to those zooms out until the ~70 permits
