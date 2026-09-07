@@ -77,12 +77,12 @@ export function RadarCharacter({
     >
       <defs>
         <linearGradient id={`${uid}-shell`} x1="0" y1="0" x2="0" y2="1">
-          {/* #10141a, lifted at the top so the squircle reads as lit from above
-              rather than as a flat fill. The two upper stops are the same hue
-              and saturation, raised in lightness only. */}
-          <stop offset="0%" stopColor="#212a36" />
-          <stop offset="55%" stopColor="#171c25" />
-          <stop offset="100%" stopColor="#10141a" />
+          {/* Greyscale. #10141a carried a slight blue cast; this is the same
+              lightness with the hue taken out, lifted at the top so the
+              squircle still reads as lit from above rather than going flat. */}
+          <stop offset="0%" stopColor="#2c2c2c" />
+          <stop offset="55%" stopColor="#1e1e1e" />
+          <stop offset="100%" stopColor="#151515" />
         </linearGradient>
 
         {/* The body is backlit rather than solid: a blurred white dome reads as
@@ -90,26 +90,24 @@ export function RadarCharacter({
             so white survives only as the glowing edge. */}
         <linearGradient id={`${uid}-body`} x1="0" y1="0" x2="0" y2="1">
           {/*
-            Half the whiteness of the first version, taken 50% toward the
-            palette's soft green rather than by halving it in HWB: that is the
-            literal reading, but it drives the hue to a neon mint that belongs
-            to no other part of this product. The eyes are near-white, so every
-            point of white left in the body was contrast taken away from them.
+            Grey, at the lightness the green tint had. That lightness was
+            chosen so the near-white eyes keep something to read against; only
+            the hue is gone, so the contrast that made them legible survives.
           */}
-          <stop offset="0%" stopColor="#a7ceba" />
-          <stop offset="55%" stopColor="#b2d4c2" />
-          <stop offset="100%" stopColor="#bedaca" />
+          <stop offset="0%" stopColor="#bbbbbb" />
+          <stop offset="55%" stopColor="#c3c3c3" />
+          <stop offset="100%" stopColor="#cccccc" />
         </linearGradient>
 
         <linearGradient id={`${uid}-eye`} x1="0" y1="0" x2="0" y2="1">
-          {/* Lighter than the tinted body, so the eyes read as cut out of the
-              glow rather than drawn on top of it. */}
+          {/* Lighter than the body, so the eyes read as cut out of the glow
+              rather than drawn on top of it. */}
           <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="100%" stopColor="#f6fdfa" />
+          <stop offset="100%" stopColor="#fafafa" />
         </linearGradient>
 
         <filter id={`${uid}-eyeDepth`} x="-40%" y="-40%" width="180%" height="180%">
-          <feDropShadow dx="0" dy="0.7" stdDeviation="0.9" floodColor="#1f4a39" floodOpacity="0.22" />
+          <feDropShadow dx="0" dy="0.7" stdDeviation="0.9" floodColor="#151515" floodOpacity="0.22" />
         </filter>
 
         <clipPath id={`${uid}-squircle`}>
