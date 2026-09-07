@@ -94,9 +94,9 @@ export function RadarCharacter({
             chosen so the near-white eyes keep something to read against; only
             the hue is gone, so the contrast that made them legible survives.
           */}
-          <stop offset="0%" stopColor="#bbbbbb" />
-          <stop offset="55%" stopColor="#c3c3c3" />
-          <stop offset="100%" stopColor="#cccccc" />
+          <stop offset="0%" stopColor="#9e9e9e" />
+          <stop offset="55%" stopColor="#a6a6a6" />
+          <stop offset="100%" stopColor="#b0b0b0" />
         </linearGradient>
 
         <linearGradient id={`${uid}-eye`} x1="0" y1="0" x2="0" y2="1">
@@ -114,8 +114,14 @@ export function RadarCharacter({
           <rect width="100" height="100" rx="27" ry="27" />
         </clipPath>
 
-        <filter id={`${uid}-soft`} x="-25%" y="-25%" width="150%" height="150%">
-          <feGaussianBlur stdDeviation="2.6" />
+        <filter id={`${uid}-soft`} x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="6" />
+        </filter>
+
+        {/* A touch of blur on the body itself, so its crest is not a hard edge
+            sitting on top of a soft glow. */}
+        <filter id={`${uid}-bodySoft`} x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="1.6" />
         </filter>
       </defs>
 
@@ -127,7 +133,7 @@ export function RadarCharacter({
             crest around a quarter of the way down, which leaves the shell
             reading across the shoulders and the eyes near the middle. */}
         <ellipse cx="50" cy="70" rx="51" ry="51" fill="#ffffff" filter={`url(#${uid}-soft)`} />
-        <ellipse cx="50" cy="72" rx="46" ry="47" fill={`url(#${uid}-body)`} />
+        <ellipse cx="50" cy="72" rx="46" ry="47" fill={`url(#${uid}-body)`} filter={`url(#${uid}-bodySoft)`} />
 
         {/*
           Level, and mirrored about the centre line. The pair was deliberately
