@@ -12,6 +12,7 @@ import {
   type LogStatus,
 } from "@/lib/queries";
 import { count } from "@/lib/format";
+import { segmented } from "@/components/ui/segmented";
 
 export const dynamic = "force-dynamic";
 
@@ -142,25 +143,34 @@ export default async function LogPage({
                 </p>
               </div>
 
-              <div className="flex flex-wrap items-center gap-1 rounded-full border border-line bg-rail p-1 self-start">
-                {STATUSES.map((s) => (
-                  <Link
-                    key={s.value}
-                    href={hrefFor({ status: s.value, limit: PAGE, tag: topic?.id ?? null })}
-                    aria-current={s.value === status ? "page" : undefined}
-                    className={cn(
-                      "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] font-medium no-underline transition-colors",
-                      s.value === status
-                        ? "bg-paper text-ink shadow-[0_1px_2px_rgba(24,24,27,0.06)]"
-                        : "text-muted hover:bg-hover hover:text-ink",
-                    )}
-                  >
-                    {s.label}
-                    <span className="font-mono text-[11px] tabular-nums text-faint">
-                      {count(tabCount[s.value])}
-                    </span>
-                  </Link>
-                ))}
+              {/* Links, not buttons: the filters live in the URL. Same
+                  appearance as FilterPills, from the same class strings. */}
+              <div className={cn(segmented.track, "self-start")}>
+                {STATUSES.map((s) => {
+                  const active = s.value === status;
+                  return (
+                    <Link
+                      key={s.value}
+                      href={hrefFor({ status: s.value, limit: PAGE, tag: topic?.id ?? null })}
+                      aria-current={active ? "page" : undefined}
+                      className={cn(
+                        segmented.item,
+                        "no-underline",
+                        active ? segmented.active : segmented.idle,
+                      )}
+                    >
+                      {s.label}
+                      <span
+                        className={cn(
+                          "font-mono text-[11px] tabular-nums",
+                          active ? segmented.countActive : segmented.countIdle,
+                        )}
+                      >
+                        {count(tabCount[s.value])}
+                      </span>
+                    </Link>
+                  );
+                })}
               </div>
 
               <div className="flex flex-col gap-3 border-t border-line-soft pt-4">

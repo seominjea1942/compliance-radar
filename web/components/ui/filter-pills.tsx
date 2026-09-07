@@ -1,6 +1,8 @@
 "use client";
 
+import { segmented } from "@/components/ui/segmented";
 import { cn } from "@/lib/utils";
+
 
 export type FilterOption<T extends string> = {
   value: T;
@@ -30,10 +32,7 @@ export function FilterPills<T extends string>({
     <div
       role="group"
       aria-label="Filter items"
-      className={cn(
-        "flex flex-wrap items-center gap-1 rounded-full border border-line bg-rail p-1",
-        className,
-      )}
+      className={cn(segmented.track, className)}
     >
       {options.map((o) => {
         const active = o.value === value;
@@ -45,19 +44,16 @@ export function FilterPills<T extends string>({
             disabled={o.count === 0 && !active}
             onClick={() => onChange(o.value)}
             className={cn(
-              "flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] font-medium",
-              "transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+              segmented.item,
               "disabled:cursor-not-allowed disabled:opacity-40",
-              active
-                ? "bg-paper text-ink shadow-[0_1px_2px_rgba(24,24,27,0.06)]"
-                : "text-muted hover:text-ink enabled:hover:bg-hover",
+              active ? segmented.active : segmented.idle,
             )}
           >
             {o.label}
             <span
               className={cn(
                 "font-mono text-[11px] tabular-nums",
-                active ? "text-monoink" : "text-faint",
+                active ? segmented.countActive : segmented.countIdle,
               )}
             >
               {o.count}
