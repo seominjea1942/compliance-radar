@@ -27,7 +27,11 @@ const EYE_RX = 12;
 const EYE_RY = 12.6;
 const PUPIL_RX = 8.8;
 const PUPIL_RY = 9.2;
-/** Centred on the circle, not on the frame, since the circle sits off-centre. */
+/**
+ * Centred on the part of the circle you can actually see, which is neither the
+ * frame's middle nor the circle's: most of the circle is outside the frame, so
+ * centring on it would push the face into the cropped corner.
+ */
 const EYES = [
   { cx: 43, cy: 58 },
   { cx: 69, cy: 58 },
@@ -103,8 +107,12 @@ export function RadarCharacter({
           two edges and leaves a black crescent along the top and left. Centred
           it read as a shape placed inside a frame; offset, it reads as one
           that carries on past it.
+
+          The offset is what makes the black a shape of its own rather than a
+          margin, so it is generous: twelve units of band at the left, sixteen
+          at the top.
         */}
-        <circle cx="56" cy="58" r="52" fill={FACE} />
+        <circle cx="64" cy="68" r="52" fill={FACE} />
 
         {EYES.map((e, i) => (
           <ellipse key={i} cx={e.cx} cy={e.cy} rx={EYE_RX} ry={EYE_RY} fill="#ffffff" />
