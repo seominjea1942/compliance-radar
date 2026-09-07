@@ -112,15 +112,14 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
       {needsAction && <UrgentBanner reason={item.shortReason} />}
 
       <ItemCard.Body>
+        {/*
+          Media on the right, deliberately. On the left it set the headline's
+          left edge, so a card with a photo started its title 96px further in
+          than one without and the column of headlines shifted as you scrolled.
+          On the right the text edge is fixed and only the right-hand gutter
+          varies, which nothing has to be read against.
+        */}
         <div className="flex items-start gap-4">
-          {/* Only the first photo here; the rest belong to the detail gallery. */}
-          <ItemMedia
-            image={item.images[0]}
-            upc={item.product?.upcs[0]}
-            alt={`Recall photo: ${item.displayTitle}`}
-            className="mt-0.5 aspect-square w-20 flex-none md:w-24"
-          />
-
           <div className="flex min-w-0 flex-1 flex-col gap-2.5">
             {event.isGroup ? (
           /* Headline carries firm, count and hazard, so the card states what
@@ -156,6 +155,14 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
           </div>
         )}
           </div>
+
+          {/* Only the first photo here; the rest belong to the detail gallery. */}
+          <ItemMedia
+            image={item.images[0]}
+            upc={item.product?.upcs[0]}
+            alt={`Recall photo: ${item.displayTitle}`}
+            className="mt-0.5 aspect-square w-20 flex-none md:w-24"
+          />
         </div>
 
         <div className="text-[12.5px] text-faint">
