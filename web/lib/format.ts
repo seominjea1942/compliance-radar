@@ -38,6 +38,22 @@ export function posted(v: string): string {
   return `Posted ${new Intl.DateTimeFormat("en-US", { timeZone: TZ, month: "short", day: "numeric" }).format(utc(v))}`;
 }
 
+/**
+ * How long an item has been waiting, e.g. "Flagged 8 days ago".
+ *
+ * Shown only on items older than the activity window. Those used to be hidden
+ * from the action tabs, so the label answers the question their reappearance
+ * raises: not when the recall was issued, which the timing line already gives,
+ * but how long this has been sitting on the owner's plate.
+ */
+export function flagged(v: string): string {
+  const days = Math.floor((Date.now() - utc(v).getTime()) / 86_400_000);
+  if (days < 1) return "Flagged today";
+  if (days === 1) return "Flagged yesterday";
+  if (days < 30) return `Flagged ${days} days ago`;
+  return `Flagged ${new Intl.DateTimeFormat("en-US", { timeZone: TZ, month: "short", day: "numeric" }).format(utc(v))}`;
+}
+
 export function count(n: number): string {
   return n.toLocaleString("en-US");
 }
