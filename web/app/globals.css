@@ -171,9 +171,9 @@
  * sliding; mismatched ones never repeat the same arrangement twice, which is
  * what makes it read as light rather than as an animation.
  *
- * Slow enough not to be caught: the full travel is about 4% of the viewport
- * over a minute, well under what the eye tracks as motion when it is looking
- * at something else.
+ * Slow enough to stay ambient, far enough to be seen: about 240px of travel
+ * over 41 seconds, or six pixels a second. The first pass ran at one pixel a
+ * second, which was past ambient and into nothing happening at all.
  */
 .canvas-pool {
   position: absolute;
@@ -188,7 +188,7 @@
     rgba(38, 78, 128, 0.2) 0%,
     rgba(38, 78, 128, 0) 100%
   );
-  animation: canvas-drift-a 71s ease-in-out infinite alternate;
+  animation: canvas-drift-a 41s ease-in-out infinite alternate;
 }
 
 .canvas-pool-soft {
@@ -199,24 +199,24 @@
     rgba(126, 162, 208, 0.26) 0%,
     rgba(126, 162, 208, 0) 100%
   );
-  animation: canvas-drift-b 89s ease-in-out infinite alternate;
+  animation: canvas-drift-b 53s ease-in-out infinite alternate;
 }
 
 @keyframes canvas-drift-a {
   from {
-    transform: translate3d(-1.6%, 1.1%, 0) scale(1);
+    transform: translate3d(-4.8%, 3.2%, 0) scale(1);
   }
   to {
-    transform: translate3d(1.8%, -1.4%, 0) scale(1.06);
+    transform: translate3d(5.2%, -4%, 0) scale(1.1);
   }
 }
 
 @keyframes canvas-drift-b {
   from {
-    transform: translate3d(1.4%, -1.2%, 0) scale(1.05);
+    transform: translate3d(4.4%, -3.6%, 0) scale(1.08);
   }
   to {
-    transform: translate3d(-1.7%, 1.5%, 0) scale(1);
+    transform: translate3d(-5%, 4.4%, 0) scale(1);
   }
 }
 
