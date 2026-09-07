@@ -16,13 +16,18 @@ RSS_URL = "https://www.fda.gov/about-fda/contact-fda/stay-informed/rss-feeds/rec
 IMG_RE = re.compile(r'<img[^>]+src="(/files/[^"]+\.(?:jpg|jpeg|png)[^"]*)"')
 
 
-def fetch_recall_images(link: str, max_images: int = 4) -> list[str]:
-    """Official product photos from an FDA press-release page (best effort)."""
+def fetch_recall_images(link: str, max_images: int = 4) -> tuple[list[str], list[str]]:
+    """Official product photos from an FDA press-release page (best effort).
+    Returns (thumbnail_urls, full_size_urls); full size derived by stripping
+    the style path, unverified at ingest (FE hides on 404)."""
     try:
         html = _get(link, timeout=20).decode("utf-8", "replace")
-        return ["https://www.fda.gov" + m for m in IMG_RE.findall(html)[:max_images]]
+        smalls = ["https://www.fda.gov" + m for m in IMG_RE.findall(html)[:max_images]]
+        fulls = [re.sub(r"/files/styles/[^/]+/public/", "/files/", u).split("?")[0]
+                 for u in smalls]
+        return smalls, fulls
     except Exception:
-        return []
+        return [], []
 OPENFDA_URL = (
     "https://api.fda.gov/food/enforcement.json"
     "?search=report_date:[{start}+TO+{end}]&limit=100"
@@ -46,7 +51,9 @@ def fetch_rss_items() -> list[dict]:
             "source": "fda_rss",
             "type": "food_recall_press_release",
             "event_key": get("link") or get("title")[:80],  # one press release = one event
-            "images": fetch_recall_images(get("link")) if get("link") else [],
+            **(dict(zip(("images", "images_full"),
+                        fetch_recall_images(get("link")))) if get("link")
+               else {"images": [], "images_full": []}),
             "title": get("title"),
             "description": re.sub(r"<[^>]+>", " ", get("description")).strip(),
             "link": get("link"),
