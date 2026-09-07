@@ -142,27 +142,89 @@
 /*
  * The canvas the cards float on.
  *
- * Three washes rather than one linear ramp: a single gradient across a page
- * this tall reads as a colour change halfway down, where two soft pools and a
- * faint diagonal read as light in a room. The green is the accent already in
- * the palette (--color-green / --color-green-soft) at single-digit alpha, so
- * the white cards stay the brightest thing on screen and the ink keeps its
- * contrast.
+ * One fixed layer behind the whole app rather than a background on each
+ * page's wrapper: the pools have to move, and a moving background-position
+ * repaints the full viewport every frame. As their own elements they move by
+ * transform instead, which the compositor handles without repainting
+ * anything, so a 7,000px log still scrolls clean while they drift.
  *
- * `fixed` attachment pins the wash to the viewport instead of stretching it
- * over the document. The log runs past 7,000px; stretched, every screen of it
- * would show one nearly flat slice, and the page would look like it had lost
- * the gradient rather than scrolled through it.
+ * It sits at z-index -1, above the body's background and below every piece of
+ * page content, so the translucent cards read it through themselves. Nothing
+ * between it and them may paint an opaque background.
+ *
+ * Blue carries less luminance than green at the same alpha (0.07 of it
+ * against 0.72 in the sRGB weighting), so these alphas are lower than the
+ * green build's and were set by measuring, not by eye.
  */
-.app-canvas {
-  background-color: var(--color-paper);
-  background-image:
-    radial-gradient(112% 74% at 88% 2%, rgba(38, 78, 128, 0.20) 0%, rgba(38, 78, 128, 0) 58%),
-    /* Centred past the bottom edge, and to the right of the rail: at the
-       corner it put its deepest tint under the rail's smallest text. */
-    radial-gradient(100% 78% at 28% 106%, rgba(126, 162, 208, 0.26) 0%, rgba(126, 162, 208, 0) 62%),
-    linear-gradient(158deg, #fbfdff 0%, #f2f7fd 44%, #e7eff9 100%);
-  background-attachment: fixed;
+.canvas-layer {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background-image: linear-gradient(158deg, #fbfdff 0%, #f2f7fd 44%, #e7eff9 100%);
+}
+
+/*
+ * Two pools, oversized so no edge can drift into frame, and offset from each
+ * other in period and direction. Matched periods would read as one object
+ * sliding; mismatched ones never repeat the same arrangement twice, which is
+ * what makes it read as light rather than as an animation.
+ *
+ * Slow enough not to be caught: the full travel is about 4% of the viewport
+ * over a minute, well under what the eye tracks as motion when it is looking
+ * at something else.
+ */
+.canvas-pool {
+  position: absolute;
+  inset: -30%;
+  will-change: transform;
+}
+
+.canvas-pool-deep {
+  /* Top right, matching the static build's 88% 2%. */
+  background-image: radial-gradient(
+    46% 42% at 68% 24%,
+    rgba(38, 78, 128, 0.2) 0%,
+    rgba(38, 78, 128, 0) 100%
+  );
+  animation: canvas-drift-a 71s ease-in-out infinite alternate;
+}
+
+.canvas-pool-soft {
+  /* Bottom left, clear of the rail's smallest text: at the corner its deepest
+     tint measured 2.9:1 behind that label. */
+  background-image: radial-gradient(
+    44% 44% at 40% 80%,
+    rgba(126, 162, 208, 0.26) 0%,
+    rgba(126, 162, 208, 0) 100%
+  );
+  animation: canvas-drift-b 89s ease-in-out infinite alternate;
+}
+
+@keyframes canvas-drift-a {
+  from {
+    transform: translate3d(-1.6%, 1.1%, 0) scale(1);
+  }
+  to {
+    transform: translate3d(1.8%, -1.4%, 0) scale(1.06);
+  }
+}
+
+@keyframes canvas-drift-b {
+  from {
+    transform: translate3d(1.4%, -1.2%, 0) scale(1.05);
+  }
+  to {
+    transform: translate3d(-1.7%, 1.5%, 0) scale(1);
+  }
+}
+
+/* Ambient decoration is exactly what this setting is for. */
+@media (prefers-reduced-motion: reduce) {
+  .canvas-pool {
+    animation: none;
+  }
 }
 
 /* Tooltip entrance. Kept here rather than pulling in an animation plugin. */

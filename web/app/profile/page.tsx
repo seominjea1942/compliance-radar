@@ -23,7 +23,7 @@ export default async function ProfilePage() {
 
   return (
     <AskRadarProvider>
-      <div className="app-canvas flex min-h-screen flex-col md:flex-row">
+      <div className="flex min-h-screen flex-col md:flex-row">
         <Sidebar
           profile={profile}
           surfacedCount={summary.surfaced}
