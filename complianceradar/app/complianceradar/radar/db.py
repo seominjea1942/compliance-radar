@@ -36,8 +36,19 @@ FIXED_TAGS = {"food-recalls", "city-programs-fees", "council-routine",
 ACTION_TYPES = {"act", "verify", "fyi"}
 
 
-def insert_decision(conn, document_id: int, decision: dict, embedding=None) -> int:
+# fallback tag by source so no decision is ever unreachable by topic filter
+DEFAULT_TAG_BY_SOURCE = {
+    "fda_rss": "food-recalls", "openfda_enforcement": "food-recalls",
+    "fsis_email": "food-recalls", "legistar": "council-routine",
+    "permits": "nearby-construction", "street_work": "nearby-construction",
+}
+
+
+def insert_decision(conn, document_id: int, decision: dict, embedding=None,
+                    source: str = None) -> int:
     tags = [t for t in (decision.get("tags") or []) if t in FIXED_TAGS]
+    if not tags and source in DEFAULT_TAG_BY_SOURCE:
+        tags = [DEFAULT_TAG_BY_SOURCE[source]]
     action = decision.get("action_type")
     if decision["decision"] == "REJECT" or action not in ACTION_TYPES:
         action = None
