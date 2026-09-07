@@ -4,14 +4,33 @@ import { useEffect, useId, useRef } from "react";
 import { gazeOffset } from "./gaze";
 
 /**
- * The radar's face: a white gradient body rising inside a green squircle, with
- * two eyes that follow the pointer.
+ * The radar's face: a solid yellow circle cropped by a near-black squircle,
+ * with eyes that follow the pointer.
  *
- * Drawn as one SVG so a single component covers the launcher and the panel
- * header. Gradient ids are namespaced with `useId` because the mark renders
- * more than once per page and duplicate ids in one document would make every
- * instance resolve to whichever gradient mounted first.
+ * Flat colour, no gradients and no glow. The circle is bigger than the frame
+ * and runs off the bottom and sides, so the crop is the composition rather
+ * than an accident of fitting, the way a sticker sits on a button. Only the
+ * clip path's id needs namespacing, since the mark renders more than once per
+ * page.
  */
+
+const SHELL = "#151515";
+const FACE = "#f7d94c";
+
+/**
+ * Sclera. The pupils move inside these; the whites stay put.
+ *
+ * Big, and set close together with only a few units between them: that
+ * spacing is most of what reads as cute rather than merely as two eyes.
+ */
+const EYE_RX = 11;
+const EYE_RY = 12;
+const PUPIL_RX = 6.5;
+const PUPIL_RY = 7.2;
+const EYES = [
+  { cx: 37, cy: 56 },
+  { cx: 63, cy: 56 },
+];
 
 export function RadarCharacter({
   className,
@@ -23,7 +42,7 @@ export function RadarCharacter({
 }) {
   const uid = useId().replace(/:/g, "");
   const svgRef = useRef<SVGSVGElement>(null);
-  const eyesRef = useRef<SVGGElement>(null);
+  const pupilsRef = useRef<SVGGElement>(null);
 
   useEffect(() => {
     if (!track) return;
@@ -38,9 +57,9 @@ export function RadarCharacter({
 
     const apply = () => {
       frame = 0;
-      const eyes = eyesRef.current;
+      const pupils = pupilsRef.current;
       const svg = svgRef.current;
-      if (!eyes || !svg || !pointer) return;
+      if (!pupils || !svg || !pointer) return;
 
       const box = svg.getBoundingClientRect();
       if (!box.width) return;
@@ -52,7 +71,7 @@ export function RadarCharacter({
 
       // Written straight to the node: this runs on every pointer move, and a
       // re-render per pixel would cost far more than the transform it sets.
-      eyes.setAttribute("transform", `translate(${x.toFixed(2)} ${y.toFixed(2)})`);
+      pupils.setAttribute("transform", `translate(${x.toFixed(2)} ${y.toFixed(2)})`);
     };
 
     const onMove = (e: PointerEvent) => {
@@ -68,91 +87,28 @@ export function RadarCharacter({
   }, [track]);
 
   return (
-    <svg
-      ref={svgRef}
-      viewBox="0 0 100 100"
-      className={className}
-      aria-hidden
-      focusable="false"
-    >
+    <svg ref={svgRef} viewBox="0 0 100 100" className={className} aria-hidden focusable="false">
       <defs>
-        <linearGradient id={`${uid}-shell`} x1="0" y1="0" x2="0" y2="1">
-          {/* Greyscale. #10141a carried a slight blue cast; this is the same
-              lightness with the hue taken out, lifted at the top so the
-              squircle still reads as lit from above rather than going flat. */}
-          <stop offset="0%" stopColor="#2c2c2c" />
-          <stop offset="55%" stopColor="#1e1e1e" />
-          <stop offset="100%" stopColor="#151515" />
-        </linearGradient>
-
-        {/* The body is backlit rather than solid: a blurred white dome reads as
-            the rim light, and a slightly smaller tinted dome sits on top of it,
-            so white survives only as the glowing edge. */}
-        <linearGradient id={`${uid}-body`} x1="0" y1="0" x2="0" y2="1">
-          {/*
-            Grey, at the lightness the green tint had. That lightness was
-            chosen so the near-white eyes keep something to read against; only
-            the hue is gone, so the contrast that made them legible survives.
-          */}
-          <stop offset="0%" stopColor="#9e9e9e" />
-          <stop offset="55%" stopColor="#a6a6a6" />
-          <stop offset="100%" stopColor="#b0b0b0" />
-        </linearGradient>
-
-        <linearGradient id={`${uid}-eye`} x1="0" y1="0" x2="0" y2="1">
-          {/* Lighter than the body, so the eyes read as cut out of the glow
-              rather than drawn on top of it. */}
-          <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="100%" stopColor="#fafafa" />
-        </linearGradient>
-
-        <filter id={`${uid}-eyeDepth`} x="-40%" y="-40%" width="180%" height="180%">
-          <feDropShadow dx="0" dy="0.7" stdDeviation="0.9" floodColor="#151515" floodOpacity="0.22" />
-        </filter>
-
         <clipPath id={`${uid}-squircle`}>
           <rect width="100" height="100" rx="27" ry="27" />
         </clipPath>
-
-        <filter id={`${uid}-soft`} x="-40%" y="-40%" width="180%" height="180%">
-          <feGaussianBlur stdDeviation="6" />
-          {/*
-            Brightens the rim without tightening it. A blur this wide spreads
-            the white thin, so the alpha is lifted after the fact: the falloff
-            keeps its shape and the glow just carries more light. Reducing the
-            blur would have brightened it too, at the cost of the soft crest.
-          */}
-          <feComponentTransfer>
-            <feFuncA type="linear" slope="1.5" />
-          </feComponentTransfer>
-        </filter>
-
-        {/* A touch of blur on the body itself, so its crest is not a hard edge
-            sitting on top of a soft glow. */}
-        <filter id={`${uid}-bodySoft`} x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur stdDeviation="1.6" />
-        </filter>
       </defs>
 
       <g clipPath={`url(#${uid}-squircle)`}>
-        <rect width="100" height="100" fill={`url(#${uid}-shell)`} />
+        <rect width="100" height="100" fill={SHELL} />
 
-        {/* Both domes run off the bottom of the frame so the body meets the
-            squircle's edges instead of floating as a circle inside it, and
-            crest around a quarter of the way down, which leaves the shell
-            reading across the shoulders and the eyes near the middle. */}
-        <ellipse cx="50" cy="70" rx="51" ry="51" fill="#ffffff" filter={`url(#${uid}-soft)`} />
-        <ellipse cx="50" cy="72" rx="46" ry="47" fill={`url(#${uid}-body)`} filter={`url(#${uid}-bodySoft)`} />
+        <circle cx="50" cy="64" r="44" fill={FACE} />
 
-        {/*
-          Level, and mirrored about the centre line. The pair was deliberately
-          offset at first, copying the reference art, but at 56px an offset
-          that small stops reading as character and starts reading as a squint.
-          The gap between them is the one they already had.
-        */}
-        <g ref={eyesRef} fill={`url(#${uid}-eye)`} filter={`url(#${uid}-eyeDepth)`}>
-          <ellipse cx="37" cy="54" rx="10" ry="12.9" />
-          <ellipse cx="63" cy="54" rx="10" ry="12.9" />
+        {EYES.map((e, i) => (
+          <ellipse key={i} cx={e.cx} cy={e.cy} rx={EYE_RX} ry={EYE_RY} fill="#ffffff" />
+        ))}
+
+        {/* Only the pupils track. Moving the whole eye slides the whites around
+            the face; moving the pupils inside them is what looking is. */}
+        <g ref={pupilsRef} fill={SHELL}>
+          {EYES.map((e, i) => (
+            <ellipse key={i} cx={e.cx} cy={e.cy} rx={PUPIL_RX} ry={PUPIL_RY} />
+          ))}
         </g>
       </g>
     </svg>
