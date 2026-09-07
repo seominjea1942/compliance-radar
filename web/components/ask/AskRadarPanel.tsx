@@ -138,7 +138,10 @@ export function AskRadarPanel({
     >
       {/* No character here. It leads the empty state one row below, and twice
           in the same 380px column read as two of it rather than one. */}
-      <header className="flex items-center gap-2.5 border-b border-line px-4 py-3.5">
+      {/* Same height as the application bar, from the same variable: with
+          the drawer open the two headers are side by side and their bottom
+          borders have to be one line. */}
+      <header className="flex flex-none items-center gap-2.5 border-b border-line px-4 py-3.5 sm:h-[var(--app-bar-h)] sm:py-0">
         <span className="flex-1 text-[15px] font-semibold text-ink">Ask the radar</span>
         <button
           type="button"

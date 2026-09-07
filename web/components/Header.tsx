@@ -54,7 +54,7 @@ export function Header({
   ];
 
   return (
-    <header className="sticky top-0 z-20 flex-none border-b border-line bg-paper">
+    <header className="sticky top-0 z-20 flex-none border-b border-line bg-paper md:h-[var(--app-bar-h)]">
       {/*
         One row above md. Below it the three columns do not fit in 375px, so
         the bar wraps: mark and identities on the first row, sections on a
@@ -65,7 +65,7 @@ export function Header({
           max-width, or the cap decides the inset rather than the padding.
           Back to 16 at the sides below md, where 32 each way is a sixth of a
           375px screen and pushes the third tab out of the scroll row. */}
-      <div className="flex w-full flex-wrap items-center gap-x-3 gap-y-3 px-4 py-4 md:flex-nowrap md:px-8">
+      <div className="flex w-full flex-wrap items-center gap-x-3 gap-y-3 px-4 py-4 md:h-full md:flex-nowrap md:px-8 md:py-0">
         <div className="order-1 flex flex-1 items-center">
           <Link href="/" aria-label="Compliance Radar, home" className="no-underline">
             <Logo />

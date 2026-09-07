@@ -62,6 +62,15 @@
   --color-road-faint: #ededf0;
 
   /*
+   * The application bar's height, and the ask drawer's header with it. One
+   * number because the two sit side by side when the drawer is open, and a
+   * few pixels of difference between their bottom borders is the kind of
+   * thing you see without being able to name. Below md the bar wraps to two
+   * rows and the drawer is a bottom sheet, so neither is pinned to this.
+   */
+  --app-bar-h: 73px;
+
+  /*
    * Type. app/layout.tsx binds the actual faces to these role variables, so a
    * typeface swap happens there and nowhere else.
    *   ui -> Geist   mono-ui -> IBM Plex Mono
