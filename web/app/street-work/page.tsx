@@ -59,10 +59,10 @@ export default async function StreetWorkPage() {
                   : `Street work near your door.`}
               </h1>
               <p className="max-w-[700px] text-[14.5px]/relaxed text-pretty text-body md:text-[15.5px]">
-                Everything the city has filed near the store: open dig permits, streets that
-                cannot be dug, and paving on the way. Your deliveries come through the front and
-                your customers park on the street, so this is the part of the public record that
-                can close you for a morning.
+                Everything the city has filed near the store: open dig permits and paving on
+                the way. Your deliveries come through the front and your customers park on the
+                street, so this is the part of the public record that can close you for a
+                morning.
               </p>
             </div>
 

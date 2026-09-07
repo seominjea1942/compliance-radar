@@ -32,8 +32,16 @@ export function StreetWorkDetail({
   const [at, setAt] = useState<{ x: number; y: number } | null>(null);
 
   const active = activePermits(streetWork);
-  const moratorium = moratoriumSegments(streetWork);
   const planned = plannedPaving(streetWork);
+  /*
+   * Only the legend reads this now. The page used to list all forty no-dig
+   * segments by name, which was a wall of street names saying nothing had
+   * happened and nothing was going to: a moratorium is the city refusing
+   * other people permission to dig, so there is no date to watch and
+   * nothing for the store to do. The dots stay on the map, where they cost
+   * a glance and explain why a street near the door is quiet.
+   */
+  const moratorium = moratoriumSegments(streetWork);
 
   return (
     <>
@@ -96,27 +104,6 @@ export function StreetWorkDetail({
         items={active}
       />
 
-      {moratorium.length > 0 && (
-        <Card className="gap-3">
-          <div className="flex flex-col gap-1.5">
-            <CardTitle as="h2">Streets that cannot be dug</CardTitle>
-            <CardNote>
-              Recently repaved, so the city forbids opening them. Protection rather than a
-              warning.
-            </CardNote>
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {moratorium.map((m) => (
-              <span
-                key={m.documentId}
-                className="rounded-full border border-green-tint-line bg-green-tint px-2.5 py-1 text-[12px] text-green"
-              >
-                {m.segment ?? m.title}
-              </span>
-            ))}
-          </div>
-        </Card>
-      )}
     </>
   );
 }
