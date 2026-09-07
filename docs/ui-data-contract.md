@@ -55,6 +55,13 @@ UPDATE triage_decisions SET overturned=TRUE, overturned_at=NOW(),
 (or import `radar.db.apply_overturn`). "curious" overturns are automatically
 excluded from the learning signal by the backend; the UI just stores them.
 
+To REVERT an overturn (toggle back to filtered/set-aside; also removes it
+from the learning signal):
+```sql
+UPDATE triage_decisions SET overturned=FALSE, overturned_at=NULL,
+  overturn_reason_type=NULL, overturn_note=NULL WHERE id=%s
+```
+
 ### 4. `v_nearby_permits` — home map (store pin + gray watched pins)
 Columns: `document_id` (BIGINT, can exceed JS safe int, treat as STRING),
 `title`, `lat` (str), `lon` (str), `status`, `distance_from_store_m` (str),
