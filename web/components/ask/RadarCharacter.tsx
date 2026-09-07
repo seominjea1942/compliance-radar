@@ -88,9 +88,16 @@ export function RadarCharacter({
             the rim light, and a slightly smaller tinted dome sits on top of it,
             so white survives only as the glowing edge. */}
         <linearGradient id={`${uid}-body`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#bfe2d1" />
-          <stop offset="55%" stopColor="#d6efe3" />
-          <stop offset="100%" stopColor="#ecf9f3" />
+          {/*
+            Half the whiteness of the first version, taken 50% toward the
+            palette's soft green rather than by halving it in HWB: that is the
+            literal reading, but it drives the hue to a neon mint that belongs
+            to no other part of this product. The eyes are near-white, so every
+            point of white left in the body was contrast taken away from them.
+          */}
+          <stop offset="0%" stopColor="#a7ceba" />
+          <stop offset="55%" stopColor="#b2d4c2" />
+          <stop offset="100%" stopColor="#bedaca" />
         </linearGradient>
 
         <linearGradient id={`${uid}-eye`} x1="0" y1="0" x2="0" y2="1">
