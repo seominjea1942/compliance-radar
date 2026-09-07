@@ -35,8 +35,10 @@
   --color-ink-soft: #27272a;
   --color-body: #3f3f46;
   --color-muted: #52525b;
-  --color-faint: #71717a;
-  --color-monoink: #71717a;
+  /* Both were #71717a, which is 4.9:1 on white and so had no room left the
+     moment the cards stopped being white. One step darker buys the glass. */
+  --color-faint: #67676f;
+  --color-monoink: #67676f;
   --color-ghost: #a1a1aa;
 
   /* Accent */

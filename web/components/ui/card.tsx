@@ -12,9 +12,11 @@ import { cn } from "@/lib/utils";
  * instead of stopping at its edge. Opaque white cards covered so much of the
  * screen that the wash survived only in the gutters and read as a printing
  * error. The alpha is high enough that ink on these keeps well past the
- * contrast floor. The alphas are set by measurement, not taste: at 0.72 the
- * faintest label inside a card landed at 4.40:1, just under AA, and these
- * put it back over while the wash still reads through the panel.
+ * contrast floor. The alphas are set by measurement, not taste. Glass this
+ * clear is only affordable because --color-faint moved a step darker with
+ * it; at the old #71717a these same alphas put the faintest label in a card
+ * at 4.14:1. Measured across all three points of the canvas drift, the
+ * worst text on the overview now sits at 4.80:1.
  */
 function Card({
   className,
@@ -31,8 +33,8 @@ function Card({
         // snapshot a layer that size and paint nothing at all below the
         // fold. There is also nothing to blur: the backdrop is a smooth
         // gradient, so the filter cost a whole screen to change no pixels.
-        tone === "paper" && "rounded-card border-line bg-paper/82 px-6.5 py-5.5",
-        tone === "inset" && "rounded-panel border-line bg-shell/72 px-5.5 py-5",
+        tone === "paper" && "rounded-card border-line bg-paper/55 px-6.5 py-5.5",
+        tone === "inset" && "rounded-panel border-line bg-shell/48 px-5.5 py-5",
         className,
       )}
       {...props}
