@@ -39,7 +39,18 @@ export function AskRadarProvider({ children }: { children: React.ReactNode }) {
 
       sessionId.current ??= newSessionId();
       const stamp = Date.now();
-      setMessages((m) => [...m, { id: stamp, from: "user", text: question }]);
+      setMessages((m) => [
+        ...m,
+        { id: stamp, from: "user", text: question, attached: scoped?.displayTitle ?? null },
+      ]);
+      /*
+       * The attachment is consumed here, the way a file is. It travels with
+       * this one message and then leaves the composer, so a conversation about
+       * an item does not keep silently re-sending it. Follow-ups still land in
+       * context: the runtime keeps the history for this session id, so "which
+       * lot codes exactly?" resolves against what was already asked.
+       */
+      setScopedTo(null);
       setPending(true);
 
       const controller = new AbortController();
@@ -48,8 +59,8 @@ export function AskRadarProvider({ children }: { children: React.ReactNode }) {
       const body: AskRequestBody = {
         question,
         sessionId: sessionId.current,
-        // Re-sent on every turn while the panel is scoped: the runtime treats
-        // it as this turn's item, not as a sticky conversation setting.
+        // Only the turn the item was attached to. Afterwards the session's own
+        // history carries the thread.
         decisionId: scoped?.decisionId ?? null,
       };
 

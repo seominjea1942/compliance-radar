@@ -12,7 +12,13 @@ import { RadarCharacter } from "./RadarCharacter";
 import { AnswerText } from "./AnswerText";
 import type { SurfacedItem } from "@/lib/queries";
 
-export type Message = { id: number; from: "user" | "radar" | "error"; text: string };
+export type Message = {
+  id: number;
+  from: "user" | "radar" | "error";
+  text: string;
+  /** The item that was attached when this message was sent, if any. */
+  attached?: string | null;
+};
 
 /** Answers land in 2-9s warm; a tool-heavy question can run far longer. */
 const STILL_WORKING_MS = 12_000;
@@ -152,11 +158,17 @@ export function AskRadarPanel({
         {messages.map((m) => {
           if (m.from === "user") {
             return (
-              <div
-                key={m.id}
-                className="max-w-[250px] self-end rounded-xl border border-green-tint-line bg-green-tint px-3.5 py-2.5 text-sm/relaxed text-ink"
-              >
-                {m.text}
+              <div key={m.id} className="flex max-w-[250px] flex-col items-end gap-1 self-end">
+                {/* What went with the message, shown on the message it went with. */}
+                {m.attached && (
+                  <div className="flex max-w-full items-center gap-1.5 rounded-md border border-line bg-shell px-2 py-1">
+                    <MdOutlineDescription className="size-3 flex-none text-monoink" aria-hidden />
+                    <span className="truncate text-[11.5px] text-muted">{m.attached}</span>
+                  </div>
+                )}
+                <div className="rounded-xl border border-green-tint-line bg-green-tint px-3.5 py-2.5 text-sm/relaxed text-ink">
+                  {m.text}
+                </div>
               </div>
             );
           }
