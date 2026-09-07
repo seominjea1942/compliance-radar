@@ -558,8 +558,12 @@ export type LogPage = {
   rows: LogRow[];
   /** Scoped to the current filters: what the tabs on screen describe. */
   counts: { all: number; setAside: number; overturned: number };
-  /** The whole log, ignoring filters: what the rail's badge describes. */
-  overall: { all: number; setAside: number };
+  /**
+   * The whole log, ignoring every filter. The rail's badge reads from it,
+   * and so do the status tabs: a tab is a destination, and a count that
+   * changed with the topic pills was describing the trip already taken.
+   */
+  overall: { all: number; setAside: number; overturned: number };
   hasMore: boolean;
 };
 
@@ -665,6 +669,7 @@ export async function getFilteredLog(opts: {
     overall: {
       all: Number(everything?.total ?? 0),
       setAside: Number(everything?.total ?? 0) - Number(everything?.resolved ?? 0),
+      overturned: Number(everything?.resolved ?? 0),
     },
     hasMore: rows.length > limit,
   };

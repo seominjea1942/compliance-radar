@@ -88,7 +88,24 @@ export default async function LogPage({
     getStoreProfile(),
   ]);
 
+  /*
+   * Two different questions, two different numbers.
+   *
+   * The tabs are navigation: each one says how big that part of the log is,
+   * full stop. Scoping them to the selected topic made them report the view
+   * being left rather than the one being entered, so All could read 1 while
+   * the page said 578 items just above it.
+   *
+   * The line under the pills is the opposite: it exists to answer the
+   * filters, so it stays scoped to the topic and the tab in force.
+   */
   const tabCount: Record<LogStatus, number> = {
+    all: log.overall.all,
+    "set-aside": log.overall.setAside,
+    overturned: log.overall.overturned,
+  };
+
+  const scopedCount: Record<LogStatus, number> = {
     all: log.counts.all,
     "set-aside": log.counts.setAside,
     overturned: log.counts.overturned,
@@ -179,11 +196,11 @@ export default async function LogPage({
                   className="m-0 text-[12.5px]/relaxed text-faint"
                 >
                   <span className="font-mono tabular-nums text-monoink">
-                    {count(tabCount[status])}
+                    {count(scopedCount[status])}
                   </span>{" "}
                   {STATUS_NOUN[status]}
                   {topic ? ` in ${topic.label.toLowerCase()}` : " across every topic"}
-                  {log.rows.length < tabCount[status] &&
+                  {log.rows.length < scopedCount[status] &&
                     `, showing ${count(log.rows.length)}`}
                   .
                 </p>
