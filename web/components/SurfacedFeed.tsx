@@ -75,7 +75,7 @@ export function SurfacedFeed({
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-1.5">
-        <h1 className="text-[20px]/tight font-semibold tracking-[-0.01em] text-ink md:text-[23px]">
+        <h1 className="text-[22px]/tight font-bold tracking-[-0.02em] text-ink md:text-[27px]">
           {HEADING[filter](counts[filter])}
         </h1>
         <p className="max-w-[700px] text-[14.5px]/relaxed text-pretty text-body md:text-[15.5px]">
