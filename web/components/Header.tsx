@@ -1,6 +1,10 @@
-import Image from "next/image";
 import Link from "next/link";
-import { MdInfoOutline } from "react-icons/md";
+import {
+  MdInfoOutline,
+  MdOutlineDashboard,
+  MdOutlineListAlt,
+  MdOutlineSettings,
+} from "react-icons/md";
 import { BusinessSwitcher } from "@/components/BusinessSwitcher";
 import { Logo } from "@/components/Logo";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -32,46 +36,29 @@ export function Header({
 }) {
   const storeName = profile?.storeName ?? "Store";
 
-  /*
-   * 3dicons.co, v1 collection by realvjy, CC0. Rendered art rather than
-   * glyphs, so they are images at a fixed box instead of an icon font.
-   *
-   * The files carry no alpha: their background is opaque white, which is
-   * what the bar is again, so nothing shows. The multiply stays anyway. On
-   * white it changes not one pixel, and it is what let them sit on a tinted
-   * bar while the bar was tinted, so the next background change is free. A
-   * dark one would still need real alpha.
-   *
-   * `nudge` corrects the art inside the canvas, not the box. Each render is
-   * centred differently in its own 200px frame: measuring the bounding box of
-   * the non-white pixels puts the target's centre 10px below the middle where
-   * the notebook and the toggle are within 1.5px of it. At a 40px box that is
-   * two visible pixels, which is what made the first tab sit low.
-   */
   const tabs = [
     {
       href: "/",
       label: "Overview",
       section: "overview" as const,
       meta: count(surfacedCount),
-      icon: "/icons3d/overview.webp",
-      nudge: "-translate-y-[2px]",
+      icon: <MdOutlineDashboard className="size-[18px] flex-none" aria-hidden />,
     },
     {
       href: "/log",
       label: "Log",
       section: "log" as const,
       meta: count(setAsideCount),
-      icon: "/icons3d/log.webp",
-      nudge: "",
+      icon: <MdOutlineListAlt className="size-[18px] flex-none" aria-hidden />,
     },
     {
       href: "/profile",
       label: "Store profile",
       section: "profile" as const,
       meta: undefined,
-      icon: "/icons3d/profile.webp",
-      nudge: "",
+      // Settings, not a storefront: the page is a set of switches about
+      // what the shop does and does not do.
+      icon: <MdOutlineSettings className="size-[18px] flex-none" aria-hidden />,
     },
   ];
 
@@ -116,15 +103,7 @@ export function Header({
                   active ? "font-medium text-ink" : "font-normal text-muted hover:text-ink",
                 )}
               >
-                {/* Decorative: the label beside it is the accessible name. */}
-                <Image
-                  src={t.icon}
-                  alt=""
-                  width={48}
-                  height={48}
-                  aria-hidden
-                  className={cn("size-10 flex-none mix-blend-multiply", t.nudge)}
-                />
+                {t.icon}
                 {t.label}
                 {t.meta !== undefined && (
                   <span className="font-mono text-[11px] font-medium text-monoink">{t.meta}</span>
