@@ -77,11 +77,12 @@ export function RadarCharacter({
     >
       <defs>
         <linearGradient id={`${uid}-shell`} x1="0" y1="0" x2="0" y2="1">
-          {/* The app's green, opened up at the top so the squircle reads as lit
-              from above rather than as a flat fill. */}
-          <stop offset="0%" stopColor="#4fb188" />
-          <stop offset="55%" stopColor="#2f6a4f" />
-          <stop offset="100%" stopColor="#27583f" />
+          {/* #10141a, lifted at the top so the squircle reads as lit from above
+              rather than as a flat fill. The two upper stops are the same hue
+              and saturation, raised in lightness only. */}
+          <stop offset="0%" stopColor="#212a36" />
+          <stop offset="55%" stopColor="#171c25" />
+          <stop offset="100%" stopColor="#10141a" />
         </linearGradient>
 
         {/* The body is backlit rather than solid: a blurred white dome reads as
