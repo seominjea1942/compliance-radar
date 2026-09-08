@@ -25,7 +25,10 @@ export function logStatusFor(v: View): LogStatus {
 
 export const PAGE = 25;
 
-export type ViewParams = { view: View; tag: string | null; limit: number };
+export type ViewParams = { view: View; tag: string | null; q: string | null; limit: number };
+
+/** Long enough to be a real query; the column is a title, not an essay. */
+export const MAX_QUERY = 80;
 
 /**
  * Filters live in the URL: the set-aside half is 577 rows served 25 at a
@@ -39,13 +42,15 @@ export function hrefFor(p: Partial<ViewParams>, from: ViewParams): string {
   const next: ViewParams = {
     view: p.view ?? from.view,
     tag: p.tag !== undefined ? p.tag : from.tag,
+    q: p.q !== undefined ? p.q : from.q,
     limit: p.limit ?? from.limit,
   };
-  const q = new URLSearchParams();
-  if (next.view !== "act") q.set("view", next.view);
-  if (next.tag) q.set("tag", next.tag);
-  if (next.limit !== PAGE) q.set("limit", String(next.limit));
-  const s = q.toString();
+  const params = new URLSearchParams();
+  if (next.view !== "act") params.set("view", next.view);
+  if (next.tag) params.set("tag", next.tag);
+  if (next.q) params.set("q", next.q);
+  if (next.limit !== PAGE) params.set("limit", String(next.limit));
+  const s = params.toString();
   return s ? `/?${s}` : "/";
 }
 
@@ -58,6 +63,9 @@ export function readParams(sp: Record<string, string | string[] | undefined>): V
     // Validated against the fixed tag set: an unknown ?tag is dropped rather
     // than narrowing the screen to nothing and looking like an empty database.
     tag: TAGS.find((t) => t.id === one("tag"))?.id ?? null,
+    // Free text, so it is trimmed and capped here rather than trusted; it
+    // reaches SQL as a bound parameter either way.
+    q: (one("q") ?? "").trim().slice(0, MAX_QUERY) || null,
     limit: Math.min(Math.max(Number(one("limit")) || PAGE, PAGE), 500),
   };
 }

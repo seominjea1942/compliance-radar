@@ -586,12 +586,23 @@ export async function getFilteredLog(opts: {
   source?: SourceGroup | "all";
   /** One of TAGS. Narrows the log to a single topic. */
   tag?: string | null;
+  /** Free-text match over the title and the filtering reason. */
+  q?: string | null;
   limit?: number;
 } = {}): Promise<LogPage> {
   const status = opts.status ?? "set-aside";
   const source = opts.source ?? "all";
   const tag = TAGS.some((t) => t.id === opts.tag) ? opts.tag! : null;
   const limit = Math.min(Math.max(opts.limit ?? 25, 1), 500);
+
+  /*
+   * LIKE, not full text: the log is ~750 rows, the owner searches for a brand
+   * they half-remember ("Fromm"), and a prefix-only index would miss it inside
+   * a longer product title. The wildcards are added here so the caller cannot
+   * inject them; `%` and `_` in the query itself are escaped to stay literal.
+   */
+  const q = (opts.q ?? "").trim();
+  const like = q ? `%${q.replace(/[\\%_]/g, (c) => `\\${c}`)}%` : null;
 
   const where: string[] = [];
   const params: unknown[] = [];
@@ -612,6 +623,11 @@ export async function getFilteredLog(opts: {
     params.push(JSON.stringify(tag));
   }
 
+  if (like) {
+    where.push("(title LIKE ? OR reason LIKE ?)");
+    params.push(like, like);
+  }
+
   const clause = where.length ? `WHERE ${where.join(" AND ")}` : "";
 
   // The tab counts have to answer "of what is on screen". Scoped to the same
@@ -626,6 +642,10 @@ export async function getFilteredLog(opts: {
   if (tag) {
     totalsWhere.push("JSON_CONTAINS(tags, ?)");
     totalsParams.push(JSON.stringify(tag));
+  }
+  if (like) {
+    totalsWhere.push("(title LIKE ? OR reason LIKE ?)");
+    totalsParams.push(like, like);
   }
   const totalsClause = totalsWhere.length ? `WHERE ${totalsWhere.join(" AND ")}` : "";
 
@@ -649,7 +669,7 @@ export async function getFilteredLog(opts: {
   // The rail's badge counts the whole log, not the slice being viewed: it is
   // global navigation, and a count that moved every time a filter changed
   // would be reporting the current screen rather than the destination.
-  const narrowed = source !== "all" || tag !== null;
+  const narrowed = source !== "all" || tag !== null || like !== null;
   const [everything] = narrowed
     ? await query<{ total: number | string; resolved: number | string | null }>(
         `SELECT COUNT(*) AS total, SUM(overturned = 1) AS resolved FROM v_filtered_log`,

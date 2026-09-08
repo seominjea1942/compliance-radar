@@ -5,6 +5,7 @@ import { Header } from "@/components/Header";
 import { LogRows } from "@/components/log/LogRows";
 import { SurfacedCard } from "@/components/SurfacedCard";
 import { TopicFilter } from "@/components/TopicFilter";
+import { LogSearch } from "@/components/LogSearch";
 import { ContextRail } from "@/components/rail/ContextRail";
 import { DecisionTabs } from "@/components/ui/decision-tabs";
 import { PageTitle } from "@/components/ui/page-title";
@@ -74,7 +75,7 @@ export default async function HomePage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = readParams(await searchParams);
-  const { view, tag, limit } = params;
+  const { view, tag, q, limit } = params;
 
   const [summary, surfaced, profile, log] = await Promise.all([
     getWeeklySummary(),
@@ -85,6 +86,8 @@ export default async function HomePage({
     getFilteredLog({
       status: logStatusFor(view),
       tag,
+      // Search belongs to the log half only; a surfaced view keeps its counts.
+      q: isLogView(view) ? q : null,
       limit: isLogView(view) ? limit : 1,
     }),
   ]);
@@ -157,7 +160,8 @@ export default async function HomePage({
                   <DecisionTabs params={params} counts={counts} className="min-w-0" />
                   {/* Pushed to the far edge: it is the other axis, not the
                       seventh item of the control it sits beside. */}
-                  <div className="ml-auto flex-none">
+                  <div className="ml-auto flex flex-none items-center gap-2">
+                    {isLogView(view) && <LogSearch params={params} />}
                     <TopicFilter params={params} counts={topicCounts} />
                   </div>
                 </div>
@@ -171,10 +175,11 @@ export default async function HomePage({
                     rather than on a card, where #71717a measures 4.4:1. */}
                 <p aria-live="polite" className="m-0 -mt-2 text-[12.5px]/relaxed text-muted">
                   <span className="font-mono tabular-nums text-ink">{count(onScreen)}</span>{" "}
-                  {isLogView(view) ? "decisions" : "open"}
+                  {isLogView(view) ? (onScreen === 1 ? "decision" : "decisions") : "open"}
                   {tag
                     ? ` in ${TAGS.find((t) => t.id === tag)?.label.toLowerCase()}`
                     : " across every topic"}
+                  {isLogView(view) && q ? ` matching “${q}”` : ""}
                   {shown < onScreen && `, showing ${count(shown)}`}.
                 </p>
 
