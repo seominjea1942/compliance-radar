@@ -9,5 +9,5 @@ import { LogoMark } from "@/components/ui/logo-mark";
  * carries the accessible name, so nothing is lost to a screen reader.
  */
 export function Logo() {
-  return <LogoMark className="h-[26px] w-auto flex-none text-ink" />;
+  return <LogoMark className="h-[20px] w-auto flex-none text-ink" />;
 }
