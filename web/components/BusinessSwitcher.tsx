@@ -90,7 +90,7 @@ export function BusinessSwitcher({
             </span>
             {location && <span className="text-[11.5px] text-faint">{location}</span>}
           </div>
-          <MdCheck className="ml-auto size-4 flex-none text-green" aria-hidden />
+          <MdCheck className="ml-auto size-4 flex-none text-brand" aria-hidden />
         </div>
 
         <div className="mt-1 flex items-center justify-between gap-2 border-t border-line px-2 pt-2.5 pb-1">

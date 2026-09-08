@@ -45,7 +45,7 @@ export default async function StreetWorkPage() {
             <div className="mx-auto flex w-full max-w-[900px] flex-col gap-5 px-4 pt-5 pb-10 md:gap-6.5 md:px-12 md:pt-7.5 md:pb-12">
               <Link
                 href="/"
-                className="inline-flex items-center gap-1.5 self-start text-[13px] font-medium text-green no-underline hover:underline"
+                className="inline-flex items-center gap-1.5 self-start text-[13px] font-medium text-brand no-underline hover:underline"
               >
                 <MdArrowBack className="size-4" aria-hidden />
                 Back to overview

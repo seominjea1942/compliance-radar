@@ -94,7 +94,7 @@ export default async function AboutPage() {
                             href={l.href}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-[14px] font-medium text-green no-underline hover:underline"
+                            className="inline-flex items-center gap-1 text-[14px] font-medium text-brand no-underline hover:underline"
                           >
                             {l.label}
                             <MdOpenInNew className="size-3.5" aria-hidden />

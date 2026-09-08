@@ -182,7 +182,7 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
           {event.resolvedCount > 0 && (
             <>
               {" · "}
-              <span className="text-green">
+              <span className="text-brand">
                 {event.items.length} remaining of {event.allItems.length}
               </span>
             </>
@@ -200,7 +200,7 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
               type="button"
               onClick={() => setExpanded((v) => !v)}
               aria-expanded={expanded}
-              className="flex cursor-pointer items-center gap-1 self-start text-[12.5px] font-medium text-green hover:underline"
+              className="flex cursor-pointer items-center gap-1 self-start text-[12.5px] font-medium text-brand hover:underline"
             >
               {expanded ? "Hide the products" : `Show all ${event.items.length} products`}
               {expanded ? (
@@ -274,9 +274,9 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
       {resolving && <ResolveDialog event={event} onClose={() => setResolving(false)} />}
 
       {done && (
-        <div className="flex items-center gap-2.5 rounded-lg border border-green-tint-line bg-green-tint px-3.5 py-2.5">
-          <MdCheck className="size-3.5 flex-none text-green" aria-hidden />
-          <span className="text-sm text-green">Resolved. It will drop out of the feed.</span>
+        <div className="flex items-center gap-2.5 rounded-lg border border-brand-tint-line bg-brand-tint px-3.5 py-2.5">
+          <MdCheck className="size-3.5 flex-none text-brand" aria-hidden />
+          <span className="text-sm text-brand">Resolved. It will drop out of the feed.</span>
         </div>
       )}
     </ItemCard>

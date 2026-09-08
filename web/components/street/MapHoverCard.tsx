@@ -64,7 +64,7 @@ export function MapHoverCard({
           <span className="font-medium text-ink">
             {target.work.segment ?? target.work.title}
             {target.work.onStoreStreet && (
-              <span className="ml-1.5 text-green">your street</span>
+              <span className="ml-1.5 text-brand">your street</span>
             )}
           </span>
 

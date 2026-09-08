@@ -15,12 +15,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-green-deep",
+        default: "bg-primary text-primary-foreground hover:bg-brand-deep",
         outline: "border border-line-card bg-paper text-ink hover:bg-hover",
-        ghost: "text-muted hover:bg-hover hover:text-green",
-        link: "text-green underline-offset-4 hover:underline",
+        ghost: "text-muted hover:bg-hover hover:text-brand",
+        link: "text-brand underline-offset-4 hover:underline",
         cardAction:
-          "flex-none tracking-[0.02em] text-muted hover:bg-control-hover hover:text-green",
+          "flex-none tracking-[0.02em] text-muted hover:bg-control-hover hover:text-brand",
       },
       size: {
         default: "h-9 px-4 text-sm",

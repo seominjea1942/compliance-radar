@@ -188,7 +188,7 @@ export default async function LogPage({
                           className={cn(
                             "rounded-full border px-3 py-1 text-[12.5px] no-underline transition-colors",
                             active
-                              ? "border-green-soft bg-green-tint font-medium text-green"
+                              ? "border-brand-soft bg-brand-tint font-medium text-brand"
                               : "border-line text-muted hover:border-line-strong hover:text-ink",
                           )}
                         >
@@ -225,7 +225,7 @@ export default async function LogPage({
                   <div className="flex items-center justify-center text-[12.5px]">
                     <Link
                       href={hrefFor({ status, limit: limit + PAGE, tag: topic?.id ?? null })}
-                      className="font-medium text-green no-underline hover:underline"
+                      className="font-medium text-brand no-underline hover:underline"
                     >
                       Load more
                     </Link>

@@ -132,7 +132,7 @@ function Section({
             <div className="flex items-baseline justify-between gap-3">
               <span className="text-[13.5px] font-medium text-ink">
                 {w.segment ?? w.title}
-                {w.onStoreStreet && <span className="ml-2 text-[11.5px] text-green">your street</span>}
+                {w.onStoreStreet && <span className="ml-2 text-[11.5px] text-brand">your street</span>}
               </span>
               <span className="flex-none font-mono text-[11.5px] text-faint">
                 {metres(w.distanceM)}

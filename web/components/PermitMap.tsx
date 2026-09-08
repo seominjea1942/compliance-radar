@@ -199,7 +199,7 @@ export function PermitMap({
                 <span className="truncate text-muted">
                   {seg.where}
                   {seg.onStoreStreet && (
-                    <span className="ml-1.5 text-green">your street</span>
+                    <span className="ml-1.5 text-brand">your street</span>
                   )}
                 </span>
                 {/* City text naming the utility and the job, not generated. */}

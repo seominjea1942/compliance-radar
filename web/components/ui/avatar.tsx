@@ -27,7 +27,7 @@ function Avatar({
         shape === "square" &&
           "size-8 rounded-[7px] border border-line-strong bg-line text-xs font-semibold text-muted",
         shape === "round" &&
-          "size-[30px] rounded-full bg-green text-xs font-medium text-shell",
+          "size-[30px] rounded-full bg-brand text-xs font-medium text-shell",
         className,
       )}
       {...props}

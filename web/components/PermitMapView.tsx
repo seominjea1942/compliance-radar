@@ -160,7 +160,7 @@ export function PermitMapView({
         radius: 7,
         weight: 3,
         color: "#ffffff",
-        fillColor: "#2f6a4f",
+        fillColor: "#28619e",
         fillOpacity: 1,
       })
         .addTo(instance)

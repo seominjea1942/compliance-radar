@@ -71,7 +71,7 @@ export function TopicTable({
           <a
             href="/log"
             aria-label="Open the log"
-            className="flex size-8 flex-none items-center justify-center rounded-control text-green transition-colors hover:bg-hover focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className="flex size-8 flex-none items-center justify-center rounded-control text-brand transition-colors hover:bg-hover focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             <MdArrowForward className="size-[18px]" aria-hidden />
           </a>

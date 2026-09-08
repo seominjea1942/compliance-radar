@@ -34,7 +34,7 @@ export function LogRows({ rows }: { rows: LogRow[] }) {
             <ItemCard.Chips>
               <Badge>{row.sourceLabel}</Badge>
               {row.overturned && (
-                <Badge variant="outline" className="gap-1.5 border-green-tint-line text-green">
+                <Badge variant="outline" className="gap-1.5 border-brand-tint-line text-brand">
                   <MdCheck className="size-3.5" aria-hidden />
                   Overturned
                 </Badge>

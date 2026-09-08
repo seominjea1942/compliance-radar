@@ -72,7 +72,7 @@ export function OverturnDialog({ row, onClose }: { row: LogRow; onClose: () => v
                 type="button"
                 disabled={pending}
                 onClick={() => submit(r.value)}
-                className="cursor-pointer rounded-[10px] border border-line bg-shell px-3.5 py-2.5 text-left text-[13.5px] text-ink transition-colors hover:border-green-tint-line hover:bg-green-tint disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                className="cursor-pointer rounded-[10px] border border-line bg-shell px-3.5 py-2.5 text-left text-[13.5px] text-ink transition-colors hover:border-brand-tint-line hover:bg-brand-tint disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               >
                 {r.label}
               </button>
@@ -89,7 +89,7 @@ export function OverturnDialog({ row, onClose }: { row: LogRow; onClose: () => v
               type="button"
               disabled={pending}
               onClick={() => submit()}
-              className="cursor-pointer rounded-control px-3 py-1.5 text-[13px] font-medium text-green hover:bg-hover disabled:opacity-50"
+              className="cursor-pointer rounded-control px-3 py-1.5 text-[13px] font-medium text-brand hover:bg-hover disabled:opacity-50"
             >
               {pending ? "Saving…" : "Skip"}
             </button>

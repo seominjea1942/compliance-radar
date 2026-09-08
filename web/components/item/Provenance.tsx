@@ -130,7 +130,7 @@ export function Provenance({
 
       {source !== "legistar" && source !== "permits" && text(payload.title) && (
         <details className="group">
-          <summary className="cursor-pointer text-[12.5px] font-medium text-green marker:content-none hover:underline">
+          <summary className="cursor-pointer text-[12.5px] font-medium text-brand marker:content-none hover:underline">
             Show the full product description
           </summary>
           <p className="mt-2 mb-0 text-pretty text-[12.5px]/relaxed text-faint">
@@ -144,7 +144,7 @@ export function Provenance({
           href={link}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[13px] font-medium text-green no-underline hover:underline"
+          className="text-[13px] font-medium text-brand no-underline hover:underline"
         >
           Open the source record ↗
         </a>

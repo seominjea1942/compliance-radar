@@ -100,7 +100,7 @@ export function ResolveDialog({
                     disabled={notCarried || pending}
                     onChange={(e) => set(item.decisionId, e.target.checked ? "handled" : "open")}
                     aria-label={`Handled: ${item.title.slice(0, 60)}`}
-                    className="mt-0.5 size-4 flex-none accent-[var(--color-green)] disabled:opacity-40"
+                    className="mt-0.5 size-4 flex-none accent-[var(--color-brand)] disabled:opacity-40"
                   />
                   <div className="flex min-w-0 flex-1 flex-col gap-1">
                     <span
@@ -174,7 +174,7 @@ export function ResolveDialog({
                 Object.fromEntries(event.items.map((i) => [i.decisionId, "not_carried" as RowState])),
               )
             }
-            className="mt-3 cursor-pointer text-[12.5px] font-medium text-green hover:underline disabled:opacity-50"
+            className="mt-3 cursor-pointer text-[12.5px] font-medium text-brand hover:underline disabled:opacity-50"
           >
             We don&apos;t carry any of these
           </button>

@@ -31,7 +31,7 @@ export function FactList({ facts }: { facts: StoreFact[] }) {
             <button
               type="button"
               onClick={() => setEditing(f)}
-              className="flex-none cursor-pointer rounded-control px-2 py-1 text-[12.5px] font-medium text-green opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className="flex-none cursor-pointer rounded-control px-2 py-1 text-[12.5px] font-medium text-brand opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             >
               Edit
             </button>
@@ -111,7 +111,7 @@ function FactDialog({ fact, onClose }: { fact: StoreFact | null; onClose: () => 
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="You have a small parking lot with its entrance on Lincoln."
-            className="w-full resize-none rounded-[10px] border border-line-strong bg-shell px-3 py-2.5 text-[14px]/relaxed text-ink placeholder:text-monoink focus:border-green focus:outline-none"
+            className="w-full resize-none rounded-[10px] border border-line-strong bg-shell px-3 py-2.5 text-[14px]/relaxed text-ink placeholder:text-monoink focus:border-brand focus:outline-none"
           />
           {error && <p className="m-0 text-[12.5px] text-alert">{error}</p>}
 

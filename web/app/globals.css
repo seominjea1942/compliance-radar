@@ -39,12 +39,20 @@
   --color-monoink: #71717a;
   --color-ghost: #a1a1aa;
 
-  /* Accent */
-  --color-green: #2f6a4f;
-  --color-green-deep: #245240;
-  --color-green-soft: #8fbaa2;
-  --color-green-tint: #f1f7f3;
-  --color-green-tint-line: #dbe8e0;
+  /*
+   * Accent. Named for its role, not its hue: it was green, and a token called
+   * --color-green holding a blue is a lie the next person has to find out the
+   * hard way.
+   *
+   * Each blue is matched to the luminance of the green it replaces, to three
+   * decimal places, so every contrast ratio in the app is what it was: the
+   * accent 6.38:1 on white against the old 6.37, deep 8.92 against 8.91.
+   */
+  --color-brand: #28619e;
+  --color-brand-deep: #1d4b7d;
+  --color-brand-soft: #93b3d4;
+  --color-brand-tint: #f2f6fb;
+  --color-brand-tint-line: #dce6f2;
 
   /* Urgent */
   --color-alert: #b42318;
@@ -99,18 +107,18 @@
   --card-foreground: var(--color-ink);
   --popover: var(--color-paper);
   --popover-foreground: var(--color-ink);
-  --primary: var(--color-green);
+  --primary: var(--color-brand);
   --primary-foreground: var(--color-shell);
   --secondary: var(--color-rail);
   --secondary-foreground: var(--color-ink);
   --muted: var(--color-rail);
   --muted-foreground: var(--color-faint);
   --accent: var(--color-hover);
-  --accent-foreground: var(--color-green);
+  --accent-foreground: var(--color-brand);
   --destructive: var(--color-alert);
   --border: var(--color-line);
   --input: var(--color-line-card);
-  --ring: var(--color-green-soft);
+  --ring: var(--color-brand-soft);
 }
 
 @theme inline {

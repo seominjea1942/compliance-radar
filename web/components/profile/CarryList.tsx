@@ -52,7 +52,7 @@ export function CarryList({
               <button
                 type="button"
                 onClick={() => setDialog({ mode: "edit", entry: e })}
-                className="w-10 flex-none cursor-pointer self-start text-left text-[12.5px] font-medium text-green opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none sm:self-auto"
+                className="w-10 flex-none cursor-pointer self-start text-left text-[12.5px] font-medium text-brand opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none sm:self-auto"
               >
                 Edit
               </button>
@@ -91,7 +91,7 @@ export function CarryList({
           <button
             type="button"
             onClick={() => setDialog({ mode: "not-carried" })}
-            className="cursor-pointer rounded-full border border-dashed border-line-strong px-3 py-1 text-[12.5px] text-muted transition-colors hover:border-green hover:bg-green-tint hover:text-green"
+            className="cursor-pointer rounded-full border border-dashed border-line-strong px-3 py-1 text-[12.5px] text-muted transition-colors hover:border-brand hover:bg-brand-tint hover:text-brand"
           >
             + Add something you don&apos;t carry
           </button>
@@ -211,7 +211,7 @@ function CarryDialog({
               value={item}
               onChange={(e) => setItem(e.target.value)}
               placeholder="Cooked steak, sliced to order"
-              className="rounded-[10px] border border-line-strong bg-shell px-3 py-2.5 text-[14px] text-ink placeholder:text-monoink focus:border-green focus:outline-none"
+              className="rounded-[10px] border border-line-strong bg-shell px-3 py-2.5 text-[14px] text-ink placeholder:text-monoink focus:border-brand focus:outline-none"
             />
             <span className="text-[11.5px] text-faint">
               Name it the way a recall notice would: the product, not the shelf.

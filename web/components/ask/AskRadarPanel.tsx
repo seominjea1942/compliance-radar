@@ -63,7 +63,7 @@ function Thinking() {
         {[0, 1, 2].map((i) => (
           <span
             key={i}
-            className="size-1.5 animate-pulse rounded-full bg-green"
+            className="size-1.5 animate-pulse rounded-full bg-brand"
             style={{ animationDelay: `${i * 160}ms`, animationDuration: "1.1s" }}
           />
         ))}
@@ -236,7 +236,7 @@ export function AskRadarPanel({
                     <span className="truncate text-[11.5px] text-muted">{m.attached}</span>
                   </div>
                 )}
-                <div className="rounded-xl border border-green-tint-line bg-green-tint px-3.5 py-2.5 text-sm/relaxed text-ink">
+                <div className="rounded-xl border border-brand-tint-line bg-brand-tint px-3.5 py-2.5 text-sm/relaxed text-ink">
                   {m.text}
                 </div>
               </div>
@@ -273,7 +273,7 @@ export function AskRadarPanel({
         }}
         className="flex flex-col gap-2 border-t border-line px-4 pt-3 pb-4"
       >
-        <div className="flex flex-col gap-2 rounded-[10px] border border-line-strong bg-shell px-3 py-2.5 focus-within:border-green">
+        <div className="flex flex-col gap-2 rounded-[10px] border border-line-strong bg-shell px-3 py-2.5 focus-within:border-brand">
           {scopedTo && (
             /*
               Inside the box the message is written in, not above the
@@ -323,7 +323,7 @@ export function AskRadarPanel({
             type="submit"
             disabled={!draft.trim() || pending}
             aria-label="Send"
-            className="flex size-7 flex-none cursor-pointer items-center justify-center rounded-full bg-green text-shell transition-opacity disabled:cursor-not-allowed disabled:opacity-35"
+            className="flex size-7 flex-none cursor-pointer items-center justify-center rounded-full bg-brand text-shell transition-opacity disabled:cursor-not-allowed disabled:opacity-35"
           >
             <MdArrowUpward className="size-4" aria-hidden />
           </button>
