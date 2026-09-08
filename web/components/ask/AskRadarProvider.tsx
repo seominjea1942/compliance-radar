@@ -116,19 +116,38 @@ export function AskRadarProvider({ children }: { children: React.ReactNode }) {
   return (
     <AskRadarCtx.Provider value={value}>
       {/*
-        The page makes room for the drawer instead of sitting under it: the
-        panel is not modal, and half the reason to open it is to read a card
-        while asking about it. Padding on a wrapper rather than a width on the
-        page, so nothing inside has to know the drawer exists. Only from sm,
-        where the panel is a side drawer at all.
+        Above md the panel is a column of the page, not something opened over
+        it: a real flex sibling that is always there, so the page is beside it
+        rather than under it and nothing has to be pushed out of the way. It
+        stopped being a drawer because it was never transient; half the reason
+        to have it is to read a card while asking about that card.
+
+        Below md there is no room for a second column, so it reverts to a
+        sheet over the page with a launcher to raise it.
       */}
-      <div
-        className={[
-          "transition-[padding] duration-200 ease-out",
-          isOpen ? "sm:pr-[380px]" : "",
-        ].join(" ")}
-      >
-        {children}
+      <div className="flex min-h-screen w-full">
+        <div className="min-w-0 flex-1">{children}</div>
+
+        <aside
+          aria-label="Ask the radar"
+          className={[
+            "z-40 flex-none bg-paper",
+            isOpen
+              ? "fixed inset-x-0 bottom-0 flex h-[min(640px,88vh)] border-t border-line-strong"
+              : "hidden",
+            "md:sticky md:inset-auto md:top-0 md:flex md:h-screen md:w-[380px]",
+            "md:border-t-0 md:border-l md:border-line",
+          ].join(" ")}
+        >
+          <AskRadarPanel
+            scopedTo={scopedTo}
+            messages={messages}
+            pending={pending}
+            onSend={(text) => send(text, scopedTo)}
+            onClearScope={() => setScopedTo(null)}
+            onClose={close}
+          />
+        </aside>
       </div>
 
       {/*
@@ -149,26 +168,15 @@ export function AskRadarProvider({ children }: { children: React.ReactNode }) {
           // shadow follow the same silhouette.
           "rounded-[27%] shadow-[0_6px_18px_rgba(24,24,27,0.24)]",
           "transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none",
-          // Hidden while the panel is open, at every width. The header's
-          // close button and Escape both shut it, so a launcher parked
-          // beside the drawer is a second close button in a worse place,
-          // and on small screens it sat on top of the sheet's footer.
-          isOpen ? "hidden" : "flex",
+          // Below md only: above it the panel is always on screen and a
+          // button to summon it would summon nothing. Hidden while the sheet
+          // is up too, where it sat on top of the sheet's own footer.
+          isOpen ? "hidden" : "flex md:hidden",
         ].join(" ")}
       >
         <RadarCharacter className="size-full" track />
       </button>
 
-      {isOpen && (
-        <AskRadarPanel
-          scopedTo={scopedTo}
-          messages={messages}
-          pending={pending}
-          onSend={(text) => send(text, scopedTo)}
-          onClearScope={() => setScopedTo(null)}
-          onClose={close}
-        />
-      )}
     </AskRadarCtx.Provider>
   );
 }

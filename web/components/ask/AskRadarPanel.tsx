@@ -99,8 +99,10 @@ export function AskRadarPanel({
   }, [draft, scopedTo]);
 
   useEffect(() => {
+    // Only the sheet closes. Above md the panel is a column of the page, and
+    // Escape there would fire at nothing.
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape" && !window.matchMedia("(min-width: 48rem)").matches) onClose();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
@@ -122,19 +124,14 @@ export function AskRadarPanel({
       role="dialog"
       aria-modal="false"
       aria-label="Ask the radar"
-      className={[
-        // Below sm it stays a bottom sheet: a side drawer on a phone is the
-        // whole screen anyway, and the thumb is at the bottom.
-        "fixed inset-x-0 bottom-0 z-40 flex h-[min(640px,88vh)] flex-col overflow-hidden",
-        "border border-line-strong bg-paper",
-        // From sm it docks to the right edge, full height, square, with only
-        // its left border. It used to float above the launcher as a rounded
-        // box, which read as a transient popover; the drawer reads as a place
-        // that stays open while you work, which is what it is.
-        "sm:inset-x-auto sm:inset-y-0 sm:right-0 sm:h-full sm:w-[380px]",
-        "sm:border-0 sm:border-l sm:border-line",
-        "radar-drawer",
-      ].join(" ")}
+      /*
+        Above md the panel fills the column it is given and does no
+        positioning of its own; the aside in the provider owns that. Below md
+        there is no room for a column, so it is still a bottom sheet: a side
+        panel on a phone is the whole screen anyway, and the thumb is at the
+        bottom.
+      */
+      className="flex h-full w-full flex-col overflow-hidden bg-paper"
     >
       {/* No character here. It leads the empty state one row below, and twice
           in the same 380px column read as two of it rather than one. */}
@@ -143,11 +140,12 @@ export function AskRadarPanel({
           borders have to be one line. */}
       <header className="flex flex-none items-center gap-2.5 border-b border-line px-4 py-3.5 sm:h-[var(--app-bar-h)] sm:py-0">
         <span className="flex-1 text-[15px] font-semibold text-ink">Ask the radar</span>
+        {/* Nothing to close above md, where the panel is part of the page. */}
         <button
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="cursor-pointer rounded-control p-1 text-faint transition-colors hover:bg-hover hover:text-ink focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          className="cursor-pointer rounded-control p-1 text-faint transition-colors hover:bg-hover hover:text-ink focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none md:hidden"
         >
           <MdClose className="size-[18px]" aria-hidden />
         </button>
