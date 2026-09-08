@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="820" viewBox="0 0 1400 820" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 z" fill="#556"/></marker>
+  </defs>
+  <rect width="1400" height="820" fill="#fafaf7"/>
+  <text x="700" y="46" text-anchor="middle" font-size="30" font-weight="bold" fill="#1a1a2e">Compliance Radar — Architecture</text>
+  <text x="700" y="74" text-anchor="middle" font-size="15" fill="#667">One Strands agent brain, two modes, on Amazon Bedrock AgentCore</text>
+
+  <!-- Sources column -->
+  <rect x="40" y="110" width="300" height="560" rx="14" fill="#eef3fb" stroke="#b9c9e6"/>
+  <text x="190" y="140" text-anchor="middle" font-size="17" font-weight="bold" fill="#2b4a7d">Public data sources (real)</text>
+  <g font-size="13.5" fill="#223">
+    <rect x="60" y="158" width="260" height="66" rx="8" fill="#fff" stroke="#c7d4ea"/>
+    <text x="72" y="182" font-weight="bold">FDA recalls</text>
+    <text x="72" y="200">press-release RSS (fresh) +</text>
+    <text x="72" y="216">openFDA enforcement (structured)</text>
+    <rect x="60" y="236" width="260" height="66" rx="8" fill="#fff" stroke="#c7d4ea"/>
+    <text x="72" y="260" font-weight="bold">USDA FSIS recalls</text>
+    <text x="72" y="278">GovDelivery email → SES inbound</text>
+    <text x="72" y="294">→ S3 (API is bot-blocked)</text>
+    <rect x="60" y="314" width="260" height="66" rx="8" fill="#fff" stroke="#c7d4ea"/>
+    <text x="72" y="338" font-weight="bold">San José City Council</text>
+    <text x="72" y="356">Legistar API + staff-report PDF</text>
+    <text x="72" y="372">deep-read (two-stage triage)</text>
+    <rect x="60" y="392" width="260" height="66" rx="8" fill="#fff" stroke="#c7d4ea"/>
+    <text x="72" y="416" font-weight="bold">Street work near the store</text>
+    <text x="72" y="434">excavation permits + pavement</text>
+    <text x="72" y="450">projects + no-dig segments (ArcGIS)</text>
+    <rect x="60" y="472" width="260" height="50" rx="8" fill="#fff" stroke="#c7d4ea"/>
+    <text x="72" y="496" font-weight="bold">Building permits (context)</text>
+    <text x="72" y="512">geocoded points for the map</text>
+  </g>
+  <text x="190" y="560" text-anchor="middle" font-size="12.5" fill="#667">validated against live data</text>
+  <text x="190" y="578" text-anchor="middle" font-size="12.5" fill="#667">before anything was built</text>
+
+  <!-- Scheduler / lambda -->
+  <rect x="410" y="110" width="250" height="88" rx="12" fill="#fff4e5" stroke="#e5c391"/>
+  <text x="535" y="140" text-anchor="middle" font-size="15" font-weight="bold" fill="#7a5320">Daily loop (6:00 AM PT)</text>
+  <text x="535" y="162" text-anchor="middle" font-size="13">EventBridge Scheduler</text>
+  <text x="535" y="180" text-anchor="middle" font-size="13">→ Lambda → InvokeAgentRuntime</text>
+
+  <!-- AgentCore box -->
+  <rect x="410" y="230" width="480" height="330" rx="14" fill="#eafbef" stroke="#9ed4ae"/>
+  <text x="650" y="262" text-anchor="middle" font-size="18" font-weight="bold" fill="#1e6b3a">Bedrock AgentCore Runtime</text>
+  <text x="650" y="284" text-anchor="middle" font-size="13.5" fill="#356">Strands Agents SDK · Claude Haiku 4.5 · Titan V2 embeddings</text>
+  <rect x="432" y="304" width="208" height="228" rx="10" fill="#fff" stroke="#b5dcc1"/>
+  <text x="536" y="330" text-anchor="middle" font-size="14.5" font-weight="bold">Batch: daily triage</text>
+  <g font-size="12.6" fill="#223">
+    <text x="446" y="354">fetch all sources</text>
+    <text x="446" y="374">embed + retrieve similar</text>
+    <text x="446" y="394">past decisions (vector)</text>
+    <text x="446" y="414">decide ALERT / REJECT</text>
+    <text x="446" y="434">with reason + hazard +</text>
+    <text x="446" y="454">act / verify / fyi</text>
+    <text x="446" y="482">council: title triage →</text>
+    <text x="446" y="502">PDF deep-read + evidence</text>
+    <text x="446" y="522">quote + key dates</text>
+  </g>
+  <rect x="660" y="304" width="208" height="228" rx="10" fill="#fff" stroke="#b5dcc1"/>
+  <text x="764" y="330" text-anchor="middle" font-size="14.5" font-weight="bold">Interactive: Ask + Brief</text>
+  <g font-size="12.6" fill="#223">
+    <text x="674" y="354">AgentCore sessions,</text>
+    <text x="674" y="374">bounded chat memory</text>
+    <text x="674" y="398">5 database tools:</text>
+    <text x="674" y="418">open items · filtered log</text>
+    <text x="674" y="438">resolutions · lookup ·</text>
+    <text x="674" y="458">semantic search</text>
+    <text x="674" y="486">forwardable plain-text</text>
+    <text x="674" y="506">brief per surfaced item</text>
+  </g>
+
+  <!-- TiDB -->
+  <rect x="410" y="596" width="480" height="120" rx="14" fill="#f3ecfb" stroke="#c9b4e6"/>
+  <text x="650" y="626" text-anchor="middle" font-size="17" font-weight="bold" fill="#5b3a8a">TiDB Cloud Serverless (SQL + vector)</text>
+  <text x="650" y="650" text-anchor="middle" font-size="13">640+ triage decisions · rejection log with reasons · store profile</text>
+  <text x="650" y="670" text-anchor="middle" font-size="13">vector search = rejection learning · overturns feed future triage</text>
+  <text x="650" y="694" text-anchor="middle" font-size="12.5" fill="#667">password via Secrets Manager · UI reads through SQL views only</text>
+
+  <!-- Web -->
+  <rect x="960" y="230" width="400" height="330" rx="14" fill="#fdeef0" stroke="#e6aab2"/>
+  <text x="1160" y="262" text-anchor="middle" font-size="18" font-weight="bold" fill="#8a2f3d">Next.js on Vercel</text>
+  <g font-size="13.5" fill="#223">
+    <text x="982" y="294" font-weight="bold">Home:</text><text x="1040" y="294"> quiet-week stats, topics,</text>
+    <text x="982" y="312">open-obligations tabs (act/verify/fyi)</text>
+    <text x="982" y="340" font-weight="bold">Event cards:</text><text x="1078" y="340"> grouped recalls, photos,</text>
+    <text x="982" y="358">hazard, UPCs, Resolve modal</text>
+    <text x="982" y="386" font-weight="bold">Rejection log:</text><text x="1088" y="386"> reasons + overturn</text>
+    <text x="982" y="414" font-weight="bold">Map:</text><text x="1028" y="414"> street work vs. context permits</text>
+    <text x="982" y="442" font-weight="bold">Ask the radar:</text><text x="1090" y="442"> chat panel →</text>
+    <text x="982" y="460">InvokeAgentRuntime (one least-</text>
+    <text x="982" y="478">privilege AWS key)</text>
+    <text x="982" y="506" font-weight="bold">Profile:</text><text x="1046" y="506"> 8 facts + 53-entry carry list,</text>
+    <text x="982" y="524">edited live, drives future triage</text>
+  </g>
+
+  <!-- Owner -->
+  <rect x="960" y="596" width="400" height="120" rx="14" fill="#fffbe6" stroke="#e0d391"/>
+  <text x="1160" y="626" text-anchor="middle" font-size="16" font-weight="bold" fill="#7a6a1e">Sam (owner)</text>
+  <text x="1160" y="650" text-anchor="middle" font-size="13">6 AM alert email via SES (only when something matters)</text>
+  <text x="1160" y="670" text-anchor="middle" font-size="13">resolves / overturns / edits profile → radar learns</text>
+  <text x="1160" y="694" text-anchor="middle" font-size="12.5" fill="#667">"Silence is the product. The rejection log makes it trustworthy."</text>
+
+  <!-- arrows -->
+  <line x1="340" y1="390" x2="410" y2="390" stroke="#556" stroke-width="2.2" marker-end="url(#a)"/>
+  <line x1="535" y1="198" x2="580" y2="230" stroke="#556" stroke-width="2.2" marker-end="url(#a)"/>
+  <line x1="650" y1="560" x2="650" y2="596" stroke="#556" stroke-width="2.2" marker-end="url(#a)"/>
+  <line x1="890" y1="395" x2="960" y2="395" stroke="#556" stroke-width="2.2" marker-end="url(#a)"/>
+  <line x1="890" y1="656" x2="960" y2="656" stroke="#556" stroke-width="2.2" marker-end="url(#a)"/>
+  <line x1="1160" y1="560" x2="1160" y2="596" stroke="#556" stroke-width="2.2" marker-end="url(#a)"/>
+</svg>
