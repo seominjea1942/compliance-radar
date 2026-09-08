@@ -3,7 +3,6 @@ import { AskRadarProvider } from "@/components/ask/AskRadarProvider";
 import { AskRadarDock } from "@/components/ask/AskRadarDock";
 import { LogRows } from "@/components/log/LogRows";
 import { Header } from "@/components/Header";
-import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
   getFilteredLog,
@@ -127,7 +126,13 @@ export default async function LogPage({
         <div className="flex min-h-0 flex-1">
           <main className="min-w-0 flex-1 bg-paper">
             <div className="mx-auto flex w-full max-w-[800px] flex-col gap-5 px-4 pt-5 pb-10 md:gap-6.5 md:px-12 md:pt-7.5 md:pb-12">
-              <Card className="gap-5">
+              {/*
+                No outer frame. The rows inside are the objects; a card around
+                them framed a stack of frames and put two borders and two
+                paddings between the page and every reason. Same as the
+                overview's feed, which lost its own for the same reason.
+              */}
+              <div className="flex flex-col gap-5">
                 <div className="flex flex-col gap-1.5">
                   <PageTitle>
                     Everything I&apos;ve read
@@ -231,7 +236,7 @@ export default async function LogPage({
                     </Link>
                   </div>
                 )}
-              </Card>
+              </div>
             </div>
           </main>
 
