@@ -201,7 +201,12 @@ export function AskRadarPanel({
             */}
             {/* Three cards, not one list. Hairlines between rows made them a
                 single object to be read down; separate boxes make them three
-                things to be picked between, which is what they are. */}
+                things to be picked between, which is what they are.
+
+                Filled rather than outlined: three outlines stacked under a
+                heading read as a form to be completed. A fill reads as
+                something to press, and it is the only grey on a panel that is
+                otherwise white, so it carries the whole affordance. */}
             <ul className="m-0 flex list-none flex-col gap-2 p-0">
               {OPENERS.map((q) => (
                 <li key={q}>
@@ -209,7 +214,7 @@ export function AskRadarPanel({
                     type="button"
                     disabled={pending}
                     onClick={() => send(q)}
-                    className="flex w-full cursor-pointer items-center gap-3 rounded-xl border border-line bg-paper px-3.5 py-3 text-left text-[13px]/snug text-ink transition-colors hover:border-line-strong hover:bg-hover disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex w-full cursor-pointer items-center gap-3 rounded-xl bg-wash px-3.5 py-3 text-left text-[13px]/snug text-ink transition-colors hover:bg-control-hover disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <span className="flex-1">{q}</span>
                     <MdAutoAwesome className="size-4 flex-none text-ghost" aria-hidden />
