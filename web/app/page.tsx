@@ -147,8 +147,8 @@ export default async function HomePage({
                 </div>
 
                 {/* State on the left, topic behind the button on the right. */}
-                <div className="flex flex-wrap items-center gap-2">
-                  <DecisionTabs params={params} counts={counts} />
+                <div className="flex items-center gap-2">
+                  <DecisionTabs params={params} counts={counts} className="min-w-0 flex-1" />
                   {/* Pushed to the far edge: it is the other axis, not the
                       seventh item of the control it sits beside. */}
                   <div className="ml-auto">

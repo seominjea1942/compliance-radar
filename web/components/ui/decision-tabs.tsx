@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useRef } from "react";
 import { segmented } from "@/components/ui/segmented";
 import { count } from "@/lib/format";
 import { hrefFor, PAGE, VIEWS, type View, type ViewParams } from "@/lib/view";
@@ -39,8 +42,26 @@ export function DecisionTabs({
   counts: TabCounts;
   className?: string;
 }) {
+  const track = useRef<HTMLDivElement>(null);
+
+  /*
+   * Keep the selected item in view. The strip scrolls now, and arriving on a
+   * late view by link left it selected somewhere off to the right with the
+   * strip resting at zero: the control looked like it had nothing chosen.
+   *
+   * scrollLeft on the track itself, not scrollIntoView, which walks up every
+   * scrollable ancestor and would drag the page with it.
+   */
+  useEffect(() => {
+    const el = track.current;
+    const on = el?.querySelector<HTMLElement>("[aria-current]");
+    if (!el || !on) return;
+    const left = on.offsetLeft - (el.clientWidth - on.offsetWidth) / 2;
+    el.scrollLeft = Math.max(0, left);
+  }, [params.view]);
+
   return (
-    <div className={cn(segmented.track, "self-start", className)}>
+    <div ref={track} className={cn(segmented.track, "self-start", className)}>
       {VIEWS.map((v) => {
         const on = v === params.view;
         return (

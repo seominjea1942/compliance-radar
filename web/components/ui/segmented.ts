@@ -14,9 +14,17 @@
  * over a moving canvas it stopped reading as pressed at all.
  */
 export const segmented = {
-  track: "flex flex-wrap items-center gap-1 rounded-full border border-line bg-canvas p-1",
+  /*
+   * Never wraps. Six labelled items need 609px, which no window under about
+   * 1200 gives it, and a segmented control folded onto two lines stops being
+   * one control. It scrolls instead, with no scrollbar: a horizontal bar
+   * inside a pill reads as damage, and an item clipped by the pill's edge
+   * already says there is more.
+   */
+  track:
+    "flex flex-nowrap items-center gap-1 overflow-x-auto rounded-full border border-line bg-canvas p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
   item:
-    "flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] font-medium " +
+    "flex flex-none cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] font-medium " +
     "transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
   active: "bg-ink text-paper",
   idle: "text-muted hover:bg-hover hover:text-ink",
