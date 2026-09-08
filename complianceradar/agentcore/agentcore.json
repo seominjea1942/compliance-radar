@@ -30,16 +30,17 @@
           "value": "ntcgNL97uxfWpLo.root"
         },
         {
-          "name": "TIDB_PASSWORD",
-          "value": "bagwcVDB27BO3a5N"
-        },
-        {
           "name": "TIDB_DATABASE",
           "value": "compliance_radar"
+        },
+        {
+          "name": "TIDB_PASSWORD_SECRET",
+          "value": "compliance-radar/tidb-password"
         }
       ],
       "additionalPolicies": [
-        "s3-inbox-read-policy.json"
+        "s3-inbox-read-policy.json",
+        "secrets-read-policy.json"
       ]
     }
   ],
