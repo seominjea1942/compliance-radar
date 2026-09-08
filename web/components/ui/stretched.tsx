@@ -23,8 +23,14 @@ import { cn } from "@/lib/utils";
  * is a plain section now, so the one card left here has an edge to darken and
  * a ring on top of it would draw two lines instead of one darker one.
  */
-export const stretchedCard =
-  "relative transition-colors hover:border-line-strong focus-within:border-line-strong";
+export const stretchedCard = [
+  "relative transition-colors",
+  // Ink, not the next grey up. The card is one of a stack of identical
+  // frames, so the edge under the pointer has to be the only dark line on
+  // screen to be found at a glance; #d4d4d8 was a shade, not an answer.
+  "hover:border-ink hover:bg-shell",
+  "focus-within:border-ink focus-within:bg-shell",
+].join(" ");
 
 /**
  * The card's stretched link: its ::after covers the whole card, so clicking
