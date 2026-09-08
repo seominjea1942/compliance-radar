@@ -28,7 +28,10 @@ export async function ContextRail() {
       className={[
         // Mirrors the ask panel on the other side: full height, its own
         // scroll, a rule down its inside edge.
-        "scroll-quiet order-2 flex flex-col gap-6 px-4 pb-10 xl:order-1",
+        // Same paper as the content beside it. It was inheriting the
+        // shell grey from the page wrapper, which put a seam down the
+        // middle of a window whose two halves are the same surface.
+        "scroll-quiet order-2 flex flex-col gap-6 bg-paper px-4 pb-10 xl:order-1",
         "xl:sticky xl:top-[var(--app-bar-h)] xl:h-[calc(100vh-var(--app-bar-h))]",
         "xl:w-[380px] xl:flex-none xl:overflow-y-auto xl:border-r xl:border-line xl:px-6 xl:py-6",
       ].join(" ")}
