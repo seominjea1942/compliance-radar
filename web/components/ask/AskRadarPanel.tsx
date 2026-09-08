@@ -317,7 +317,14 @@ export function AskRadarPanel({
             disabled={pending}
             placeholder={pending ? "Waiting for an answer…" : "Ask a follow-up…"}
             aria-label="Ask a follow-up"
-            className="max-h-[7.5rem] min-w-0 flex-1 resize-none bg-transparent text-[13.5px]/relaxed text-ink placeholder:text-monoink focus:outline-none disabled:cursor-not-allowed"
+            /*
+              py-[3px] makes one line of this 28px, the send button's height,
+              so the row's items-end centres it instead of dropping it. The
+              alignment is end so the button stays at the bottom once the box
+              grows; at one line that was shoving a 22px line to the floor of
+              a 28px row, 17px of air above the text and 11 below.
+            */
+            className="max-h-[7.5rem] min-w-0 flex-1 resize-none bg-transparent py-[3px] text-[13.5px]/relaxed text-ink placeholder:text-monoink focus:outline-none disabled:cursor-not-allowed"
           />
           <button
             type="submit"
