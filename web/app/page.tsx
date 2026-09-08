@@ -19,6 +19,16 @@ import { checkedAt } from "@/lib/format";
 // Live operational data: never serve a build-time snapshot.
 export const dynamic = "force-dynamic";
 
+/*
+ * The overview's right rail: the weekly topic table and the street-work map.
+ *
+ * Off while the single-column feed is being looked at. One flag rather than
+ * commented-out markup, so the rail is either rendered or it is not, and
+ * turning it back on is this line. Everything behind it is untouched: the
+ * queries still run, /street-work still renders the same map at full size.
+ */
+const SHOW_RAIL = false;
+
 export default async function HomePage() {
   const [summary, surfaced, permits, profile, topics, lastChecked, streetWork] =
     await Promise.all([
@@ -49,8 +59,18 @@ export default async function HomePage() {
               Feed on the left, context on the right. The rail is sticky so the
               weekly numbers and the map stay visible while the feed scrolls,
               which is the point of splitting them out of the column.
+
+              With the rail off the grid drops to one column and the page
+              narrows to the feed's own measure, so the text does not stretch
+              into the space the rail was holding.
             */}
-            <div className="mx-auto grid w-full max-w-[1200px] grid-cols-1 gap-5 px-4 pt-5 pb-10 md:px-12 md:pt-7.5 md:pb-12 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-7">
+            <div
+              className={`mx-auto grid w-full grid-cols-1 gap-5 px-4 pt-5 pb-10 md:px-12 md:pt-7.5 md:pb-12 lg:gap-7 ${
+                SHOW_RAIL
+                  ? "max-w-[1200px] lg:grid-cols-[minmax(0,1fr)_380px]"
+                  : "max-w-[800px]"
+              }`}
+            >
               {/*
                 No card around the feed. The item cards are already cards, so the
                 outer one framed a stack of frames and put two borders and two
@@ -61,6 +81,7 @@ export default async function HomePage() {
                 <SurfacedFeed events={events} reviewed={summary.reviewed} />
               </div>
 
+              {SHOW_RAIL && (
               <aside className="flex flex-col gap-5 lg:sticky lg:top-6 lg:self-start">
                 <TopicTable
                   reviewed={summary.reviewed}
@@ -72,6 +93,7 @@ export default async function HomePage() {
                   <PermitMap permits={permits} streetWork={streetWork} />
                 )}
               </aside>
+              )}
             </div>
           </main>
 
