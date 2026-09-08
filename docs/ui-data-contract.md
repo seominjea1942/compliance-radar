@@ -22,10 +22,11 @@ Fixed tag set (exactly these 5): `food-recalls`, `city-programs-fees`,
 
 ## Queryable views
 
-### 1. `v_weekly_summary` — home screen strip ("reviewed 94, surfaced 2")
-Columns: `source` (str), `reviewed` (int), `surfaced` (num), `filtered` (num).
-Rolling last-7-days window. One row per source; sum across rows for the
-headline numbers. NOTE: on quiet weeks some sources have no row at all.
+### 1. `v_read_totals` (all-time) and `v_weekly_summary` (legacy 7-day)
+`v_read_totals` (added 2026-09-08): `source`, `reviewed`, `surfaced`,
+`filtered`, no time window; SUM(reviewed) = 775 = COUNT(triage_decisions).
+`v_weekly_summary` (rolling 7 days, may miss quiet sources) remains until FE
+switches, then gets dropped.
 
 ### 2. `v_filtered_log` — rejection log screen (reasons are the primary content)
 Columns: `decision_id` (int), `title` (str), `source` (str), `reason` (str,
@@ -96,9 +97,15 @@ deep-read items `key_dates` (list of {label, date}), `evidence`
 ({quote, page_hint}), `staff_report_attachment`; permits: `lat`, `lon`,
 `permit_value`, `square_footage`, `address`, `work_category`.
 
-### 6. `v_weekly_topics` — per-tag home table (added 2026-09-03)
-Columns: `tag` (str), `read` (int), `for_you` (num). One row per fixed tag,
-zeros kept, rolling 7 days. Replaces the interim getWeeklyTopics() query.
+### 6. `v_topic_totals` (all-time) and `v_weekly_topics` (legacy 7-day)
+`v_topic_totals` (added 2026-09-08): same shape (`tag`, `read`, `for_you`),
+one row per fixed tag, zeros kept, NO time window — matches the masthead
+date-range indicator. Verified: read sums to exactly 775 with no
+double-counting (0 rows carry two tags today; the write path allows up to 2,
+so if a future decision gets 2 tags the sum exceeds the total — FE should
+treat TOTAL FLAGGED as sum-of-rows or read COUNT(*) separately).
+`v_weekly_topics` (rolling 7 days) remains until FE switches over; it will
+be dropped after that — tell BE when the switch lands.
 
 ### 7. `v_run_status` — trust stamp (added 2026-09-03)
 Single row: `last_checked` (datetime, UTC) = the last pipeline run, INCLUDING
