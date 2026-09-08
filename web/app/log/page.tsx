@@ -14,7 +14,8 @@ import {
 } from "@/lib/queries";
 import { count } from "@/lib/format";
 import { DecisionTabs, type DecisionTab } from "@/components/ui/decision-tabs";
-import { defaultTier, tierCounts } from "@/components/SurfacedFeed";
+import { tierCounts } from "@/components/SurfacedFeed";
+import { SurfacedCard } from "@/components/SurfacedCard";
 import { getSurfaced, groupSurfaced } from "@/lib/queries";
 import { PageTitle } from "@/components/ui/page-title";
 
@@ -52,7 +53,8 @@ const TOPICS: { value: string | null; label: string }[] = [
 
 /** What the scoped indicator is counting, per status tab. */
 const STATUS_NOUN: Record<LogStatus, string> = {
-  all: "items read",
+  // The All view now carries the surfaced cards as well as the rows.
+  all: "decisions",
   "set-aside": "set aside, not surfaced",
   overturned: "overturned",
 };
@@ -96,18 +98,34 @@ export default async function LogPage({
   ]);
 
   const events = groupSurfaced(surfaced);
+  const tiers = tierCounts(events);
   const tabCounts6 = {
-    ...tierCounts(events),
+    ...tiers,
     "set-aside": log.overall.setAside,
     overturned: log.overall.overturned,
+    // Everything the radar decided: what it surfaced, plus what it did not.
+    all: tiers.all + log.overall.all,
   };
   /*
-   * "All" on this control means all surfaced, so the log's own all-of-the-log
-   * tab has nowhere to sit: it split into the two states it was the union of.
    * A visit to /log with no status lands on Set aside, which is where the
-   * default already was.
+   * default already was. "All" is the union of all five states before it, so
+   * it is the one view that carries both halves.
    */
-  const activeTab: DecisionTab = status === "overturned" ? "overturned" : "set-aside";
+  const activeTab: DecisionTab =
+    status === "overturned" ? "overturned" : status === "all" ? "all" : "set-aside";
+
+  /*
+   * The All view is the only place both halves appear together. The surfaced
+   * cards go above the rows rather than interleaved: they are 28 against 578,
+   * and the rows are paged, so any shared ordering would bury them on page
+   * one and lose them entirely on page two.
+   */
+  const showSurfaced = status === "all";
+  const surfacedHere = showSurfaced
+    ? topic
+      ? events.filter((e) => e.items.some((i) => i.tags.includes(topic.id)))
+      : events
+    : [];
 
   /*
    * The line under the topic pills is scoped: it answers the filters, where
@@ -158,7 +176,7 @@ export default async function LogPage({
                       the filters, below.
                     */}
                     <p className="max-w-[700px] text-[14.5px]/relaxed text-pretty text-body md:text-[15.5px]">
-                      {count(log.overall.all)} items. Set aside holds what I chose not to surface,
+                      {count(tabCounts6.all)} decisions. Set aside holds what I chose not to surface,
                       each with a reason. Overturned holds the calls you sent back. If I set
                       something aside wrongly, say so and I&apos;ll adjust.
                     </p>
@@ -199,15 +217,24 @@ export default async function LogPage({
                       className="m-0 text-[12.5px]/relaxed text-faint"
                     >
                       <span className="font-mono tabular-nums text-monoink">
-                        {count(scopedCount[status])}
+                        {count(scopedCount[status] + surfacedHere.length)}
                       </span>{" "}
                       {STATUS_NOUN[status]}
                       {topic ? ` in ${topic.label.toLowerCase()}` : " across every topic"}
                       {log.rows.length < scopedCount[status] &&
-                        `, showing ${count(log.rows.length)}`}
+                        `, showing ${count(log.rows.length + surfacedHere.length)}`}
                       .
                     </p>
                   </div>
+
+                  {/* Surfaced first, then what was set aside. */}
+                  {surfacedHere.length > 0 && (
+                    <div className="flex flex-col gap-3.5">
+                      {surfacedHere.map((e) => (
+                        <SurfacedCard key={e.key} event={e} />
+                      ))}
+                    </div>
+                  )}
 
                   <LogRows rows={log.rows} />
 

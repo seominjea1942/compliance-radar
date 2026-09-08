@@ -22,13 +22,18 @@ export type DecisionTab = "act" | "check" | "file" | "all" | "set-aside" | "over
 
 export type TabCounts = Record<DecisionTab, number>;
 
-const LABELS: { value: DecisionTab; label: string; href: (v: DecisionTab) => string }[] = [
-  { value: "act", label: "Needs action", href: (v) => `/?tier=${v}` },
-  { value: "check", label: "To check", href: (v) => `/?tier=${v}` },
-  { value: "file", label: "For the file", href: (v) => `/?tier=${v}` },
-  { value: "all", label: "All", href: (v) => `/?tier=${v}` },
-  { value: "set-aside", label: "Set aside", href: () => "/log" },
-  { value: "overturned", label: "Overturned", href: () => "/log?status=overturned" },
+/*
+ * Order is the reading order: the three things the radar asked of you, then
+ * the two it did not, then everything. "All" is last because it is the union
+ * of the five before it, not a sixth state alongside them.
+ */
+const LABELS: { value: DecisionTab; label: string; href: string }[] = [
+  { value: "act", label: "Needs action", href: "/?tier=act" },
+  { value: "check", label: "To check", href: "/?tier=check" },
+  { value: "file", label: "For the file", href: "/?tier=file" },
+  { value: "set-aside", label: "Set aside", href: "/log" },
+  { value: "overturned", label: "Overturned", href: "/log?status=overturned" },
+  { value: "all", label: "All", href: "/log?status=all" },
 ];
 
 export function DecisionTabs({
@@ -47,7 +52,7 @@ export function DecisionTabs({
         return (
           <Link
             key={t.value}
-            href={t.href(t.value)}
+            href={t.href}
             aria-current={on ? "page" : undefined}
             className={cn(segmented.item, "no-underline", on ? segmented.active : segmented.idle)}
           >

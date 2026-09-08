@@ -15,7 +15,7 @@ import type { DecisionTab } from "@/components/ui/decision-tabs";
 // Live operational data: never serve a build-time snapshot.
 export const dynamic = "force-dynamic";
 
-const TIERS = ["act", "check", "file", "all"] as const;
+const TIERS = ["act", "check", "file"] as const;
 
 export default async function HomePage({
   searchParams,
@@ -43,10 +43,13 @@ export default async function HomePage({
    * half in component state would be two controls wearing one coat.
    */
   const tier = (TIERS.find((t) => t === asked) ?? defaultTier(events)) as DecisionTab;
+  const tiers = tierCounts(events);
   const counts = {
-    ...tierCounts(events),
+    ...tiers,
     "set-aside": log.overall.setAside,
     overturned: log.overall.overturned,
+    // Everything the radar decided: what it surfaced, plus what it did not.
+    all: tiers.all + log.overall.all,
   };
 
   return (
@@ -77,7 +80,7 @@ export default async function HomePage({
                 <SurfacedFeed
                   events={events}
                   reviewed={summary.reviewed}
-                  filter={tier as "act" | "check" | "file" | "all"}
+                  filter={tier as "act" | "check" | "file"}
                   counts={counts}
                 />
             </div>

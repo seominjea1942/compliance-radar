@@ -42,8 +42,9 @@ const HEADING: Record<Filter, (n: number) => string> = {
 export function defaultTier(events: SurfacedEvent[]): Filter {
   if (events.some((e) => MATCHES.act(e.severity))) return "act";
   if (events.some((e) => MATCHES.check(e.severity))) return "check";
-  if (events.some((e) => MATCHES.file(e.severity))) return "file";
-  return "all";
+  // Not "all": that tab is the combined view on the log now, so landing the
+  // overview on it would light a tab that points off this screen.
+  return "file";
 }
 
 export function tierCounts(events: SurfacedEvent[]) {
