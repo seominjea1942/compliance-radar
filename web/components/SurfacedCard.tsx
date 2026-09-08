@@ -20,6 +20,7 @@ import { cardCode } from "@/lib/format";
 import type { SurfacedEvent } from "@/lib/queries";
 import { ResolveDialog } from "@/components/ResolveDialog";
 import { ResolveConfirm } from "@/components/ResolveConfirm";
+import { BriefDialog } from "@/components/BriefDialog";
 import { MdExpandLess, MdExpandMore } from "react-icons/md";
 
 /**
@@ -60,6 +61,7 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
   const [done, setDone] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [resolving, setResolving] = useState(false);
+  const [briefing, setBriefing] = useState(false);
   const ask = useAskRadar();
 
   /*
@@ -254,7 +256,7 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
         ) : (
           <ResolveConfirm item={item} disabled={done} onResolved={() => setDone(true)} />
         )}
-        <Button variant="cardAction" size="action">
+        <Button variant="cardAction" size="action" onClick={() => setBriefing(true)}>
           <MdOutlineMailOutline className="size-[15px]" aria-hidden />
           Share via email
         </Button>
@@ -269,6 +271,14 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
       </ItemCard.Actions>
 
       {resolving && <ResolveDialog event={event} onClose={() => setResolving(false)} />}
+
+      {briefing && (
+        <BriefDialog
+          decisionId={event.lead.decisionId}
+          title={event.lead.title}
+          onClose={() => setBriefing(false)}
+        />
+      )}
 
       {done && (
         <div className="flex items-center gap-2.5 rounded-lg border border-brand-tint-line bg-brand-tint px-3.5 py-2.5">
