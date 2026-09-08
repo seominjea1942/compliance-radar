@@ -1,11 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { MapHoverCard, type HoverTarget } from "@/components/street/MapHoverCard";
 import { MapLegend } from "@/components/street/MapLegend";
 import { STREET_COLORS } from "@/lib/street-colors";
-import { Card, CardNote, CardTitle } from "@/components/ui/card";
-import { Above, StretchedLink, stretchedCard } from "@/components/ui/stretched";
+import { RailLabel } from "@/components/rail/RailLabel";
 import { PermitMapView } from "@/components/PermitMapView";
 import { plainDate } from "@/lib/format";
 import {
@@ -107,36 +107,27 @@ export function PermitMap({
   ].filter(Boolean);
 
   return (
-    <Card className={`w-full min-w-0 gap-3.5 border-0 p-4.5 ${stretchedCard}`}>
-      <div className="flex flex-col gap-1.5">
-        <CardTitle>
-          {/*
-            The click target is the card, not the sentence, and the hover is
-            the card's own: the same treatment as an item card. The map and
-            legend are lifted above the overlay so panning, zooming and marker
-            hover still reach Leaflet.
-          */}
-          <StretchedLink href="/street-work" className="text-ink">
-            {blocking.length === 0
-              ? "No street work blocking your block."
-              : `Street work on ${listed.length} ${
-                  listed.length === 1 ? "street" : "streets"
-                } near you.`}
-          </StretchedLink>
-        </CardTitle>
-        <CardNote>
-          {/*
-            Say what it means before saying what was counted. "21 permits
-            watched" is the radar describing its own effort; whether the
-            deliveries get through is the thing the owner actually asked.
-          */}
+    <section className="flex w-full min-w-0 flex-col gap-3">
+      <RailLabel>Street work</RailLabel>
+
+      {/*
+        The finding, not a heading, so it stays a sentence. What left with the
+        card is the line under it that listed what was watched: the legend
+        below the map already names those four counts, and saying them twice
+        in one column was the longest thing in the rail.
+      */}
+      <p className="m-0 text-[13.5px]/relaxed text-body">
+        <Link href="/street-work" className="text-ink no-underline hover:underline">
           {blocking.length === 0
-            ? "Deliveries and street parking are clear. "
-            : "This can close a lane or a sidewalk near your door. "}
-          {watched.length > 0 && `Watching ${watched.join(", ")}`}
-          {permits.length > 0 && `, plus ${permits.length} building permits`}.
-        </CardNote>
-      </div>
+            ? "No street work blocking your block."
+            : `Street work on ${listed.length} ${
+                listed.length === 1 ? "street" : "streets"
+              } near you.`}
+        </Link>{" "}
+        {blocking.length === 0
+          ? "Deliveries and street parking are clear."
+          : "This can close a lane or a sidewalk near your door."}
+      </p>
 
       <PermitMapView
         permits={permits}
@@ -145,14 +136,13 @@ export function PermitMap({
           setHovered(target);
           setAt(point ?? null);
         }}
-        className={`relative z-[1] w-full overflow-hidden rounded-[9px] border border-line bg-wash ${
+        className={`w-full overflow-hidden rounded-[9px] border border-line bg-wash ${
           blocking.length > 0 ? "[aspect-ratio:704/300]" : "[aspect-ratio:704/430]"
         }`}
       />
 
-      <Above>
-        <MapLegend
-          entries={[
+      <MapLegend
+        entries={[
             {
               color: STREET_COLORS.active,
               label: "Street work",
@@ -180,9 +170,8 @@ export function PermitMap({
               explain:
                 "Building permits nearby, shown for context. They rarely affect street access.",
             },
-          ]}
-        />
-      </Above>
+        ]}
+      />
 
       <MapHoverCard target={hovered} at={at} />
 
@@ -229,6 +218,6 @@ export function PermitMap({
           )}
         </ul>
       )}
-    </Card>
+    </section>
   );
 }

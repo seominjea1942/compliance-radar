@@ -206,6 +206,40 @@
   }
 }
 
+/*
+ * A scrollbar that only shows when it is being used.
+ *
+ * The gutter is always reserved and only the thumb comes and goes, so
+ * revealing it never reflows what is beside it. Hover covers the wheel, which
+ * needs the pointer over the element anyway, and focus-within covers the
+ * keyboard, which is the other way this column gets scrolled.
+ */
+.scroll-quiet {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.scroll-quiet:hover,
+.scroll-quiet:focus-within {
+  scrollbar-color: var(--color-line-strong) transparent;
+}
+
+.scroll-quiet::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scroll-quiet::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 4px;
+  background-clip: content-box;
+  background-color: transparent;
+}
+
+.scroll-quiet:hover::-webkit-scrollbar-thumb,
+.scroll-quiet:focus-within::-webkit-scrollbar-thumb {
+  background-color: var(--color-line-strong);
+}
+
 /* Tooltip entrance. Kept here rather than pulling in an animation plugin. */
 @keyframes radar-tooltip-in {
   from {

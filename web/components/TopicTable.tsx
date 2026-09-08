@@ -1,7 +1,5 @@
 import Link from "next/link";
-import { MdArrowForward } from "react-icons/md";
-import { Card, CardTitle } from "@/components/ui/card";
-import { Tooltip } from "@/components/ui/tooltip";
+import { RailLabel } from "@/components/rail/RailLabel";
 import type { TopicRow } from "@/lib/queries";
 import { count } from "@/lib/format";
 
@@ -38,53 +36,26 @@ function Row({ topic }: { topic: TopicRow }) {
   );
 }
 
+/**
+ * What the radar read this week, by topic.
+ *
+ * The heading used to be the sentence "170 items read this week. Set aside
+ * 167", with an arrow to the log beside it. Both are gone: the sentence is
+ * the table's own first column said twice, and a section in a rail wants a
+ * name, not a claim. The rows still link to the log, each to its own topic,
+ * which is what the arrow was doing in a less specific way.
+ */
 export function TopicTable({
-  reviewed,
-  filtered,
   checked,
   topics,
 }: {
-  reviewed: number;
-  filtered: number;
   checked: string | null;
   topics: TopicRow[];
 }) {
   return (
-    // No outline: the rail cards sit on the same white as the page, and
-    // the table draws its own lines between rows.
-    <Card className="w-full min-w-0 gap-4 border-0">
-      {/* items-start, not baseline: the icon is a box, not a line of text. */}
-      <div className="flex items-start justify-between gap-4">
-        <CardTitle>
-          {/*
-            "Set aside", not "Filtered": the log calls the state that, and
-            the word "filter" belongs to the controls that narrow a list.
-            The prop keeps the view's own column name, `filtered`.
-          */}
-          {count(reviewed)} items read this week. Set aside {count(filtered)}.
-        </CardTitle>
-        {/*
-          Icon only, so the title keeps the full width of the card. The label
-          it replaces still has to reach anyone not looking at the picture:
-          aria-label names the link, and the tooltip opens on keyboard focus
-          as well as hover, so the wording is available from the keyboard too.
-        */}
-        <Tooltip content="Open the log">
-          <a
-            href="/log"
-            aria-label="Open the log"
-            className="flex size-8 flex-none items-center justify-center rounded-control text-brand transition-colors hover:bg-hover focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
-            <MdArrowForward className="size-[18px]" aria-hidden />
-          </a>
-        </Tooltip>
-      </div>
-
-      {checked && (
-        <div className="-mb-2 flex">
-          <span className="text-sm text-faint">{checked}</span>
-        </div>
-      )}
+    <section className="flex w-full min-w-0 flex-col gap-3">
+      <RailLabel>This week</RailLabel>
+      {checked && <span className="-mt-1 text-[12.5px] text-faint">{checked}</span>}
 
       <div className="flex flex-col gap-px overflow-hidden rounded-lg border border-line bg-line">
         <div className="flex items-baseline gap-4 bg-rail px-4 py-2.5 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-monoink">
@@ -96,6 +67,6 @@ export function TopicTable({
           <Row key={t.id} topic={t} />
         ))}
       </div>
-    </Card>
+    </section>
   );
 }

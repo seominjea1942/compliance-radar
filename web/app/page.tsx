@@ -1,9 +1,8 @@
 import { AskRadarProvider } from "@/components/ask/AskRadarProvider";
 import { AskRadarDock } from "@/components/ask/AskRadarDock";
-import { PermitMap } from "@/components/PermitMap";
 import { Header } from "@/components/Header";
 import { SurfacedFeed } from "@/components/SurfacedFeed";
-import { TopicTable } from "@/components/TopicTable";
+import { ContextRail } from "@/components/rail/ContextRail";
 import {
   getLastChecked,
   getNearbyPermits,
@@ -64,18 +63,15 @@ export default async function HomePage() {
             className={[
               "order-2 flex flex-col gap-5 px-4 pb-10 xl:order-1",
               "xl:sticky xl:top-[var(--app-bar-h)] xl:h-[calc(100vh-var(--app-bar-h))]",
-              "xl:w-[380px] xl:flex-none xl:overflow-y-auto xl:border-r xl:border-line xl:px-6 xl:py-6",
+              "xl:w-[380px] xl:flex-none xl:overflow-y-auto xl:border-r xl:border-line xl:px-6 xl:py-6 scroll-quiet",
             ].join(" ")}
           >
-            <TopicTable
-              reviewed={summary.reviewed}
-              filtered={summary.filtered}
+            <ContextRail
               checked={checkedAt(lastChecked)}
               topics={topics}
+              permits={permits}
+              streetWork={streetWork}
             />
-            {(permits.length > 0 || streetWork.length > 0) && (
-              <PermitMap permits={permits} streetWork={streetWork} />
-            )}
           </aside>
 
           <main className="order-1 min-w-0 flex-1 bg-paper xl:order-2">
