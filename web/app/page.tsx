@@ -1,22 +1,53 @@
 import { AskRadarProvider } from "@/components/ask/AskRadarProvider";
 import { AskRadarDock } from "@/components/ask/AskRadarDock";
 import { Header } from "@/components/Header";
-import { SurfacedFeed } from "@/components/SurfacedFeed";
+import { SurfacedFeed, defaultTier, tierCounts } from "@/components/SurfacedFeed";
 import { ContextRail } from "@/components/rail/ContextRail";
-import { getStoreProfile, getSurfaced, getWeeklySummary, groupSurfaced } from "@/lib/queries";
+import {
+  getFilteredLog,
+  getStoreProfile,
+  getSurfaced,
+  getWeeklySummary,
+  groupSurfaced,
+} from "@/lib/queries";
+import type { DecisionTab } from "@/components/ui/decision-tabs";
 
 // Live operational data: never serve a build-time snapshot.
 export const dynamic = "force-dynamic";
 
-export default async function HomePage() {
-  const [summary, surfaced, profile] = await Promise.all([
+const TIERS = ["act", "check", "file", "all"] as const;
+
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = await searchParams;
+  const asked = Array.isArray(sp.tier) ? sp.tier[0] : sp.tier;
+
+  const [summary, surfaced, profile, log] = await Promise.all([
     getWeeklySummary(),
     getSurfaced(),
     getStoreProfile(),
+    // Only for the two counts the control shows on the set-aside half; one
+    // row is enough, the totals come back with it either way.
+    getFilteredLog({ status: "set-aside", limit: 1 }),
   ]);
 
   // One card per real-world recall event, grouped on the backend's event_key.
   const events = groupSurfaced(surfaced);
+
+  /*
+   * The tier lives in the URL now that the control spans both screens. Half
+   * its items are server-filtered and paged, so a control that kept the other
+   * half in component state would be two controls wearing one coat.
+   */
+  const tier = (TIERS.find((t) => t === asked) ?? defaultTier(events)) as DecisionTab;
+  const counts = {
+    ...tierCounts(events),
+    "set-aside": log.overall.setAside,
+    overturned: log.overall.overturned,
+  };
 
   return (
     <AskRadarProvider>
@@ -43,7 +74,12 @@ export default async function HomePage() {
               paddings between the page and every headline.
             */}
             <div className="mx-auto flex w-full max-w-[800px] flex-col gap-5 px-4 pt-5 pb-10 md:px-12 md:pt-7.5 md:pb-12">
-              <SurfacedFeed events={events} reviewed={summary.reviewed} />
+                <SurfacedFeed
+                  events={events}
+                  reviewed={summary.reviewed}
+                  filter={tier as "act" | "check" | "file" | "all"}
+                  counts={counts}
+                />
             </div>
           </main>
           </div>

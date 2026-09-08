@@ -13,7 +13,9 @@ import {
   type LogStatus,
 } from "@/lib/queries";
 import { count } from "@/lib/format";
-import { segmented } from "@/components/ui/segmented";
+import { DecisionTabs, type DecisionTab } from "@/components/ui/decision-tabs";
+import { defaultTier, tierCounts } from "@/components/SurfacedFeed";
+import { getSurfaced, groupSurfaced } from "@/lib/queries";
 import { PageTitle } from "@/components/ui/page-title";
 
 export const dynamic = "force-dynamic";
@@ -85,29 +87,33 @@ export default async function LogPage({
   // than narrowing the log to nothing and looking like an empty database.
   const topic = TAGS.find((t) => t.id === one("tag")) ?? null;
 
-  const [log, summary, profile] = await Promise.all([
+  const [log, summary, profile, surfaced] = await Promise.all([
     getFilteredLog({ status, tag: topic?.id ?? null, limit }),
     getWeeklySummary(),
     getStoreProfile(),
+    // The four surfaced counts the shared control shows on its other half.
+    getSurfaced(),
   ]);
 
-  /*
-   * Two different questions, two different numbers.
-   *
-   * The tabs are navigation: each one says how big that part of the log is,
-   * full stop. Scoping them to the selected topic made them report the view
-   * being left rather than the one being entered, so All could read 1 while
-   * the page said 578 items just above it.
-   *
-   * The line under the pills is the opposite: it exists to answer the
-   * filters, so it stays scoped to the topic and the tab in force.
-   */
-  const tabCount: Record<LogStatus, number> = {
-    all: log.overall.all,
+  const events = groupSurfaced(surfaced);
+  const tabCounts6 = {
+    ...tierCounts(events),
     "set-aside": log.overall.setAside,
     overturned: log.overall.overturned,
   };
+  /*
+   * "All" on this control means all surfaced, so the log's own all-of-the-log
+   * tab has nowhere to sit: it split into the two states it was the union of.
+   * A visit to /log with no status lands on Set aside, which is where the
+   * default already was.
+   */
+  const activeTab: DecisionTab = status === "overturned" ? "overturned" : "set-aside";
 
+  /*
+   * The line under the topic pills is scoped: it answers the filters, where
+   * the control above answers how big each part of the log is. The control's
+   * own six counts ignore both, since a tab is a destination.
+   */
   const scopedCount: Record<LogStatus, number> = {
     all: log.counts.all,
     "set-aside": log.counts.setAside,
@@ -158,37 +164,9 @@ export default async function LogPage({
                     </p>
                   </div>
 
-                  {/* Links, not buttons: the filters live in the URL. Same
-                      appearance as FilterPills, from the same class strings. */}
-                  <div className={cn(segmented.track, "self-start")}>
-                    {STATUSES.map((s) => {
-                      const active = s.value === status;
-                      return (
-                        <Link
-                          key={s.value}
-                          href={hrefFor({ status: s.value, limit: PAGE, tag: topic?.id ?? null })}
-                          aria-current={active ? "page" : undefined}
-                          className={cn(
-                            segmented.item,
-                            "no-underline",
-                            active ? segmented.active : segmented.idle,
-                          )}
-                        >
-                          {s.label}
-                          <span
-                            className={cn(
-                              "font-mono text-[11px] tabular-nums",
-                              active ? segmented.countActive : segmented.countIdle,
-                            )}
-                          >
-                            {count(tabCount[s.value])}
-                          </span>
-                        </Link>
-                      );
-                    })}
-                  </div>
+                  <DecisionTabs active={activeTab} counts={tabCounts6} />
 
-                  <div className="flex flex-col gap-3 border-t border-line-soft pt-4">
+              <div className="flex flex-col gap-3 border-t border-line-soft pt-4">
                     <div className="flex flex-wrap items-center gap-2">
                       {TOPICS.map((t) => {
                         const active = t.value === (topic?.id ?? null);

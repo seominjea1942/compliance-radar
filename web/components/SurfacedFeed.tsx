@@ -1,7 +1,4 @@
-"use client";
-
-import { useMemo, useState } from "react";
-import { FilterPills, type FilterOption } from "@/components/ui/filter-pills";
+import { DecisionTabs, type DecisionTab, type TabCounts } from "@/components/ui/decision-tabs";
 import { SurfacedCard } from "@/components/SurfacedCard";
 import { PageTitle } from "@/components/ui/page-title";
 import { count } from "@/lib/format";
@@ -37,40 +34,39 @@ const HEADING: Record<Filter, (n: number) => string> = {
   all: (n) => (n === 0 ? "Nothing open." : `${count(n)} ${n === 1 ? "item" : "items"} open.`),
 };
 
+/**
+ * Which tier a screen opens on when the URL names none: the most urgent one
+ * that actually has something in it, so it never opens on an empty list while
+ * work sits one tab away.
+ */
+export function defaultTier(events: SurfacedEvent[]): Filter {
+  if (events.some((e) => MATCHES.act(e.severity))) return "act";
+  if (events.some((e) => MATCHES.check(e.severity))) return "check";
+  if (events.some((e) => MATCHES.file(e.severity))) return "file";
+  return "all";
+}
+
+export function tierCounts(events: SurfacedEvent[]) {
+  return {
+    act: events.filter((e) => MATCHES.act(e.severity)).length,
+    check: events.filter((e) => MATCHES.check(e.severity)).length,
+    file: events.filter((e) => MATCHES.file(e.severity)).length,
+    all: events.length,
+  };
+}
+
 export function SurfacedFeed({
   events,
   reviewed,
+  filter,
+  counts,
 }: {
   events: SurfacedEvent[];
   reviewed: number;
+  filter: Filter;
+  /** All six, because the control spans both halves of the log. */
+  counts: TabCounts;
 }) {
-  // Counts are per card, because that is what the pills navigate. The
-  // per-item totals stay on the topic table and the weekly strip.
-  const counts = useMemo(
-    () => ({
-      act: events.filter((e) => MATCHES.act(e.severity)).length,
-      check: events.filter((e) => MATCHES.check(e.severity)).length,
-      file: events.filter((e) => MATCHES.file(e.severity)).length,
-      all: events.length,
-    }),
-    [events],
-  );
-
-  /*
-   * Open on the most urgent group that actually has something in it, so the
-   * screen never opens on an empty list while work sits one tab away.
-   */
-  const [filter, setFilter] = useState<Filter>(() =>
-    counts.act > 0 ? "act" : counts.check > 0 ? "check" : counts.file > 0 ? "file" : "all",
-  );
-
-  const options: FilterOption<Filter>[] = [
-    { value: "act", label: "Needs action", count: counts.act },
-    { value: "check", label: "To check", count: counts.check },
-    { value: "file", label: "For the file", count: counts.file },
-    { value: "all", label: "All", count: counts.all },
-  ];
-
   const visible = events.filter((e) => MATCHES[filter](e.severity));
 
   return (
@@ -82,7 +78,7 @@ export function SurfacedFeed({
         </p>
       </div>
 
-      <FilterPills options={options} value={filter} onChange={setFilter} className="self-start" />
+      <DecisionTabs active={filter as DecisionTab} counts={counts} />
 
       {visible.length === 0 ? (
         <p className="py-6 text-center text-[14px] text-faint">Nothing in this group.</p>
