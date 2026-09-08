@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   MdArrowUpward,
+  MdAutoAwesome,
   MdClose,
   MdErrorOutline,
   MdOutlineDescription,
@@ -18,6 +19,19 @@ export type Message = {
   /** The item that was attached when this message was sent, if any. */
   attached?: string | null;
 };
+
+/**
+ * The three openers on an empty panel.
+ *
+ * Each is answerable from what the radar has already read rather than from
+ * the open web, which is the distinction the panel has to teach in its first
+ * screen.
+ */
+const OPENERS = [
+  "What did you set aside this week, and why?",
+  "Does anything recalled recently match what I carry?",
+  "What street work is coming near the store?",
+] as const;
 
 /** Answers land in 2-9s warm; a tool-heavy question can run far longer. */
 const STILL_WORKING_MS = 12_000;
@@ -138,14 +152,16 @@ export function AskRadarPanel({
       {/* Same height as the application bar, from the same variable: with
           the drawer open the two headers are side by side and their bottom
           borders have to be one line. */}
-      <header className="flex flex-none items-center gap-2.5 border-b border-line px-4 py-3.5 sm:h-[var(--app-bar-h)] sm:py-0">
+      {/* The sheet needs a title bar to be dismissible. The column does
+          not: the application bar runs across the top of it. */}
+      <header className="flex flex-none items-center gap-2.5 border-b border-line px-4 py-3.5 md:hidden">
         <span className="flex-1 text-[15px] font-semibold text-ink">Ask the radar</span>
         {/* Nothing to close above md, where the panel is part of the page. */}
         <button
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="cursor-pointer rounded-control p-1 text-faint transition-colors hover:bg-hover hover:text-ink focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none md:hidden"
+          className="cursor-pointer rounded-control p-1 text-faint transition-colors hover:bg-hover hover:text-ink focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         >
           <MdClose className="size-[18px]" aria-hidden />
         </button>
@@ -159,17 +175,40 @@ export function AskRadarPanel({
             they taught the shape of a question, then filled the box with
             someone else's, and every conversation opened the same way.
           */
-          <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
+          <div className="flex flex-col gap-5 pt-2">
+            <div className="flex flex-col gap-2.5">
+              <RadarCharacter className="size-10" />
+              <h2 className="text-[19px]/snug font-semibold tracking-[-0.015em] text-balance text-ink">
+                Ask me about anything I watch.
+              </h2>
+              <p className="text-[13px]/relaxed text-faint">
+                Recalls, permits, council agendas, or why something was filtered out.
+              </p>
+            </div>
+
             {/*
-              The character rather than a chat glyph: this is the first thing
-              in an empty panel, and it is the same mark as the launcher that
-              opened it, so the panel is visibly that button's room.
+              Three openers, and they are questions this radar can actually
+              answer from what it already read: the store's own log, its own
+              profile, its own block. Generic prompts were tried here once and
+              pulled, because they taught the shape of a question and then
+              filled the box with someone else's. These are shortcuts to the
+              three things the panel exists for, not a script.
             */}
-            <RadarCharacter className="size-12" />
-            <p className="text-[13px]/relaxed text-balance text-ghost">
-              Ask about anything I watch: recalls, permits, council agendas, or why something
-              was filtered out.
-            </p>
+            <ul className="m-0 flex list-none flex-col gap-px overflow-hidden rounded-xl border border-line bg-line p-0">
+              {OPENERS.map((q) => (
+                <li key={q}>
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => send(q)}
+                    className="flex w-full cursor-pointer items-center gap-3 bg-paper px-3.5 py-3 text-left text-[13px]/snug text-ink transition-colors hover:bg-hover disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <span className="flex-1">{q}</span>
+                    <MdAutoAwesome className="size-4 flex-none text-ghost" aria-hidden />
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
 

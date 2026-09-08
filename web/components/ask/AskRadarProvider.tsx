@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { RadarCharacter } from "./RadarCharacter";
 import { AskRadarCtx } from "./ask-radar-context";
-import { AskRadarPanel, type Message } from "./AskRadarPanel";
+import { type Message } from "./AskRadarPanel";
 import { newSessionId, type AskRequestBody, type AskResult } from "@/lib/ask";
 import type { SurfacedItem } from "@/lib/queries";
 
@@ -111,44 +111,20 @@ export function AskRadarProvider({ children }: { children: React.ReactNode }) {
   // history, so navigating away aborts only our wait for the answer.
   useEffect(() => () => inFlight.current?.abort(), []);
 
-  const value = useMemo(() => ({ open, close, isOpen }), [open, close, isOpen]);
+  const clearScope = useCallback(() => setScopedTo(null), []);
+  const sendFromPanel = useCallback(
+    (text: string) => send(text, scopedTo),
+    [send, scopedTo],
+  );
+
+  const value = useMemo(
+    () => ({ open, close, isOpen, scopedTo, clearScope, messages, pending, send: sendFromPanel }),
+    [open, close, isOpen, scopedTo, clearScope, messages, pending, sendFromPanel],
+  );
 
   return (
     <AskRadarCtx.Provider value={value}>
-      {/*
-        Above md the panel is a column of the page, not something opened over
-        it: a real flex sibling that is always there, so the page is beside it
-        rather than under it and nothing has to be pushed out of the way. It
-        stopped being a drawer because it was never transient; half the reason
-        to have it is to read a card while asking about that card.
-
-        Below md there is no room for a second column, so it reverts to a
-        sheet over the page with a launcher to raise it.
-      */}
-      <div className="flex min-h-screen w-full">
-        <div className="min-w-0 flex-1">{children}</div>
-
-        <aside
-          aria-label="Ask the radar"
-          className={[
-            "z-40 flex-none bg-paper",
-            isOpen
-              ? "fixed inset-x-0 bottom-0 flex h-[min(640px,88vh)] border-t border-line-strong"
-              : "hidden",
-            "md:sticky md:inset-auto md:top-0 md:flex md:h-screen md:w-[380px]",
-            "md:border-t-0 md:border-l md:border-line",
-          ].join(" ")}
-        >
-          <AskRadarPanel
-            scopedTo={scopedTo}
-            messages={messages}
-            pending={pending}
-            onSend={(text) => send(text, scopedTo)}
-            onClearScope={() => setScopedTo(null)}
-            onClose={close}
-          />
-        </aside>
-      </div>
+      {children}
 
       {/*
         The design floats this in the frame's top-right. A fixed bottom-right
