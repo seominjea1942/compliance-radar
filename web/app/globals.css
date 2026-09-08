@@ -53,6 +53,9 @@
   --color-brand-soft: #93b3d4;
   --color-brand-tint: #f2f6fb;
   --color-brand-tint-line: #dce6f2;
+  /* A pressed control on a card. Matched to the grey it replaces: 1.25
+     against a hovered card, where #e0e0e6 measured 1.26. */
+  --color-brand-wash: #d4e3f8;
 
   /* Urgent */
   --color-alert: #b42318;

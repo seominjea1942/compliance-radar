@@ -60,13 +60,6 @@ export function LogRows({ rows }: { rows: LogRow[] }) {
                   Should have shown me
                 </Button>
               )}
-              <Button
-                variant="cardAction"
-                size="action"
-                className="ml-auto text-[15px] text-ghost"
-              >
-                ···
-              </Button>
             </ItemCard.Actions>
           </ItemCard>
         ))}

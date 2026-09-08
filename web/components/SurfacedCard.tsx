@@ -266,9 +266,6 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
           <MdOutlineChatBubbleOutline className="size-[15px]" aria-hidden />
           Ask
         </Button>
-        <Button variant="cardAction" size="action" className="ml-auto text-[15px] text-ghost">
-          ···
-        </Button>
       </ItemCard.Actions>
 
       {resolving && <ResolveDialog event={event} onClose={() => setResolving(false)} />}
