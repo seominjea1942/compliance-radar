@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { segmented } from "@/components/ui/segmented";
 import { count } from "@/lib/format";
+import { hrefFor, PAGE, VIEWS, type View, type ViewParams } from "@/lib/view";
 import { cn } from "@/lib/utils";
 
 /**
@@ -18,52 +19,45 @@ import { cn } from "@/lib/utils";
  * control that is a link for two items and a button for four is one control
  * pretending to be two again.
  */
-export type DecisionTab = "act" | "check" | "file" | "all" | "set-aside" | "overturned";
+export type TabCounts = Record<View, number>;
 
-export type TabCounts = Record<DecisionTab, number>;
-
-/*
- * Order is the reading order: the three things the radar asked of you, then
- * the two it did not, then everything. "All" is last because it is the union
- * of the five before it, not a sixth state alongside them.
- */
-const LABELS: { value: DecisionTab; label: string; href: string }[] = [
-  { value: "act", label: "Needs action", href: "/?tier=act" },
-  { value: "check", label: "To check", href: "/?tier=check" },
-  { value: "file", label: "For the file", href: "/?tier=file" },
-  { value: "set-aside", label: "Set aside", href: "/log" },
-  { value: "overturned", label: "Overturned", href: "/log?status=overturned" },
-  { value: "all", label: "All", href: "/log?status=all" },
-];
+const LABEL: Record<View, string> = {
+  act: "Needs action",
+  check: "To check",
+  file: "For the file",
+  "set-aside": "Set aside",
+  overturned: "Overturned",
+  all: "All",
+};
 
 export function DecisionTabs({
-  active,
+  params,
   counts,
   className,
 }: {
-  active: DecisionTab;
+  params: ViewParams;
   counts: TabCounts;
   className?: string;
 }) {
   return (
     <div className={cn(segmented.track, "self-start", className)}>
-      {LABELS.map((t) => {
-        const on = t.value === active;
+      {VIEWS.map((v) => {
+        const on = v === params.view;
         return (
           <Link
-            key={t.value}
-            href={t.href}
+            key={v}
+            href={hrefFor({ view: v, limit: PAGE }, params)}
             aria-current={on ? "page" : undefined}
             className={cn(segmented.item, "no-underline", on ? segmented.active : segmented.idle)}
           >
-            {t.label}
+            {LABEL[v]}
             <span
               className={cn(
                 "font-mono text-[11px] tabular-nums",
                 on ? segmented.countActive : segmented.countIdle,
               )}
             >
-              {count(counts[t.value])}
+              {count(counts[v])}
             </span>
           </Link>
         );

@@ -13,10 +13,15 @@ function Row({ topic }: { topic: TopicRow }) {
 
   return (
     <Link
-      href={`/log?tag=${topic.id}`}
+      /*
+       * Turns the topic filter on where you already are. It used to leave
+       * for the log, which meant a row in the rail could only ever show you
+       * half of its own number: the set-aside half.
+       */
+      href={`/?view=all&tag=${topic.id}`}
       // The row reads as "Food recalls 6 1" to a screen reader, which says
-      // nothing about where the link goes; the destination is named instead.
-      aria-label={`Open the log filtered to ${topic.label}`}
+      // nothing about what pressing it does; the action is named instead.
+      aria-label={`Filter to ${topic.label}`}
       className="flex items-baseline gap-3 bg-paper px-4 py-3 no-underline transition-colors hover:bg-hover focus-visible:relative focus-visible:z-[1] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
     >
       <span className={`flex-1 text-[15px] ${quiet ? "text-faint" : "text-ink"}`}>

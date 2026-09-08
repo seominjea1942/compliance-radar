@@ -37,6 +37,5 @@ export async function resolveItems(
   }
 
   revalidatePath("/");
-  revalidatePath("/log");
   return { ok: true, written: clean.length };
 }

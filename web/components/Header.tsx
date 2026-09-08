@@ -2,7 +2,6 @@ import Link from "next/link";
 import {
   MdInfoOutline,
   MdOutlineDashboard,
-  MdOutlineListAlt,
   MdOutlineSettings,
 } from "react-icons/md";
 import { BusinessSwitcher } from "@/components/BusinessSwitcher";
@@ -11,7 +10,8 @@ import { Tooltip } from "@/components/ui/tooltip";
 import type { StoreProfile } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 
-export type Section = "overview" | "log" | "profile" | "about";
+/* "log" is gone: it was a route, and it is a view of the overview now. */
+export type Section = "overview" | "profile" | "about";
 
 /**
  * The application bar, replacing the left rail.
@@ -36,12 +36,6 @@ export function Header({
       label: "Overview",
       section: "overview" as const,
       icon: <MdOutlineDashboard className="size-[18px] flex-none" aria-hidden />,
-    },
-    {
-      href: "/log",
-      label: "Log",
-      section: "log" as const,
-      icon: <MdOutlineListAlt className="size-[18px] flex-none" aria-hidden />,
     },
     {
       href: "/profile",

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { MdClose } from "react-icons/md";
-import { overturnDecision } from "@/app/log/actions";
+import { overturnDecision } from "@/app/overturn-actions";
 import { OVERTURN_REASONS, type OverturnReason } from "@/lib/overturn";
 import type { LogRow } from "@/lib/queries";
 

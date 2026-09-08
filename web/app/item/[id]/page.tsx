@@ -24,14 +24,15 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
 
   if (!item) notFound();
 
-  const backHref = item.surfaced ? "/" : "/log";
+  // One screen now; a set-aside item came from the set-aside view.
+  const backHref = item.surfaced ? "/" : "/?view=set-aside";
 
   return (
     <AskRadarProvider>
       <div className="flex min-h-screen flex-col bg-shell">
         <Header
           profile={profile}
-          current={item.surfaced ? "overview" : "log"}
+          current="overview"
         />
 
         {/* The bar spans the window above this row; the panel is a

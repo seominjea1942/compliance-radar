@@ -42,7 +42,6 @@ export async function overturnDecision(
     return { ok: false, error: e instanceof Error ? e.message : "Write failed." };
   }
 
-  revalidatePath("/log");
   revalidatePath("/");
   return { ok: true };
 }
