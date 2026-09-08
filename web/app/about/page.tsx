@@ -2,6 +2,7 @@ import { MdOpenInNew } from "react-icons/md";
 import { AskRadarProvider } from "@/components/ask/AskRadarProvider";
 import { Header } from "@/components/Header";
 import { Card, CardNote, CardTitle } from "@/components/ui/card";
+import { PageTitle } from "@/components/ui/page-title";
 import { getStoreProfile } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
@@ -49,9 +50,9 @@ export default async function AboutPage() {
         <main className="min-w-0 flex-1 bg-paper">
           <div className="mx-auto flex w-full max-w-[800px] flex-col gap-5 px-4 pt-5 pb-10 md:gap-6.5 md:px-12 md:pt-7.5 md:pb-12">
             <div className="flex flex-col gap-1.5">
-              <h1 className="text-[20px]/tight font-semibold tracking-[-0.01em] text-ink md:text-[23px]">
+              <PageTitle>
                 About this project
-              </h1>
+              </PageTitle>
               <p className="max-w-[700px] text-[14.5px]/relaxed text-pretty text-body md:text-[15.5px]">
                 Compliance Radar watches the public record on behalf of one small grocery store,
                 and stays quiet unless something genuinely touches it. Silence is the product.

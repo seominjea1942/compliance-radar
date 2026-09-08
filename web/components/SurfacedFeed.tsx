@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { FilterPills, type FilterOption } from "@/components/ui/filter-pills";
 import { SurfacedCard } from "@/components/SurfacedCard";
+import { PageTitle } from "@/components/ui/page-title";
 import { count } from "@/lib/format";
 import type { Severity, SurfacedEvent } from "@/lib/queries";
 
@@ -75,9 +76,7 @@ export function SurfacedFeed({
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-1.5">
-        <h1 className="text-[22px]/tight font-bold tracking-[-0.02em] text-ink md:text-[27px]">
-          {HEADING[filter](counts[filter])}
-        </h1>
+        <PageTitle>{HEADING[filter](counts[filter])}</PageTitle>
         <p className="max-w-[700px] text-[14.5px]/relaxed text-pretty text-body md:text-[15.5px]">
           {count(reviewed)} items read this week; the rest is in the log.
         </p>

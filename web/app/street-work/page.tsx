@@ -4,6 +4,7 @@ import { AskRadarProvider } from "@/components/ask/AskRadarProvider";
 import { Header } from "@/components/Header";
 import { StreetWorkDetail } from "@/components/street/StreetWorkDetail";
 import { Card, CardNote, CardTitle } from "@/components/ui/card";
+import { PageTitle } from "@/components/ui/page-title";
 import {
   activePermits,
   blockingWork,
@@ -47,11 +48,11 @@ export default async function StreetWorkPage() {
             </Link>
 
             <div className="flex flex-col gap-1.5">
-              <h1 className="text-[20px]/tight font-semibold tracking-[-0.01em] text-ink md:text-[23px]">
+              <PageTitle>
                 {blocking.length === 0
                   ? "No street work blocking your block."
                   : `Street work near your door.`}
-              </h1>
+              </PageTitle>
               <p className="max-w-[700px] text-[14.5px]/relaxed text-pretty text-body md:text-[15.5px]">
                 Everything the city has filed near the store: open dig permits and paving on
                 the way. Your deliveries come through the front and your customers park on the

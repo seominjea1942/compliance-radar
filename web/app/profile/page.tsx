@@ -4,6 +4,7 @@ import { SectionTabs } from "@/components/profile/SectionTabs";
 import { FactList } from "@/components/profile/FactList";
 import { Header } from "@/components/Header";
 import { CardNote, CardTitle } from "@/components/ui/card";
+import { PageTitle } from "@/components/ui/page-title";
 import { getStoreProfileFull } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
@@ -28,9 +29,9 @@ export default async function ProfilePage() {
         <main className="min-w-0 flex-1 bg-paper">
           <div className="mx-auto flex w-full max-w-[800px] flex-col gap-5 px-4 pt-5 pb-10 md:gap-6.5 md:px-12 md:pt-7.5 md:pb-12">
             <div className="flex flex-col gap-1.5">
-              <h1 className="text-[20px]/tight font-semibold tracking-[-0.01em] text-ink md:text-[23px]">
+              <PageTitle>
                 What I know about your store
-              </h1>
+              </PageTitle>
               <p className="max-w-[700px] text-[14.5px]/relaxed text-pretty text-body md:text-[15.5px]">
                 These lines came from our first conversation, not a form. Every judgment I make
                 comes from them. Change one and I&apos;ll watch differently starting tonight.
