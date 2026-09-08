@@ -50,7 +50,9 @@ export function TopicTable({
   topics: TopicRow[];
 }) {
   return (
-    <Card className="w-full min-w-0 gap-4">
+    // No outline: the rail cards sit on the same white as the page, and
+    // the table draws its own lines between rows.
+    <Card className="w-full min-w-0 gap-4 border-0">
       {/* items-start, not baseline: the icon is a box, not a line of text. */}
       <div className="flex items-start justify-between gap-4">
         <CardTitle>

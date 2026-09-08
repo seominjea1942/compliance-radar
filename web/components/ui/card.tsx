@@ -19,7 +19,10 @@ function Card({
       className={cn(
         "flex flex-col border",
         tone === "paper" && "rounded-card border-line bg-paper px-6.5 py-5.5",
-        tone === "inset" && "rounded-panel border-line bg-shell px-5.5 py-5",
+        // White, like the paper it sits on. The border is what separates
+        // one item from the next; the fill was doing nothing but greying
+        // the thing being read.
+        tone === "inset" && "rounded-panel border-line bg-paper px-5.5 py-5",
         className,
       )}
       {...props}
