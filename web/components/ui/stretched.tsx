@@ -18,13 +18,13 @@ import { cn } from "@/lib/utils";
  * `::after` is measured against, so a card that takes these classes without it
  * would spread its click target over the nearest positioned ancestor instead.
  *
- * A ring, not a border and not a fill. Neither card carries a border to firm
- * up any more, and the item card's fill is now its identity: shifting that on
- * hover would read as the card turning into something else rather than
- * lighting up. A ring also costs no layout when it appears.
+ * The hover firms the border rather than adding a ring. The map panel used to
+ * share this and had no border of its own, which is why the ring existed; it
+ * is a plain section now, so the one card left here has an edge to darken and
+ * a ring on top of it would draw two lines instead of one darker one.
  */
 export const stretchedCard =
-  "relative transition-shadow hover:ring-1 hover:ring-line-strong focus-within:ring-1 focus-within:ring-line-strong";
+  "relative transition-colors hover:border-line-strong focus-within:border-line-strong";
 
 /**
  * The card's stretched link: its ::after covers the whole card, so clicking

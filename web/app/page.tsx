@@ -149,7 +149,11 @@ export default async function HomePage({
                 {/* State on the left, topic behind the button on the right. */}
                 <div className="flex flex-wrap items-center gap-2">
                   <DecisionTabs params={params} counts={counts} />
-                  <TopicFilter params={params} counts={topicCounts} />
+                  {/* Pushed to the far edge: it is the other axis, not the
+                      seventh item of the control it sits beside. */}
+                  <div className="ml-auto">
+                    <TopicFilter params={params} counts={topicCounts} />
+                  </div>
                 </div>
 
                 {/*
@@ -157,8 +161,10 @@ export default async function HomePage({
                   reader hears the new total after a filter changes, which is
                   the one place a number on this screen should move at all.
                 */}
-                <p aria-live="polite" className="m-0 -mt-2 text-[12.5px]/relaxed text-faint">
-                  <span className="font-mono tabular-nums text-monoink">{count(onScreen)}</span>{" "}
+                {/* text-muted, not text-faint: this line sits on the grey column
+                    rather than on a card, where #71717a measures 4.4:1. */}
+                <p aria-live="polite" className="m-0 -mt-2 text-[12.5px]/relaxed text-muted">
+                  <span className="font-mono tabular-nums text-ink">{count(onScreen)}</span>{" "}
                   {isLogView(view) ? "decisions" : "open"}
                   {tag
                     ? ` in ${TAGS.find((t) => t.id === tag)?.label.toLowerCase()}`

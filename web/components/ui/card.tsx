@@ -19,10 +19,8 @@ function Card({
       className={cn(
         "flex flex-col",
         tone === "paper" && "rounded-card border border-line bg-paper px-6.5 py-5.5",
-        // No border; the fill does the separating. It is a quiet one: #f9f9f9
-        // on the page's white is 1.05:1, closer to a change of paper than to
-        // an edge, and the hover ring is what answers the pointer.
-        tone === "inset" && "rounded-panel bg-card-fill px-5.5 py-5",
+        // White on white, so the border is the whole of the edge.
+        tone === "inset" && "rounded-panel border border-line bg-paper px-5.5 py-5",
         className,
       )}
       {...props}

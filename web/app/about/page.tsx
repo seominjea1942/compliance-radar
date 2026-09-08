@@ -1,6 +1,7 @@
 import { MdOpenInNew } from "react-icons/md";
 import { AskRadarProvider } from "@/components/ask/AskRadarProvider";
 import { AskRadarDock } from "@/components/ask/AskRadarDock";
+import { ContextRail } from "@/components/rail/ContextRail";
 import { Header } from "@/components/Header";
 import { Card, CardNote, CardTitle } from "@/components/ui/card";
 import { PageTitle } from "@/components/ui/page-title";
@@ -51,87 +52,94 @@ export default async function AboutPage() {
         {/* The bar spans the window above this row; the panel is a
             column of the row, so one header covers both. */}
         <div className="flex min-h-0 flex-1">
-          <main className="min-w-0 flex-1 bg-paper">
-            <div className="mx-auto flex w-full max-w-[800px] flex-col gap-5 px-4 pt-5 pb-10 md:gap-6.5 md:px-12 md:pt-7.5 md:pb-12">
-              <div className="flex flex-col gap-1.5">
-                <PageTitle>
-                  About this project
-                </PageTitle>
-                <p className="max-w-[700px] text-[14.5px]/relaxed text-pretty text-body md:text-[15.5px]">
-                  Compliance Radar watches the public record on behalf of one small grocery store,
-                  and stays quiet unless something genuinely touches it. Silence is the product.
-                </p>
-              </div>
+          {/* Rail and content share a row inside the one holding the panel:
+              the panel carries no order, so as their sibling it sorted ahead
+              of both at every width. */}
+          <div className="flex min-w-0 flex-1 flex-col xl:flex-row">
+            <ContextRail />
 
-              <Card className="gap-4">
-                <CardTitle>How it works</CardTitle>
-                <ol className="m-0 flex list-none flex-col gap-3.5 p-0">
-                  {STEPS.map((s, i) => (
-                    <li key={s.title} className="flex gap-3">
-                      <span className="mt-0.5 flex size-5 flex-none items-center justify-center rounded-full bg-rail font-mono text-[11px] text-monoink">
-                        {i + 1}
-                      </span>
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-[14px] font-medium text-ink">{s.title}</span>
-                        <span className="text-[13.5px]/relaxed text-body">{s.body}</span>
-                      </div>
-                    </li>
-                  ))}
-                </ol>
-              </Card>
-
-              <Card className="gap-4">
+            <main className="order-1 min-w-0 flex-1 bg-paper xl:order-2">
+              <div className="mx-auto flex w-full max-w-[800px] flex-col gap-5 px-4 pt-5 pb-10 md:gap-6.5 md:px-12 md:pt-7.5 md:pb-12">
                 <div className="flex flex-col gap-1.5">
-                  <CardTitle>Links</CardTitle>
-                  <CardNote>Code, demo and writeup.</CardNote>
+                  <PageTitle>
+                    About this project
+                  </PageTitle>
+                  <p className="max-w-[700px] text-[14.5px]/relaxed text-pretty text-body md:text-[15.5px]">
+                    Compliance Radar watches the public record on behalf of one small grocery store,
+                    and stays quiet unless something genuinely touches it. Silence is the product.
+                  </p>
                 </div>
-                <ul className="m-0 flex list-none flex-col gap-px overflow-hidden rounded-lg border border-line bg-line p-0">
-                  {LINKS.map((l) => (
-                    <li key={l.label} className="flex items-center gap-3 bg-paper px-4 py-3">
-                      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                        {l.href ? (
-                          <a
-                            href={l.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-[14px] font-medium text-brand no-underline hover:underline"
-                          >
-                            {l.label}
-                            <MdOpenInNew className="size-3.5" aria-hidden />
-                          </a>
-                        ) : (
-                          <span className="text-[14px] font-medium text-ghost">{l.label}</span>
-                        )}
-                        <span className="text-[12.5px] text-faint">{l.description}</span>
-                      </div>
-                      {!l.href && (
-                        <span className="flex-none font-mono text-[10px] tracking-[0.1em] text-ghost uppercase">
-                          Soon
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </Card>
 
-              <Card className="gap-4">
-                <CardTitle>Built with</CardTitle>
-                <dl className="m-0 grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-[auto_1fr]">
-                  {[
-                    ["Triage", "Amazon Bedrock via Strands agents, running on AgentCore"],
-                    ["Data", "TiDB Serverless, queried through views"],
-                    ["Frontend", "Next.js on Vercel, Tailwind and shadcn/ui"],
-                    ["Sources", "openFDA, FDA recall feeds, Legistar, San José permits"],
-                  ].map(([k, v]) => (
-                    <div key={k} className="contents">
-                      <dt className="text-[12.5px] text-faint sm:whitespace-nowrap">{k}</dt>
-                      <dd className="m-0 text-pretty text-[13.5px] text-ink">{v}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </Card>
-            </div>
-          </main>
+                <Card className="gap-4">
+                  <CardTitle>How it works</CardTitle>
+                  <ol className="m-0 flex list-none flex-col gap-3.5 p-0">
+                    {STEPS.map((s, i) => (
+                      <li key={s.title} className="flex gap-3">
+                        <span className="mt-0.5 flex size-5 flex-none items-center justify-center rounded-full bg-rail font-mono text-[11px] text-monoink">
+                          {i + 1}
+                        </span>
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-[14px] font-medium text-ink">{s.title}</span>
+                          <span className="text-[13.5px]/relaxed text-body">{s.body}</span>
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
+                </Card>
+
+                <Card className="gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <CardTitle>Links</CardTitle>
+                    <CardNote>Code, demo and writeup.</CardNote>
+                  </div>
+                  <ul className="m-0 flex list-none flex-col gap-px overflow-hidden rounded-lg border border-line bg-line p-0">
+                    {LINKS.map((l) => (
+                      <li key={l.label} className="flex items-center gap-3 bg-paper px-4 py-3">
+                        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                          {l.href ? (
+                            <a
+                              href={l.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-[14px] font-medium text-brand no-underline hover:underline"
+                            >
+                              {l.label}
+                              <MdOpenInNew className="size-3.5" aria-hidden />
+                            </a>
+                          ) : (
+                            <span className="text-[14px] font-medium text-ghost">{l.label}</span>
+                          )}
+                          <span className="text-[12.5px] text-faint">{l.description}</span>
+                        </div>
+                        {!l.href && (
+                          <span className="flex-none font-mono text-[10px] tracking-[0.1em] text-ghost uppercase">
+                            Soon
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </Card>
+
+                <Card className="gap-4">
+                  <CardTitle>Built with</CardTitle>
+                  <dl className="m-0 grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-[auto_1fr]">
+                    {[
+                      ["Triage", "Amazon Bedrock via Strands agents, running on AgentCore"],
+                      ["Data", "TiDB Serverless, queried through views"],
+                      ["Frontend", "Next.js on Vercel, Tailwind and shadcn/ui"],
+                      ["Sources", "openFDA, FDA recall feeds, Legistar, San José permits"],
+                    ].map(([k, v]) => (
+                      <div key={k} className="contents">
+                        <dt className="text-[12.5px] text-faint sm:whitespace-nowrap">{k}</dt>
+                        <dd className="m-0 text-pretty text-[13.5px] text-ink">{v}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </Card>
+              </div>
+            </main>
+          </div>
 
           <AskRadarDock />
         </div>

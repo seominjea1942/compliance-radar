@@ -16,15 +16,6 @@
   --color-shell: #fafafa;
   --color-rail: #f4f4f5;
   --color-wash: #f1f1f3;
-  /*
-   * The item card's fill. Its own token rather than --color-wash, which four
-   * other things read and which is three shades darker.
-   *
-   * Not --color-card: the shadcn block below defines that as var(--card),
-   * which is white, and being later in the file it wins. A card token here
-   * silently renders white.
-   */
-  --color-card-fill: #f9f9f9;
   --color-hover: #f1f1f3;
   /* Controls sitting on a hovered card. --color-hover is the card's own hover
      background, so a button using it vanishes exactly when the pointer is on
