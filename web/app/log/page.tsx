@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AskRadarProvider } from "@/components/ask/AskRadarProvider";
 import { AskRadarDock } from "@/components/ask/AskRadarDock";
+import { ContextRail } from "@/components/rail/ContextRail";
 import { LogRows } from "@/components/log/LogRows";
 import { Header } from "@/components/Header";
 import { cn } from "@/lib/utils";
@@ -121,124 +122,131 @@ export default async function LogPage({
           current="log"
         />
 
-        {/* The bar spans the window above this row; the panel is a
-            column of the row, so one header covers both. */}
+        {/* The bar spans the window above this row; the rail and the panel
+            are columns of it, so one header covers all three. */}
         <div className="flex min-h-0 flex-1">
-          <main className="min-w-0 flex-1 bg-paper">
-            <div className="mx-auto flex w-full max-w-[800px] flex-col gap-5 px-4 pt-5 pb-10 md:gap-6.5 md:px-12 md:pt-7.5 md:pb-12">
-              {/*
-                No outer frame. The rows inside are the objects; a card around
-                them framed a stack of frames and put two borders and two
-                paddings between the page and every reason. Same as the
-                overview's feed, which lost its own for the same reason.
-              */}
-              <div className="flex flex-col gap-5">
-                <div className="flex flex-col gap-1.5">
-                  <PageTitle>
-                    Everything I&apos;ve read
-                  </PageTitle>
-                  {/*
-                    The whole log, not the current slice. This sentence describes
-                    what the page is; a number that moved every time a pill was
-                    pressed was reporting the filter instead, and read as though
-                    the archive itself had shrunk. The filtered figures live with
-                    the filters, below.
-                  */}
-                  <p className="max-w-[700px] text-[14.5px]/relaxed text-pretty text-body md:text-[15.5px]">
-                    {count(log.overall.all)} items. Set aside holds what I chose not to surface,
-                    each with a reason. Overturned holds the calls you sent back. If I set
-                    something aside wrongly, say so and I&apos;ll adjust.
-                  </p>
-                </div>
+          {/* Rail and content share a row inside the one holding the panel:
+              the panel carries no order, so as their sibling it sorted ahead
+              of both at every width. */}
+          <div className="flex min-w-0 flex-1 flex-col xl:flex-row">
+            <ContextRail />
 
-                {/* Links, not buttons: the filters live in the URL. Same
-                    appearance as FilterPills, from the same class strings. */}
-                <div className={cn(segmented.track, "self-start")}>
-                  {STATUSES.map((s) => {
-                    const active = s.value === status;
-                    return (
-                      <Link
-                        key={s.value}
-                        href={hrefFor({ status: s.value, limit: PAGE, tag: topic?.id ?? null })}
-                        aria-current={active ? "page" : undefined}
-                        className={cn(
-                          segmented.item,
-                          "no-underline",
-                          active ? segmented.active : segmented.idle,
-                        )}
-                      >
-                        {s.label}
-                        <span
-                          className={cn(
-                            "font-mono text-[11px] tabular-nums",
-                            active ? segmented.countActive : segmented.countIdle,
-                          )}
-                        >
-                          {count(tabCount[s.value])}
-                        </span>
-                      </Link>
-                    );
-                  })}
-                </div>
+            <main className="order-1 min-w-0 flex-1 bg-paper xl:order-2">
+              <div className="mx-auto flex w-full max-w-[800px] flex-col gap-5 px-4 pt-5 pb-10 md:gap-6.5 md:px-12 md:pt-7.5 md:pb-12">
+                {/*
+                  No outer frame. The rows inside are the objects; a card around
+                  them framed a stack of frames and put two borders and two
+                  paddings between the page and every reason. Same as the
+                  overview's feed, which lost its own for the same reason.
+                */}
+                <div className="flex flex-col gap-5">
+                  <div className="flex flex-col gap-1.5">
+                    <PageTitle>
+                      Everything I&apos;ve read
+                    </PageTitle>
+                    {/*
+                      The whole log, not the current slice. This sentence describes
+                      what the page is; a number that moved every time a pill was
+                      pressed was reporting the filter instead, and read as though
+                      the archive itself had shrunk. The filtered figures live with
+                      the filters, below.
+                    */}
+                    <p className="max-w-[700px] text-[14.5px]/relaxed text-pretty text-body md:text-[15.5px]">
+                      {count(log.overall.all)} items. Set aside holds what I chose not to surface,
+                      each with a reason. Overturned holds the calls you sent back. If I set
+                      something aside wrongly, say so and I&apos;ll adjust.
+                    </p>
+                  </div>
 
-                <div className="flex flex-col gap-3 border-t border-line-soft pt-4">
-                  <div className="flex flex-wrap items-center gap-2">
-                    {TOPICS.map((t) => {
-                      const active = t.value === (topic?.id ?? null);
+                  {/* Links, not buttons: the filters live in the URL. Same
+                      appearance as FilterPills, from the same class strings. */}
+                  <div className={cn(segmented.track, "self-start")}>
+                    {STATUSES.map((s) => {
+                      const active = s.value === status;
                       return (
                         <Link
-                          key={t.value ?? "all"}
-                          href={hrefFor({ status, limit: PAGE, tag: t.value })}
-                          aria-current={active ? "true" : undefined}
+                          key={s.value}
+                          href={hrefFor({ status: s.value, limit: PAGE, tag: topic?.id ?? null })}
+                          aria-current={active ? "page" : undefined}
                           className={cn(
-                            "rounded-full border px-3 py-1 text-[12.5px] no-underline transition-colors",
-                            active
-                              ? "border-brand-soft bg-brand-tint font-medium text-brand"
-                              : "border-line text-muted hover:border-line-strong hover:text-ink",
+                            segmented.item,
+                            "no-underline",
+                            active ? segmented.active : segmented.idle,
                           )}
                         >
-                          {t.label}
+                          {s.label}
+                          <span
+                            className={cn(
+                              "font-mono text-[11px] tabular-nums",
+                              active ? segmented.countActive : segmented.countIdle,
+                            )}
+                          >
+                            {count(tabCount[s.value])}
+                          </span>
                         </Link>
                       );
                     })}
                   </div>
 
-                  {/*
-                    The count that answers the filters, kept with them. It is
-                    live-region so a screen reader hears the new total after a
-                    pill is pressed, which is the one place the number should
-                    move at all.
-                  */}
-                  <p
-                    aria-live="polite"
-                    className="m-0 text-[12.5px]/relaxed text-faint"
-                  >
-                    <span className="font-mono tabular-nums text-monoink">
-                      {count(scopedCount[status])}
-                    </span>{" "}
-                    {STATUS_NOUN[status]}
-                    {topic ? ` in ${topic.label.toLowerCase()}` : " across every topic"}
-                    {log.rows.length < scopedCount[status] &&
-                      `, showing ${count(log.rows.length)}`}
-                    .
-                  </p>
-                </div>
+                  <div className="flex flex-col gap-3 border-t border-line-soft pt-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {TOPICS.map((t) => {
+                        const active = t.value === (topic?.id ?? null);
+                        return (
+                          <Link
+                            key={t.value ?? "all"}
+                            href={hrefFor({ status, limit: PAGE, tag: t.value })}
+                            aria-current={active ? "true" : undefined}
+                            className={cn(
+                              "rounded-full border px-3 py-1 text-[12.5px] no-underline transition-colors",
+                              active
+                                ? "border-brand-soft bg-brand-tint font-medium text-brand"
+                                : "border-line text-muted hover:border-line-strong hover:text-ink",
+                            )}
+                          >
+                            {t.label}
+                          </Link>
+                        );
+                      })}
+                    </div>
 
-                <LogRows rows={log.rows} />
-
-                {log.hasMore && (
-                  <div className="flex items-center justify-center text-[12.5px]">
-                    <Link
-                      href={hrefFor({ status, limit: limit + PAGE, tag: topic?.id ?? null })}
-                      className="font-medium text-brand no-underline hover:underline"
+                    {/*
+                      The count that answers the filters, kept with them. It is
+                      live-region so a screen reader hears the new total after a
+                      pill is pressed, which is the one place the number should
+                      move at all.
+                    */}
+                    <p
+                      aria-live="polite"
+                      className="m-0 text-[12.5px]/relaxed text-faint"
                     >
-                      Load more
-                    </Link>
+                      <span className="font-mono tabular-nums text-monoink">
+                        {count(scopedCount[status])}
+                      </span>{" "}
+                      {STATUS_NOUN[status]}
+                      {topic ? ` in ${topic.label.toLowerCase()}` : " across every topic"}
+                      {log.rows.length < scopedCount[status] &&
+                        `, showing ${count(log.rows.length)}`}
+                      .
+                    </p>
                   </div>
-                )}
+
+                  <LogRows rows={log.rows} />
+
+                  {log.hasMore && (
+                    <div className="flex items-center justify-center text-[12.5px]">
+                      <Link
+                        href={hrefFor({ status, limit: limit + PAGE, tag: topic?.id ?? null })}
+                        className="font-medium text-brand no-underline hover:underline"
+                      >
+                        Load more
+                      </Link>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          </main>
+            </main>
+          </div>
 
           <AskRadarDock />
         </div>
