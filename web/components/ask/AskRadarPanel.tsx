@@ -23,14 +23,19 @@ export type Message = {
 /**
  * The three openers on an empty panel.
  *
- * Each is answerable from what the radar has already read rather than from
- * the open web, which is the distinction the panel has to teach in its first
- * screen.
+ * One per thing the radar watches: recalls, street work, the council. Each is
+ * answerable only from what it has already read rather than from the open
+ * web, which is the distinction the first screen has to teach.
+ *
+ * Each also has to work cold, as the first thing said in an empty panel. An
+ * earlier one asked what the radar had set aside and why, which reads as a
+ * follow-up to something: it assumes the panel already told you it set
+ * anything aside.
  */
 const OPENERS = [
-  "What did you set aside this week, and why?",
   "Does anything recalled recently match what I carry?",
   "What street work is coming near the store?",
+  "Is anything on the council agenda about to affect me?",
 ] as const;
 
 /** Answers land in 2-9s warm; a tool-heavy question can run far longer. */
@@ -194,14 +199,17 @@ export function AskRadarPanel({
               filled the box with someone else's. These are shortcuts to the
               three things the panel exists for, not a script.
             */}
-            <ul className="m-0 flex list-none flex-col gap-px overflow-hidden rounded-xl border border-line bg-line p-0">
+            {/* Three cards, not one list. Hairlines between rows made them a
+                single object to be read down; separate boxes make them three
+                things to be picked between, which is what they are. */}
+            <ul className="m-0 flex list-none flex-col gap-2 p-0">
               {OPENERS.map((q) => (
                 <li key={q}>
                   <button
                     type="button"
                     disabled={pending}
                     onClick={() => send(q)}
-                    className="flex w-full cursor-pointer items-center gap-3 bg-paper px-3.5 py-3 text-left text-[13px]/snug text-ink transition-colors hover:bg-hover disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex w-full cursor-pointer items-center gap-3 rounded-xl border border-line bg-paper px-3.5 py-3 text-left text-[13px]/snug text-ink transition-colors hover:border-line-strong hover:bg-hover disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <span className="flex-1">{q}</span>
                     <MdAutoAwesome className="size-4 flex-none text-ghost" aria-hidden />
