@@ -148,10 +148,16 @@ export default async function HomePage({
 
                 {/* State on the left, topic behind the button on the right. */}
                 <div className="flex items-center gap-2">
-                  <DecisionTabs params={params} counts={counts} className="min-w-0 flex-1" />
+                  {/*
+                    min-w-0 without flex-1: the strip takes the width its items
+                    need and shrinks below that only when the row runs out. With
+                    flex-1 it stretched to fill, leaving 51px of empty pill to
+                    the right of the last item at a wide window.
+                  */}
+                  <DecisionTabs params={params} counts={counts} className="min-w-0" />
                   {/* Pushed to the far edge: it is the other axis, not the
                       seventh item of the control it sits beside. */}
-                  <div className="ml-auto">
+                  <div className="ml-auto flex-none">
                     <TopicFilter params={params} counts={topicCounts} />
                   </div>
                 </div>
