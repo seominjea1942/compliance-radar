@@ -182,7 +182,14 @@ export function AskRadarPanel({
           */
           <div className="flex flex-col gap-5 pt-2">
             <div className="flex flex-col gap-2.5">
-              <RadarCharacter className="size-10" />
+              {/*
+                Larger here than anywhere else, and tracking. This is the one
+                place the character is the subject rather than a mark: it is
+                the first thing in an empty panel, and the eyes following the
+                pointer are what say the thing is listening before it has been
+                asked anything.
+              */}
+              <RadarCharacter className="size-20" track />
               <h2 className="text-[19px]/snug font-semibold tracking-[-0.015em] text-balance text-ink">
                 Ask me about anything I watch.
               </h2>
