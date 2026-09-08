@@ -35,8 +35,10 @@
   --color-ink-soft: #27272a;
   --color-body: #3f3f46;
   --color-muted: #52525b;
-  --color-faint: #71717a;
-  --color-monoink: #71717a;
+  /* One step darker than #71717a, which is 4.28:1 on the card fill below and
+     so had nothing left the moment the cards stopped being white. */
+  --color-faint: #67676f;
+  --color-monoink: #67676f;
   --color-ghost: #a1a1aa;
 
   /*

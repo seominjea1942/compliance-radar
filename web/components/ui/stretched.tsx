@@ -17,9 +17,14 @@ import { cn } from "@/lib/utils";
  * `relative` is part of it, not incidental: it is what the stretched link's
  * `::after` is measured against, so a card that takes these classes without it
  * would spread its click target over the nearest positioned ancestor instead.
+ *
+ * A ring, not a border and not a fill. Neither card carries a border to firm
+ * up any more, and the item card's fill is now its identity: shifting that on
+ * hover would read as the card turning into something else rather than
+ * lighting up. A ring also costs no layout when it appears.
  */
 export const stretchedCard =
-  "relative transition-colors hover:border-line-strong hover:bg-hover focus-within:border-line-strong";
+  "relative transition-shadow hover:ring-1 hover:ring-line-strong focus-within:ring-1 focus-within:ring-line-strong";
 
 /**
  * The card's stretched link: its ::after covers the whole card, so clicking

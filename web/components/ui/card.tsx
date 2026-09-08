@@ -17,12 +17,12 @@ function Card({
     <div
       data-slot="card"
       className={cn(
-        "flex flex-col border",
-        tone === "paper" && "rounded-card border-line bg-paper px-6.5 py-5.5",
-        // White, like the paper it sits on. The border is what separates
-        // one item from the next; the fill was doing nothing but greying
-        // the thing being read.
-        tone === "inset" && "rounded-panel border-line bg-paper px-5.5 py-5",
+        "flex flex-col",
+        tone === "paper" && "rounded-card border border-line bg-paper px-6.5 py-5.5",
+        // No border; the fill does the separating. #f1f1f3 against the page's
+        // white is enough to read as its own surface, which a hairline around
+        // white was doing more loudly than it needed to.
+        tone === "inset" && "rounded-panel bg-wash px-5.5 py-5",
         className,
       )}
       {...props}

@@ -107,11 +107,7 @@ export function PermitMap({
   ].filter(Boolean);
 
   return (
-    // No outline, so the whole-card hover cannot use one. A ring instead:
-    // same hairline, and it costs no layout when it appears.
-    <Card
-      className={`w-full min-w-0 gap-3.5 border-0 p-4.5 hover:ring-1 hover:ring-line-strong ${stretchedCard}`}
-    >
+    <Card className={`w-full min-w-0 gap-3.5 border-0 p-4.5 ${stretchedCard}`}>
       <div className="flex flex-col gap-1.5">
         <CardTitle>
           {/*
