@@ -301,6 +301,17 @@
  * between the marker and the map edge, which collapsed it to ~96px on markers
  * near the right side.
  */
+/*
+ * Leaflet gives its own panes z-index values in the hundreds, and they were
+ * winning against the ask panel at z-40. Isolating the map's container turns
+ * those into a private stack: they still order correctly among themselves,
+ * and the whole map now sits at z-0 in the page.
+ */
+.leaflet-container {
+  isolation: isolate;
+  z-index: 0;
+}
+
 .leaflet-tooltip.radar-tip {
   width: 230px;
   white-space: normal;

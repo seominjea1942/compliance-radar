@@ -207,10 +207,17 @@ export default async function HomePage({
                   reader hears the new total after a filter changes, which is
                   the one place a number on this screen should move at all.
                 */}
-                {/* text-muted, not text-faint: this line sits on the grey column
-                    rather than on a card, where #71717a measures 4.4:1. */}
-                <p aria-live="polite" className="m-0 -mt-2 text-[12.5px]/relaxed text-muted">
-                  <span className="font-mono tabular-nums text-ink">{count(onScreen)}</span>{" "}
+                {/*
+                  Same treatment as the rail's section names, because that is
+                  what it is: the label for the list under it. Its rule is the
+                  one that opens the list, so the first item does not draw its
+                  own on top of it.
+                */}
+                <p
+                  aria-live="polite"
+                  className="m-0 mt-2 border-b-2 border-rule pb-1.5 font-mono text-[11px] font-medium tracking-[0.16em] text-ink uppercase"
+                >
+                  <span className="tabular-nums">{count(onScreen)}</span>{" "}
                   {isLogView(view) ? (onScreen === 1 ? "decision" : "decisions") : "open"}
                   {tag
                     ? ` in ${TAGS.find((t) => t.id === tag)?.label.toLowerCase()}`
