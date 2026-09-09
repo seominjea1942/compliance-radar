@@ -1,29 +1,29 @@
 /**
- * The CR monogram.
+ * The Shopbell mark: a shop awning with the bell's clapper below it.
  *
  * Inline rather than an <img>, so it takes its colour from whatever it sits
- * in and costs no request. The source file is public/cr-logo.svg; two things
- * change on the way in.
+ * in and costs no request. The source file is public/shopbell-logo.svg; two
+ * things change on the way in.
  *
  * The white rect behind it goes: it was the artboard, and it would have shown
  * as a square on anything but a white bar, which is the same trap the 3D tab
  * icons fell into.
  *
  * The viewBox is tightened from the artboard's 213 square to the ink's own
- * bounds, x 26 to 187 and y 50 to 163. Left as it was, a third of the box was
- * padding, so the mark rendered small and sat high next to the wordmark.
+ * bounds, x 39 to 175 and y 44 to 175. Left as it was, a third of the box was
+ * padding, so the mark rendered small and sat high in the bar.
  */
 export function LogoMark({ className }: { className?: string }) {
   return (
     <svg
-      viewBox="26 50 161.3 113.2"
+      viewBox="39 44 136 131"
       fill="currentColor"
       // The link around this is what carries the name.
       aria-hidden
       className={className}
     >
-      <path d="M114.387 160.71V52.4399H148.698C160.287 52.4399 169.386 55.3373 175.994 61.132C182.602 66.9268 185.906 74.8565 185.906 84.9211C185.906 90.1059 184.737 94.6807 182.399 98.6455C180.163 102.61 177.163 105.762 173.402 108.1C169.64 110.337 165.523 111.607 161.05 111.912L160.44 109.93C168.268 110.235 174.114 111.963 177.977 115.115C181.84 118.165 184.077 123.197 184.686 130.212L187.279 160.71H168.37L166.082 134.634C165.777 130.771 165.015 127.772 163.795 125.637C162.677 123.502 160.897 122.028 158.458 121.215C156.119 120.401 152.866 119.995 148.698 119.995H133.296V160.71H114.387ZM133.296 102.61H148.24C154.137 102.61 158.61 101.187 161.66 98.3405C164.811 95.494 166.387 91.4275 166.387 86.141C166.387 80.8546 164.811 76.8389 161.66 74.094C158.61 71.2475 154.137 69.8242 148.24 69.8242H133.296V102.61Z" />
-      <path d="M67.1733 163.15C58.3287 163.15 50.8565 160.863 44.7567 156.288C38.657 151.713 33.9805 145.207 30.7273 136.769C27.5758 128.331 26 118.317 26 106.728C26 95.0365 27.5758 84.9719 30.7273 76.5339C33.9805 68.0959 38.657 61.5895 44.7567 57.0147C50.8565 52.3382 58.3287 50 67.1733 50C77.3396 50 85.8284 53.3549 92.6398 60.0646C99.4512 66.7743 103.823 76.2798 105.754 88.5809L86.3875 89.4959C85.0659 82.1762 82.6769 76.6356 79.2203 72.8741C75.8655 69.0109 71.8498 67.0793 67.1733 67.0793C62.3952 67.0793 58.3795 68.6551 55.1263 71.8066C51.9748 74.8565 49.5857 79.3296 47.9591 85.2261C46.3325 91.1225 45.5192 98.2897 45.5192 106.728C45.5192 115.064 46.3325 122.18 47.9591 128.077C49.5857 133.973 51.9748 138.446 55.1263 141.496C58.3795 144.546 62.3952 146.071 67.1733 146.071C72.0531 146.071 76.2721 144.038 79.8303 139.971C83.3885 135.803 85.7776 129.754 86.9975 121.825L106.364 122.587C104.534 135.397 100.163 145.359 93.2498 152.476C86.4384 159.592 77.7462 163.15 67.1733 163.15Z" />
+      <path d="M156 44V124H175V145H133V65H81V145H39V124H58V44H156Z" />
+      <circle cx="107" cy="160" r="15" />
     </svg>
   );
 }
