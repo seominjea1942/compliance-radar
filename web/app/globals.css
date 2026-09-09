@@ -11,32 +11,62 @@
  */
 @theme {
   /* Surfaces */
-  --color-canvas: #f4f4f5;
-  --color-paper: #ffffff;
-  --color-shell: #fafafa;
-  --color-rail: #f4f4f5;
-  --color-wash: #f1f1f3;
-  --color-hover: #f1f1f3;
+  --color-canvas: #e9e6dc;
+  /* Cream, not white: every surface in the app reads from this, so the page
+     and the things sitting on it are one material. */
+  --color-paper: #efede5;
+  /* The hover, so it has to be darker than the surface now rather than
+     lighter, or a hovered card would flash white against the page. */
+  --color-shell: #e6e3d8;
+  --color-rail: #e9e6dc;
+  --color-wash: #e6e3d8;
+  --color-hover: #e6e3d8;
+
+  /*
+   * The page ground. Warm cream rather than the neutral near-white it
+   * replaced, and its own token rather than a change to --color-shell:
+   * shell is what a card turns on hover, and pointing both at one value
+   * would make a hovered card disappear into the page.
+   */
+  --color-ground: #efede5;
   /* Controls sitting on a hovered card. --color-hover is the card's own hover
      background, so a button using it vanishes exactly when the pointer is on
      the card. This has to stay darker than that. */
-  --color-control-hover: #e0e0e6;
+  --color-control-hover: #dcd8ca;
 
   /* Lines */
-  --color-line: #e4e4e7;
-  --color-line-soft: #efeff1;
-  --color-line-strong: #d4d4d8;
-  --color-line-card: #e4e4e7;
-  --color-line-warm: #f3cfc9;
-  --color-line-chip: #d4d4d8;
+  /*
+   * Warm, and darker than they were. The old scale was built for white and
+   * measured 1.02-1.26 against the cream, so on this page the dividers were
+   * not faint, they were absent. These run 1.3-1.9, which is a visible
+   * hairline without becoming a second rule competing with --color-rule.
+   */
+  --color-line: #c4bfad;
+  --color-line-soft: #d6d2c4;
+  --color-line-strong: #b8b2a0;
+  --color-line-card: #c4bfad;
+  --color-line-warm: #e8c4bd;
+  --color-line-chip: #b8b2a0;
+
+  /*
+   * The rule: the heavy hairline that separates a structural region from the
+   * page, starting with the app bar. Warm near-black rather than the neutral
+   * greys above it, so it reads as ink on paper instead of another shade of
+   * the border scale.
+   */
+  --color-rule: #191511;
 
   /* Ink */
   --color-ink: #18181b;
   --color-ink-soft: #27272a;
   --color-body: #3f3f46;
   --color-muted: #52525b;
-  --color-faint: #71717a;
-  --color-monoink: #71717a;
+  /* Darkened from #71717a when the page went cream: the old value measured
+     4.12:1 on #efede5, under the 4.5 floor, while still passing on a white
+     card. One value that clears both is less fragile than deciding per site
+     which ground a given line happens to sit on. */
+  --color-faint: #67676d;
+  --color-monoink: #67676d;
   --color-ghost: #a1a1aa;
 
   /*
@@ -93,9 +123,14 @@
   --font-sans: var(--font-ui), system-ui, sans-serif;
   --font-mono: var(--font-mono-ui), ui-monospace, monospace;
 
-  --radius-card: 12px;
-  --radius-panel: 10px;
-  --radius-control: 6px;
+  /*
+   * Near-square. 2px rather than 0: a true right angle renders a hair ragged
+   * where a border meets at the corner, and the 2px keeps the edge clean
+   * while still reading as an unrounded frame.
+   */
+  --radius-card: 2px;
+  --radius-panel: 2px;
+  --radius-control: 2px;
 }
 
 /*
@@ -103,8 +138,8 @@
  * added later inherits the editorial look without being restyled by hand.
  */
 :root {
-  --radius: 0.625rem;
-  --background: var(--color-shell);
+  --radius: 2px;
+  --background: var(--color-ground);
   --foreground: var(--color-ink);
   --card: var(--color-paper);
   --card-foreground: var(--color-ink);
