@@ -14,6 +14,13 @@ import type { BriefResult } from "@/lib/brief";
  * into sections: the runtime's four headings already carry the structure, and
  * re-formatting them here would drift from what actually gets pasted.
  */
+/**
+ * The four sections the runtime always returns, as the widths of their last
+ * line. Uneven on purpose: four identical blocks read as a table, and the
+ * point of the placeholder is that prose is coming.
+ */
+const BRIEF_SECTIONS = ["w-4/5", "w-3/5", "w-2/5", "w-1/2"];
+
 export function BriefDialog({
   decisionId,
   title,
@@ -105,11 +112,34 @@ export function BriefDialog({
 
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
           {!brief && !error && (
-            <div className="flex flex-col gap-2" aria-live="polite">
-              <span className="text-[13px] text-muted">Writing the brief…</span>
-              <span className="text-[12px] text-faint">
-                It reads the source record and drafts it fresh. Usually about ten seconds.
+            <div className="flex flex-col gap-5" aria-live="polite" aria-busy>
+              <span className="text-[13px] text-muted">
+                Writing the brief…{" "}
+                <span className="text-faint">
+                  It reads the source record and drafts it fresh, so this takes about ten
+                  seconds.
+                </span>
               </span>
+
+              {/*
+                The shape of the answer, not a spinner. The brief always comes
+                back as the same four labelled sections, so the wait can show
+                what is being filled in rather than only that something is
+                happening. Each block fades on its own delay, which is what
+                reads as work in progress rather than a frozen placeholder.
+              */}
+              {BRIEF_SECTIONS.map((width, i) => (
+                <div
+                  key={i}
+                  className="flex animate-pulse flex-col gap-2 motion-reduce:animate-none"
+                  style={{ animationDelay: `${i * 180}ms` }}
+                  aria-hidden
+                >
+                  <span className="h-2 w-24 rounded-[1px] bg-line-strong" />
+                  <span className="h-2.5 w-full rounded-[1px] bg-line" />
+                  <span className={`h-2.5 rounded-[1px] bg-line ${width}`} />
+                </div>
+              ))}
             </div>
           )}
 
