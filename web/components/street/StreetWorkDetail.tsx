@@ -53,7 +53,7 @@ export function StreetWorkDetail({
             setHovered(target);
             setAt(point ?? null);
           }}
-          className="w-full overflow-hidden rounded-[9px] border border-line bg-wash [aspect-ratio:16/10]"
+          className="w-full overflow-hidden border border-line bg-wash [aspect-ratio:16/10]"
         />
         <MapLegend
           entries={[

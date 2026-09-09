@@ -22,7 +22,7 @@ export function MapLegend({ entries }: { entries: LegendEntry[] }) {
               >
                 <span
                   aria-hidden
-                  className="size-2 flex-none rounded-full"
+                  className="size-2 flex-none"
                   style={{ background: e.color }}
                 />
                 {e.label}

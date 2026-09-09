@@ -136,7 +136,7 @@ export function PermitMap({
           setHovered(target);
           setAt(point ?? null);
         }}
-        className={`w-full overflow-hidden rounded-[9px] border border-line bg-wash ${
+        className={`w-full overflow-hidden border border-line bg-wash ${
           blocking.length > 0 ? "[aspect-ratio:704/300]" : "[aspect-ratio:704/430]"
         }`}
       />
@@ -180,7 +180,7 @@ export function PermitMap({
           {listed.slice(0, rowLimit).map((seg) => (
             <li key={seg.key} className="flex items-start gap-2 text-[11.5px]">
               <span
-                className={`mt-1.5 size-1.5 flex-none rounded-full ${
+                className={`mt-1.5 size-1.5 flex-none ${
                   blocking.length > 0 ? "bg-alert" : "bg-pin"
                 }`}
               />

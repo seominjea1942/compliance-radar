@@ -100,14 +100,37 @@ export function PermitMapView({
         },
       ).addTo(instance);
 
+      /*
+       * Square markers. Leaflet's CircleMarker cannot be anything but round,
+       * so these are plain markers carrying a divIcon: a box sized in screen
+       * pixels, which is what the circles were too, rather than a Rectangle,
+       * which is sized in degrees and would grow and shrink with the zoom.
+       *
+       * `className: ""` matters. Leaflet's default divIcon class paints a
+       * white background and a border of its own, which would frame every
+       * marker in a second square.
+       */
+      const squareMarker = (
+        lat: number,
+        lon: number,
+        o: { size: number; weight: number; color: string; fill: string },
+      ) =>
+        L.marker([lat, lon], {
+          icon: L.divIcon({
+            className: "",
+            iconSize: [o.size, o.size],
+            iconAnchor: [o.size / 2, o.size / 2],
+            html: `<span style="display:block;width:100%;height:100%;box-sizing:border-box;background:${o.fill};border:${o.weight}px solid ${o.color}"></span>`,
+          }),
+        });
+
       // Permits first, so the store marker is never buried under a dot.
       for (const p of permits) {
-        L.circleMarker([p.lat, p.lon], {
-          radius: 4,
+        squareMarker(p.lat, p.lon, {
+          size: 8,
           weight: 1,
           color: "#71717a",
-          fillColor: STREET_COLORS.building,
-          fillOpacity: 0.9,
+          fill: STREET_COLORS.building,
         })
           .addTo(instance)
           // Reported upward like the street work: these titles run to
@@ -132,17 +155,16 @@ export function PermitMapView({
       for (const w of streetWork) {
         const style =
           w.workType === "pavement_moratorium"
-            ? { radius: 3, fill: STREET_COLORS.moratorium, weight: 1 }
+            ? { size: 6, fill: STREET_COLORS.moratorium, weight: 1 }
             : w.workType.startsWith("pavement_project")
-              ? { radius: 5, fill: STREET_COLORS.planned, weight: 2 }
-              : { radius: w.decision === "ALERT" ? 6 : 5, fill: STREET_COLORS.active, weight: 2 };
+              ? { size: 10, fill: STREET_COLORS.planned, weight: 2 }
+              : { size: w.decision === "ALERT" ? 12 : 10, fill: STREET_COLORS.active, weight: 2 };
 
-        L.circleMarker([w.lat, w.lon], {
-          radius: style.radius,
+        squareMarker(w.lat, w.lon, {
+          size: style.size,
           weight: style.weight,
           color: "#ffffff",
-          fillColor: style.fill,
-          fillOpacity: 1,
+          fill: style.fill,
         })
           .addTo(instance)
           .on("mouseover", (e) => {
@@ -156,12 +178,11 @@ export function PermitMapView({
           .on("mouseout", () => onHover.current?.(null));
       }
 
-      L.circleMarker([STORE_ANCHOR.lat, STORE_ANCHOR.lon], {
-        radius: 7,
+      squareMarker(STORE_ANCHOR.lat, STORE_ANCHOR.lon, {
+        size: 14,
         weight: 3,
         color: "#ffffff",
-        fillColor: "#28619e",
-        fillOpacity: 1,
+        fill: "#28619e",
       })
         .addTo(instance)
         // "Your store" is two words at the map's centre, so Leaflet's own
