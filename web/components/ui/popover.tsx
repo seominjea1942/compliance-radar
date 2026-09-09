@@ -48,11 +48,30 @@ function Popover({
           )}
         >
           {children}
-          <PopoverPrimitive.Arrow
-            width={12}
-            height={6}
-            className="fill-paper stroke-line-strong"
-          />
+          {/*
+            The tip, drawn by hand rather than by Radix's own arrow.
+
+            Radix renders the arrow outside the panel, so the panel's border
+            ran straight across the tip's mouth and the two read as a box with
+            a separate triangle beneath it. Its `stroke` follows all three
+            sides of the polygon, so outlining the tip redrew that same line.
+
+            Two elements instead: a filled triangle, and an open path along
+            only the two slanted sides. Pulled up by the border's own width, so
+            the fill covers the line across the mouth while the outline still
+            meets the panel's border at both corners.
+          */}
+          <PopoverPrimitive.Arrow asChild width={14} height={7}>
+            <svg viewBox="0 0 14 7" className="-translate-y-px overflow-visible">
+              <path d="M0 0 L14 0 L7 7 Z" className="fill-paper" />
+              <path
+                d="M0 0 L7 7 L14 0"
+                fill="none"
+                strokeWidth={1}
+                className="stroke-line-strong"
+              />
+            </svg>
+          </PopoverPrimitive.Arrow>
         </PopoverPrimitive.Content>
       </PopoverPrimitive.Portal>
     </PopoverPrimitive.Root>

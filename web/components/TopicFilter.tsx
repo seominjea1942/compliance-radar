@@ -74,7 +74,7 @@ export function TopicFilter({
               onClick={() => setOpen(false)}
               aria-current={on ? "true" : undefined}
               className={cn(
-                "flex items-center gap-2 rounded-[9px] px-2 py-2 text-[13px] no-underline transition-colors",
+                "flex items-center gap-2 px-2 py-2 text-[13px] no-underline transition-colors",
                 on ? "bg-hover font-medium text-ink" : "text-muted hover:bg-hover hover:text-ink",
               )}
             >

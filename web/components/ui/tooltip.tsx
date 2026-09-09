@@ -32,7 +32,7 @@ function Tooltip({
             sideOffset={6}
             collisionPadding={12}
             className={cn(
-              "z-50 max-w-[264px] rounded-lg bg-ink px-3 py-2",
+              "z-50 max-w-[264px] bg-ink px-3 py-2",
               "font-sans text-[12.5px]/relaxed text-shell shadow-lg",
               // keyframes live in app/globals.css; no animation plugin needed
               "radar-tooltip",

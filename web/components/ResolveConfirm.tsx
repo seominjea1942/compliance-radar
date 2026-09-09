@@ -78,7 +78,7 @@ export function ResolveConfirm({
           is left is the only thing the panel is for: which of the two ways
           this ends.
         */}
-        <span className="text-[13px]/snug text-muted">How did this end?</span>
+        <span className="text-[13px]/snug text-ink">How did this end?</span>
 
         {error && <span className="text-[12px] text-alert">{error}</span>}
 

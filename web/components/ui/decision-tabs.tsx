@@ -137,7 +137,7 @@ export function DecisionTabs({
                 onClick={() => setOpen(false)}
                 aria-current={on ? "page" : undefined}
                 className={cn(
-                  "flex items-center gap-2 rounded-control px-2 py-1.5 text-[13px] no-underline transition-colors",
+                  "flex items-center gap-2 px-2 py-1.5 text-[13px] no-underline transition-colors",
                   on ? "bg-hover font-medium text-ink" : "text-body hover:bg-hover hover:text-ink",
                 )}
               >
