@@ -67,7 +67,15 @@ export function ItemMedia({
 
   return (
     <div
-      className={`flex items-center justify-center overflow-hidden rounded-lg border border-line bg-wash ${className ?? ""}`}
+      /*
+       * The shape follows the content, so the caller only sets the width. A
+       * barcode is a wide, short thing: boxed square it had to shrink to fit
+       * the height and ended up a stamp with unreadable bars, while a product
+       * photo is usually a packet shot that squares off well.
+       */
+      className={`flex items-center justify-center overflow-hidden rounded-[2px] border border-line bg-wash ${
+        showBarcode ? "aspect-[12/5]" : "aspect-square"
+      } ${className ?? ""}`}
     >
       {showBarcode ? (
         <svg ref={barcodeRef} role="img" aria-label={`Barcode ${upc}`} className="max-h-full max-w-full" />

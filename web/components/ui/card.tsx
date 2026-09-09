@@ -29,8 +29,12 @@ function Card({
          *
          * Flush to the column, so the item's first word lines up with the
          * control above it rather than sitting 22px inside its own box.
+         *
+         * The first item draws no rule: the label above the list already
+         * drew one, and two heavy lines with 20px between them read as a
+         * mistake rather than as a frame.
          */
-        tone === "inset" && "border-t-2 border-rule px-0 py-5",
+        tone === "inset" && "border-t-2 border-rule px-0 py-5 first:border-t-0 first:pt-4",
         className,
       )}
       {...props}

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import * as React from "react";
 import { useState } from "react";
 import {
   MdCheck,
@@ -16,7 +17,7 @@ import { ItemCard } from "@/components/ui/item-card";
 import { Tooltip } from "@/components/ui/tooltip";
 import { ItemMedia } from "@/components/ui/item-media";
 import { useAskRadar } from "@/components/ask/ask-radar-context";
-import { cardCode } from "@/lib/format";
+import { cardCode, productCodes } from "@/lib/format";
 import type { SurfacedEvent } from "@/lib/queries";
 import { ResolveDialog } from "@/components/ResolveDialog";
 import { ResolveConfirm } from "@/components/ResolveConfirm";
@@ -44,9 +45,112 @@ const CLASS_MEANING: Record<string, string> = {
 
 function UrgentBanner({ reason }: { reason: string }) {
   return (
-    <div className="flex items-start gap-2.5 rounded-lg border border-alert-line bg-alert-bg px-3.5 py-2.5">
+    <div className="flex items-start gap-2.5 rounded-[2px] border border-alert-line bg-alert-bg px-3.5 py-2.5">
       <MdOutlineWarningAmber className="mt-px size-4 flex-none text-alert" aria-hidden />
       <span className="text-[13.5px]/relaxed text-alert-ink">{reason}</span>
+    </div>
+  );
+}
+
+/**
+ * One width for the photo or barcode, whichever card carries it.
+ *
+ * The two card shapes had each picked their own, so the same barcode rendered
+ * at 136px on a document card and 184px on a product one, and the feed looked
+ * like it was zooming in and out as you scrolled. The object is the same
+ * object; only its surroundings differ.
+ */
+const MEDIA_W = "w-[132px] flex-none md:w-[184px]";
+
+/**
+ * One labelled cell of the spec strip.
+ *
+ * A cell with no single answer is not empty, it is ambiguous: the source named
+ * several lots or several dates and picking one would be a guess. Those cells
+ * say "Multiple" and carry the source's own wording on hover, so the codes are
+ * a pointer away rather than gone.
+ */
+function Spec({
+  label,
+  value,
+  source,
+}: {
+  label: string;
+  value: string | null;
+  /** The raw `code_info`, shown when this cell could not be resolved. */
+  source?: string | null;
+}) {
+  const unresolved = !value && !!source;
+  // Named several, or one long enough that the source is describing a set.
+  const many = unresolved && (/[;,]/.test(source!) || source!.length > 40);
+
+  const body = (
+    <span
+      className={`truncate text-[14px] ${
+        value
+          ? "text-ink"
+          : unresolved
+            ? "cursor-help text-body underline decoration-dotted underline-offset-4"
+            : "text-ghost"
+      }`}
+    >
+      {value ?? (many ? "Multiple" : "N/A")}
+    </span>
+  );
+
+  return (
+    <div className="flex min-w-0 flex-1 flex-col gap-1 px-4 first:pl-0 last:pr-0">
+      <span className="font-mono text-[10px] tracking-[0.14em] text-monoink uppercase">
+        {label}
+      </span>
+      {unresolved ? (
+        <Tooltip
+          content={
+            <>
+              <span className="font-medium">Codes on the pack</span>
+              <br />
+              {source}
+            </>
+          }
+        >
+          {/* tabIndex so the codes are reachable by keyboard, not hover only */}
+          <span tabIndex={0} className="relative z-[1] min-w-0 outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            {body}
+          </span>
+        </Tooltip>
+      ) : (
+        body
+      )}
+    </div>
+  );
+}
+
+/**
+ * Brand, size and the two codes, as a strip of labelled cells.
+ *
+ * The lot and the best-before come from `productCodes`, which only answers
+ * when the source names them unambiguously. When it cannot, the cell hands the
+ * source's own wording over on hover: that string is what the owner matches
+ * against the shelf, so it is never dropped just because it would not fit
+ * four boxes.
+ */
+function SpecStrip({ product }: { product: NonNullable<SurfacedEvent["lead"]["product"]> }) {
+  const { lot, bestBefore } = productCodes(product.codeInfo);
+
+  return (
+    <div className="relative z-[1] flex flex-col gap-2">
+      <div className="flex items-start divide-x divide-line border-y border-line py-3">
+        <Spec label="Brand" value={product.brand} />
+        <Spec label="Net weight" value={product.sizes.length ? product.sizes.join(" · ") : null} />
+        {/*
+          `codeInfo`, not `cardCode(codeInfo)`. cardCode swaps anything long
+          for the words "multiple date codes", which is exactly the case the
+          hover exists to answer: the stand-in was hiding the codes it was
+          standing in for.
+        */}
+        <Spec label="Lot code" value={lot} source={product.codeInfo} />
+        <Spec label="Best before" value={bestBefore} source={product.codeInfo} />
+      </div>
     </div>
   );
 }
@@ -73,6 +177,43 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
   // a Class I recall of something you don't stock is not an emergency.
   const needsAction = item.severity === "act";
 
+  /*
+   * A card is about a product when the backend extracted one. Everything else
+   * is a document: a council agenda item, a press release, a grouped recall
+   * whose five members each have their own readings.
+   */
+  const isProduct = !event.isGroup && !!item.product?.productName;
+
+  const meta = (
+    <div className="text-[12.5px] text-faint">
+      {item.timingLabel ?? item.postedLabel}
+      {/*
+        Older items are no longer hidden from the action tabs, so the card has
+        to say how long one has been waiting. The timing line above reports the
+        event's own date (when the recall was issued), which says nothing about
+        how long it has sat unresolved.
+      */}
+      {item.agedLabel && (
+        <>
+          {" · "}
+          <span className="text-monoink">{item.agedLabel}</span>
+        </>
+      )}
+      {event.resolvedCount > 0 && (
+        <>
+          {" · "}
+          <span className="text-brand">
+            {event.items.length} remaining of {event.allItems.length}
+          </span>
+        </>
+      )}
+    </div>
+  );
+
+  const reason = !needsAction && (
+    <p className="max-w-[740px] text-[17px]/normal text-body md:text-[19px]">{item.shortReason}</p>
+  );
+
   return (
     <ItemCard
       dimmed={done}
@@ -82,12 +223,14 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
       onCardClick={event.isGroup ? () => setExpanded((v) => !v) : undefined}
     >
       <ItemCard.Chips>
-        <Badge>{item.sourceLabel}</Badge>
+        {/* The urgent chip leads the row. It is the only one that changes what
+            the reader should do next, so it should not be third. */}
         {ACTION_LABEL[item.severity] && (
           <Badge variant={needsAction ? "solidAlert" : "outline"}>
             {ACTION_LABEL[item.severity]}
           </Badge>
         )}
+        <Badge>{item.sourceLabel}</Badge>
         {item.classification && (
           <Tooltip
             content={
@@ -99,8 +242,13 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
             }
           >
             {/* tabIndex so the tooltip is reachable by keyboard, not hover only */}
+            {/* Never the alert fill. Class I and II both render plain: the
+                class says how bad the recall is in general, not whether this
+                store is affected, and "Action needed" beside it already
+                carries that. Two red chips also made the class look like a
+                second call to action. */}
             <Badge
-              variant={needsAction ? "solidAlert" : "outline"}
+              variant="outline"
               tabIndex={0}
               className="relative z-[1] cursor-help gap-1.5 outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
@@ -115,85 +263,84 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
 
       <ItemCard.Body>
         {/*
-          Media on the right, deliberately. On the left it set the headline's
-          left edge, so a card with a photo started its title 96px further in
-          than one without and the column of headlines shifted as you scrolled.
-          On the right the text edge is fixed and only the right-hand gutter
-          varies, which nothing has to be read against.
+          Two card shapes, not one with holes in it.
+
+          A product card is a specification: a short extracted name, a photo or
+          barcode beside it, and the four readings underneath running the full
+          width, because they are a table about the object.
+
+          A document card is a piece of writing: a long source headline, the
+          reason it surfaced, and a picture beside all of it. Running that one
+          through the product shape left the headline alone in a row whose
+          height the photo set, so the body text started a photo's height below
+          the title with nothing in between.
         */}
-        <div className="flex items-start gap-4">
-          <div className="flex min-w-0 flex-1 flex-col gap-2.5">
-            {event.isGroup ? (
-          /* Headline carries firm, count and hazard, so the card states what
-             the event is even when the urgent banner is showing above it. */
-          <h3 className="max-w-[740px] text-[20px]/tight font-medium text-ink md:text-[25px]">
-            {event.firm ?? item.sourceLabel}: {event.items.length} products
-            {event.hazard ? `, ${event.hazard}` : ""}
-          </h3>
+        {isProduct ? (
+          <>
+            {/*
+              Bottom-aligned, not top. The title runs to one line or three
+              depending on the product name, so aligning the tops left the
+              barcode floating above a two-line title with its own bottom
+              nowhere near anything. Aligned at the foot, both columns end on
+              the spec strip's rule whatever the title does.
+            */}
+            <div className="flex items-end gap-5">
+              <div className="flex min-w-0 flex-1 flex-col gap-1">
+                {/* The brand leads as a label rather than sitting in the
+                    sentence: it is how the product is found on the shelf. */}
+                {item.product?.brand && (
+                  <span className="font-mono text-[11px] tracking-[0.14em] text-monoink uppercase">
+                    {item.product.brand}
+                  </span>
+                )}
+                <h3 className="max-w-[740px] text-[22px]/tight font-bold tracking-[-0.01em] uppercase md:text-[27px]">
+                  <ItemCard.Link href={`/item/${item.decisionId}`} className="text-ink">
+                    {item.displayTitle}
+                  </ItemCard.Link>
+                </h3>
+              </div>
+
+              <ItemMedia
+                image={item.images[0]}
+                upc={item.product?.upcs[0]}
+                alt={`Recall photo: ${item.displayTitle}`}
+                className={MEDIA_W}
+              />
+            </div>
+
+            <SpecStrip product={item.product!} />
+            {meta}
+            {reason}
+          </>
         ) : (
-          <h3 className="max-w-[740px] text-[20px]/tight font-medium md:text-[25px]">
-            <ItemCard.Link href={`/item/${item.decisionId}`} className="text-ink">
-              {item.displayTitle}
-            </ItemCard.Link>
-          </h3>
-        )}
+          <div className="flex items-start gap-5">
+            <div className="flex min-w-0 flex-1 flex-col gap-2.5">
+              {event.isGroup ? (
+                /* Headline carries firm, count and hazard, so the card states
+                   what the event is even when the banner is showing above it. */
+                <h3 className="max-w-[740px] text-[20px]/tight font-medium text-ink md:text-[25px]">
+                  {event.firm ?? item.sourceLabel}: {event.items.length} products
+                  {event.hazard ? `, ${event.hazard}` : ""}
+                </h3>
+              ) : (
+                <h3 className="max-w-[740px] text-[20px]/tight font-medium md:text-[25px]">
+                  <ItemCard.Link href={`/item/${item.decisionId}`} className="text-ink">
+                    {item.displayTitle}
+                  </ItemCard.Link>
+                </h3>
+              )}
+              {meta}
+              {reason}
+            </div>
 
-        {/* Brand and size only carry meaning next to an extracted name. */}
-        {!event.isGroup && item.product?.productName && (
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12.5px] text-faint">
-            {item.product.brand && <span>{item.product.brand}</span>}
-            {item.product.sizes.length > 0 && (
-              <>
-                {item.product.brand && <span aria-hidden>·</span>}
-                <span>{item.product.sizes.join(" · ")}</span>
-              </>
-            )}
-            {cardCode(item.product.codeInfo) && (
-              <>
-                <span aria-hidden>·</span>
-                <span className="font-mono">{cardCode(item.product.codeInfo)}</span>
-              </>
-            )}
+            {/* Only the first photo here; the rest belong to the detail gallery. */}
+            <ItemMedia
+              image={item.images[0]}
+              upc={item.product?.upcs[0]}
+              alt={`Recall photo: ${item.displayTitle}`}
+              className={`mt-0.5 ${MEDIA_W}`}
+            />
           </div>
-        )}
-          </div>
-
-          {/* Only the first photo here; the rest belong to the detail gallery. */}
-          <ItemMedia
-            image={item.images[0]}
-            upc={item.product?.upcs[0]}
-            alt={`Recall photo: ${item.displayTitle}`}
-            className="mt-0.5 aspect-square w-20 flex-none md:w-24"
-          />
-        </div>
-
-        <div className="text-[12.5px] text-faint">
-          {item.timingLabel ?? item.postedLabel}
-          {/*
-            Older items are no longer hidden from the action tabs, so the card
-            has to say how long one has been waiting. The timing line above
-            reports the event's own date (when the recall was issued), which
-            says nothing about how long it has sat unresolved.
-          */}
-          {item.agedLabel && (
-            <>
-              {" · "}
-              <span className="text-monoink">{item.agedLabel}</span>
-            </>
-          )}
-          {event.resolvedCount > 0 && (
-            <>
-              {" · "}
-              <span className="text-brand">
-                {event.items.length} remaining of {event.allItems.length}
-              </span>
-            </>
-          )}
-        </div>
-        {!needsAction && (
-          <p className="max-w-[740px] text-[17px]/normal text-body md:text-[19px]">
-            {item.shortReason}
-          </p>
         )}
 
         {event.isGroup && (
@@ -213,7 +360,7 @@ export function SurfacedCard({ event }: { event: SurfacedEvent }) {
             </button>
 
             {expanded && (
-              <ul className="m-0 flex list-none flex-col gap-px overflow-hidden rounded-lg border border-line bg-line p-0">
+              <ul className="m-0 flex list-none flex-col gap-px overflow-hidden rounded-[2px] border border-line bg-line p-0">
                 {event.items.map((member) => (
                   <li key={member.decisionId} className="flex flex-col gap-0.5 bg-paper px-3.5 py-2.5">
                     <Link
