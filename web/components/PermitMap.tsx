@@ -107,7 +107,7 @@ export function PermitMap({
   ].filter(Boolean);
 
   return (
-    <section className="flex w-full min-w-0 flex-col gap-3">
+    <section className="flex w-full min-w-0 flex-col gap-2.5">
       <RailLabel>Street work</RailLabel>
 
       {/*

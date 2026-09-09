@@ -9,27 +9,32 @@
  * when this lived in filter-pills.tsx: the log's control rendered with no
  * classes at all while the overview's looked right.
  *
- * Light grey track, black knob. The knob used to be white on a grey track, which
- * made the selected item the lightest thing on the page; on a glass panel
- * over a moving canvas it stopped reading as pressed at all.
+ * A row of boxes sharing one frame, not pills floating on a track. The knob
+ * is the ink itself, so the selected item is the darkest thing in the row
+ * rather than the lightest.
  */
 export const segmented = {
   /*
-   * Never wraps. Six labelled items need 609px, which no window under about
-   * 1200 gives it, and a segmented control folded onto two lines stops being
-   * one control. It scrolls instead, with no scrollbar: a horizontal bar
-   * inside a pill reads as damage, and an item clipped by the pill's edge
-   * already says there is more.
+   * One frame around the whole row, with the items dividing it. Never wraps:
+   * a segmented control folded onto two lines stops being one control. It
+   * scrolls instead, with no scrollbar, since an item clipped by the frame's
+   * edge already says there is more.
    */
   track:
-    "flex flex-nowrap items-center gap-1 overflow-x-auto rounded-full border border-line bg-canvas p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+    "inline-flex flex-nowrap items-stretch overflow-x-auto rounded-[2px] border border-rule " +
+    "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+  /*
+   * The divider is the item's own left border, so it exists exactly once
+   * between any two items and never doubles at the frame's edge.
+   */
   item:
-    "flex flex-none cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] font-medium " +
+    "flex flex-none cursor-pointer items-center gap-2 border-l border-rule px-5 py-2.5 " +
+    "text-[13.5px] font-medium first:border-l-0 " +
     "transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-  active: "bg-ink text-paper",
-  idle: "text-muted hover:bg-hover hover:text-ink",
-  /* 65% white on the ink knob is 7.0:1, so the count stays secondary and legible. */
+  active: "bg-rule text-paper",
+  idle: "bg-paper text-muted hover:bg-hover hover:text-ink",
+  /* 65% paper on the ink fill is 7.0:1, so the count stays secondary and legible. */
   countActive: "text-paper/65",
-  /* text-muted, not text-faint: #71717a is 4.4:1 on the track. */
+  /* text-muted, not text-faint: #67676d is 4.4:1 on the idle fill. */
   countIdle: "text-muted",
 } as const;

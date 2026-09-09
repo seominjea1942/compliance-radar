@@ -7,10 +7,12 @@ import { SurfacedCard } from "@/components/SurfacedCard";
 import { TopicFilter } from "@/components/TopicFilter";
 import { LogSearch } from "@/components/LogSearch";
 import { ContextRail } from "@/components/rail/ContextRail";
+import { DataRange } from "@/components/DataRange";
 import { DecisionTabs } from "@/components/ui/decision-tabs";
 import { PageTitle } from "@/components/ui/page-title";
-import { count } from "@/lib/format";
+import { count, rangeLabel } from "@/lib/format";
 import {
+  getDataRange,
   getFilteredLog,
   getStoreProfile,
   getSurfaced,
@@ -42,10 +44,15 @@ const TIER: Record<"act" | "check" | "file", (s: Severity) => boolean> = {
  * statistic about the week.
  */
 const HEADING: Record<View, (n: number) => string> = {
+  /*
+   * "A human signature", not "action": the claim of the product is that a
+   * person, not the filter, is the one who decides. The zero state stays in
+   * the same vocabulary, because that sentence is the thesis, not a fallback.
+   */
   act: (n) =>
     n === 0
-      ? "Nothing needs action."
-      : `${count(n)} ${n === 1 ? "thing needs" : "things need"} action.`,
+      ? "Nothing needs your signature."
+      : `${count(n)} ${n === 1 ? "item requires" : "items require"} a human signature.`,
   check: (n) => (n === 0 ? "Nothing to check." : `${count(n)} ${n === 1 ? "item" : "items"} to check.`),
   file: (n) =>
     n === 0 ? "Nothing for the file." : `${count(n)} ${n === 1 ? "item" : "items"} for the file.`,
@@ -77,12 +84,13 @@ export default async function HomePage({
   const params = readParams(await searchParams);
   const { view, tag, q, limit } = params;
 
-  const [summary, surfaced, profile, log] = await Promise.all([
+  const [summary, surfaced, profile, range, log] = await Promise.all([
     getWeeklySummary(),
     getSurfaced(),
     getStoreProfile(),
     // Always: the control needs the set-aside counts on every view. On a
     // surfaced view one row is enough, and the totals come back regardless.
+    getDataRange(),
     getFilteredLog({
       status: logStatusFor(view),
       tag,
@@ -128,40 +136,68 @@ export default async function HomePage({
 
   return (
     <AskRadarProvider>
-      <div className="flex min-h-screen flex-col bg-shell">
+      <div className="flex min-h-screen flex-col bg-ground">
         <Header profile={profile} />
 
         {/* The bar spans the window above this row; the rail and the panel
             are columns of it, so one header covers all three. */}
         <div className="flex min-h-0 flex-1">
-          {/* Rail and content share a row inside the one holding the panel:
-              the panel carries no order, so as their sibling it sorted ahead
-              of both at every width. */}
-          <div className="flex min-w-0 flex-1 flex-col xl:flex-row">
-            <ContextRail />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <main className="min-w-0 flex-1 bg-paper">
+              <div className="mx-auto flex w-full max-w-[1180px] flex-col gap-9 px-4 pt-5 pb-10 md:px-12 md:pt-7.5 md:pb-12">
+                {/*
+                  The masthead. Centred and held to a measure well inside the
+                  column: at the container's full 1180px the sentence ran as
+                  one long line and stopped reading as a headline. Two lines
+                  is the shape, so the width is set to force it rather than
+                  left to whatever the viewport happens to allow.
 
-            <main className="order-1 min-w-0 flex-1 bg-paper xl:order-2">
-              <div className="mx-auto flex w-full max-w-[800px] flex-col gap-5 px-4 pt-5 pb-10 md:px-12 md:pt-7.5 md:pb-12">
-                <div className="flex flex-col gap-1.5">
-                  <PageTitle>{HEADING[view](counts[view])}</PageTitle>
-                  <p className="max-w-[700px] text-[14.5px]/relaxed text-pretty text-body md:text-[15.5px]">
+                  The dotted rule stays on this wrapper, so it spans the whole
+                  column while the words stay narrow, the way a masthead rule
+                  runs wider than the title above it.
+                */}
+                <div className="flex flex-col items-center gap-3.5 border-b border-dotted border-line-strong pt-4 pb-10 text-center md:pt-8 md:pb-12">
+                  {range && <DataRange label={rangeLabel(range.from, range.to)} />}
+                  <PageTitle className="max-w-[620px]">{HEADING[view](counts[view])}</PageTitle>
+                  <p className="max-w-[520px] text-[14.5px]/relaxed text-pretty text-body md:text-[15.5px]">
                     {SUBHEAD[view] || `${count(summary.reviewed)} items read this week.`}
                   </p>
                 </div>
 
-                {/* State on the left, topic behind the button on the right. */}
-                <div className="flex items-center gap-2">
+                {/*
+                  Feed and context share one row under the masthead. The rail
+                  is no longer a fixed column of the window: it scrolls with
+                  the page, on the reading side rather than opposite it, so
+                  the headline can run the full width above both.
+                */}
+                <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
+                  <div className="flex min-w-0 flex-1 flex-col gap-5">
+
+                {/*
+                  Wraps rather than squeezes. The search box only exists on the
+                  log views, so this row grows by ~200px exactly when it is
+                  already at its widest; without wrapping, the loss came out of
+                  the segmented control, which clipped its last item to a black
+                  sliver at the very moment that item was the selected one.
+                */}
+                <div className="flex flex-wrap items-center gap-2">
                   {/*
                     min-w-0 without flex-1: the strip takes the width its items
                     need and shrinks below that only when the row runs out. With
                     flex-1 it stretched to fill, leaving 51px of empty pill to
                     the right of the last item at a wide window.
                   */}
-                  <DecisionTabs params={params} counts={counts} className="min-w-0" />
+                  <DecisionTabs params={params} counts={counts} className="max-w-full" />
                   {/* Pushed to the far edge: it is the other axis, not the
                       seventh item of the control it sits beside. */}
                   <div className="ml-auto flex flex-none items-center gap-2">
-                    {isLogView(view) && <LogSearch params={params} />}
+                    {/*
+                      Search is hidden while the control row is being designed.
+                      Only the trigger is gone: `?q=` still filters on the
+                      server, so a prepared URL reaches the same screen and
+                      putting the box back is this one line.
+                    */}
+                    {false && isLogView(view) && <LogSearch params={params} />}
                     <TopicFilter params={params} counts={topicCounts} />
                   </div>
                 </div>
@@ -184,7 +220,10 @@ export default async function HomePage({
                 </p>
 
                 {cards.length > 0 && (
-                  <div className="flex flex-col gap-3.5">
+                  <div className="flex flex-col">
+                    {/* No gap: each item draws its own rule, and a gap on top
+                        of that would space the rules unevenly against the
+                        padding inside them. */}
                     {cards.map((e) => (
                       <SurfacedCard key={e.key} event={e} />
                     ))}
@@ -207,6 +246,10 @@ export default async function HomePage({
                     </Link>
                   </div>
                 )}
+                  </div>
+
+                  <ContextRail className="flex flex-col gap-10 lg:w-[300px] lg:flex-none" />
+                </div>
               </div>
             </main>
           </div>

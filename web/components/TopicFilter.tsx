@@ -44,11 +44,15 @@ export function TopicFilter({
           type="button"
           aria-label={active ? `Topic: ${active.label}. Change` : "Filter by topic"}
           className={cn(
-            "flex flex-none cursor-pointer items-center gap-1.5 rounded-full border transition-colors",
+            "flex flex-none cursor-pointer items-center gap-1.5 rounded-[2px] border transition-colors",
             "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+            // The same rule the segmented control is framed in, so the two
+            // read as one row of controls rather than a black box beside a
+            // grey one.
+            "border-rule",
             active
-              ? "border-brand-soft bg-brand-tint px-3 py-1.5 text-[12.5px] font-medium text-brand"
-              : "size-9 justify-center border-line bg-paper text-muted hover:border-line-strong hover:text-ink",
+              ? "bg-brand-tint px-3.5 py-2 text-[13.5px] font-medium text-brand"
+              : "size-[42px] justify-center bg-paper text-muted hover:bg-hover hover:text-ink",
           )}
         >
           <MdFilterList className="size-[18px] flex-none" aria-hidden />

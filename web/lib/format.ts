@@ -27,6 +27,26 @@ export function checkedAt(v: string | null): string | null {
 }
 
 /** Relative age for the card byline, e.g. "Posted 3 days ago". */
+/**
+ * A span as one line: "Aug 28 – Sep 8, 2026".
+ *
+ * The year is printed once, at the end, because both ends are almost always
+ * in the same one and repeating it reads as two dates rather than a range.
+ * When they differ each end carries its own.
+ */
+export function rangeLabel(from: string, to: string): string {
+  const a = utc(from);
+  const b = utc(to);
+  const day = (d: Date) =>
+    new Intl.DateTimeFormat("en-US", { timeZone: TZ, month: "short", day: "numeric" }).format(d);
+  const year = (d: Date) =>
+    new Intl.DateTimeFormat("en-US", { timeZone: TZ, year: "numeric" }).format(d);
+
+  return year(a) === year(b)
+    ? `${day(a)} – ${day(b)}, ${year(b)}`
+    : `${day(a)}, ${year(a)} – ${day(b)}, ${year(b)}`;
+}
+
 export function posted(v: string): string {
   const diffMs = Date.now() - utc(v).getTime();
   const hours = Math.floor(diffMs / 3_600_000);

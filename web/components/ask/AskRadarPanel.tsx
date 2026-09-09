@@ -8,7 +8,6 @@ import {
   MdErrorOutline,
   MdOutlineDescription,
 } from "react-icons/md";
-import { RadarCharacter } from "./RadarCharacter";
 import { AnswerText } from "./AnswerText";
 import type { SurfacedItem } from "@/lib/queries";
 
@@ -152,16 +151,11 @@ export function AskRadarPanel({
       */
       className="flex h-full w-full flex-col overflow-hidden bg-paper"
     >
-      {/* No character here. It leads the empty state one row below, and twice
-          in the same 380px column read as two of it rather than one. */}
-      {/* Same height as the application bar, from the same variable: with
-          the drawer open the two headers are side by side and their bottom
-          borders have to be one line. */}
-      {/* The sheet needs a title bar to be dismissible. The column does
-          not: the application bar runs across the top of it. */}
-      <header className="flex flex-none items-center gap-2.5 border-b border-line px-4 py-3.5 md:hidden">
+      {/* The panel is summoned at every width now, so it carries its own title
+          bar and close mark everywhere: nothing else on screen says what the
+          floating box is or how to dismiss it. */}
+      <header className="flex flex-none items-center gap-2.5 border-b border-line px-4 py-3.5">
         <span className="flex-1 text-[15px] font-semibold text-ink">Ask the radar</span>
-        {/* Nothing to close above md, where the panel is part of the page. */}
         <button
           type="button"
           onClick={onClose}
@@ -182,14 +176,9 @@ export function AskRadarPanel({
           */
           <div className="flex flex-col gap-5 pt-2">
             <div className="flex flex-col gap-2.5">
-              {/*
-                Larger here than anywhere else, and tracking. This is the one
-                place the character is the subject rather than a mark: it is
-                the first thing in an empty panel, and the eyes following the
-                pointer are what say the thing is listening before it has been
-                asked anything.
-              */}
-              <RadarCharacter className="size-20" track />
+              {/* No character here. The launcher stays on screen while the
+                  panel is open and already carries it; a second one directly
+                  above it read as two of the same thing. */}
               <h2 className="text-[19px]/snug font-semibold tracking-[-0.015em] text-balance text-ink">
                 Ask me about anything I watch.
               </h2>
@@ -221,7 +210,7 @@ export function AskRadarPanel({
                     type="button"
                     disabled={pending}
                     onClick={() => send(q)}
-                    className="flex w-full cursor-pointer items-center gap-3 rounded-xl bg-wash px-3.5 py-3 text-left text-[13px]/snug text-ink transition-colors hover:bg-control-hover disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex w-full cursor-pointer items-center gap-3 bg-wash px-3.5 py-3 text-left text-[13px]/snug text-ink transition-colors hover:bg-control-hover disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <span className="flex-1">{q}</span>
                     <MdAutoAwesome className="size-4 flex-none text-ghost" aria-hidden />
@@ -280,7 +269,7 @@ export function AskRadarPanel({
         }}
         className="flex flex-col gap-2 border-t border-line px-4 pt-3 pb-4"
       >
-        <div className="flex flex-col gap-2 rounded-[10px] border border-line-strong bg-shell px-3 py-2.5 focus-within:border-brand">
+        <div className="flex flex-col gap-2 border border-line-strong bg-shell px-3 py-2.5 focus-within:border-brand">
           {scopedTo && (
             /*
               Inside the box the message is written in, not above the
@@ -337,7 +326,7 @@ export function AskRadarPanel({
             type="submit"
             disabled={!draft.trim() || pending}
             aria-label="Send"
-            className="flex size-7 flex-none cursor-pointer items-center justify-center rounded-full bg-brand text-shell transition-opacity disabled:cursor-not-allowed disabled:opacity-35"
+            className="flex size-7 flex-none cursor-pointer items-center justify-center bg-brand text-shell transition-opacity disabled:cursor-not-allowed disabled:opacity-35"
           >
             <MdArrowUpward className="size-4" aria-hidden />
           </button>

@@ -127,9 +127,18 @@ export function AskRadarProvider({ children }: { children: React.ReactNode }) {
       {children}
 
       {/*
-        The design floats this in the frame's top-right. A fixed bottom-right
-        launcher is used instead because the real page scrolls for pages, and a
-        top-anchored control would scroll away from the reader.
+        The launcher. Fixed bottom-right rather than the design's top-right
+        corner, because the real page scrolls for pages and a top-anchored
+        control would scroll away from the reader.
+
+        Two layers: an outlined box offset behind, and the mark over it. The
+        offset is a real element rather than a box shadow, which would have to
+        be a solid fill to sit behind a hard edge and would read as a smudge
+        instead of a second frame. Same 2px corner as the mark, so the two
+        frames are the same shape rather than one rounded inside the other.
+
+        On hover the mark slides into the outline, which is the press the
+        shape implies.
       */}
       <button
         type="button"
@@ -137,20 +146,16 @@ export function AskRadarProvider({ children }: { children: React.ReactNode }) {
         aria-expanded={isOpen}
         title="Ask the radar (⌘K)"
         aria-label={isOpen ? "Close ask the radar" : "Ask the radar (⌘K)"}
-        className={[
-          "fixed right-6 bottom-6 z-50 size-14 cursor-pointer items-center justify-center",
-          // The mark draws its own squircle, so the button carries no fill of
-          // its own; the radius is matched here only so the focus ring and the
-          // shadow follow the same silhouette.
-          "rounded-[27%] shadow-[0_6px_18px_rgba(24,24,27,0.24)]",
-          "transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none",
-          // Below md only: above it the panel is always on screen and a
-          // button to summon it would summon nothing. Hidden while the sheet
-          // is up too, where it sat on top of the sheet's own footer.
-          isOpen ? "hidden" : "flex md:hidden",
-        ].join(" ")}
+        className="group fixed right-8 bottom-8 z-50 flex size-16 cursor-pointer items-center justify-center focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
       >
-        <RadarCharacter className="size-full" track />
+        <span
+          aria-hidden
+          className="absolute inset-0 translate-x-[6px] translate-y-[6px] rounded-[2px] border border-rule"
+        />
+        <RadarCharacter
+          className="relative size-full transition-transform group-hover:translate-x-[3px] group-hover:translate-y-[3px]"
+          track
+        />
       </button>
 
     </AskRadarCtx.Provider>

@@ -702,6 +702,19 @@ export async function getFilteredLog(opts: {
   };
 }
 
+/**
+ * The span the radar can actually answer for: its first stored decision to
+ * its last. Read from the data rather than a fixed window, so the label can
+ * never claim a range the database does not hold.
+ */
+export async function getDataRange(): Promise<{ from: string; to: string } | null> {
+  const [r] = await query<{ a: string | null; b: string | null }>(
+    `SELECT MIN(created_at) AS a, MAX(created_at) AS b FROM triage_decisions`,
+  );
+  if (!r?.a || !r?.b) return null;
+  return { from: r.a, to: r.b };
+}
+
 /* ------------------------------------------------------------------ *
  * 6. One decision: the detail route
  * ------------------------------------------------------------------ */

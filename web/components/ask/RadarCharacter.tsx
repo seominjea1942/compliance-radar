@@ -4,7 +4,7 @@ import { useEffect, useId, useRef } from "react";
 import { gazeOffset } from "./gaze";
 
 /**
- * The radar's face: a solid blue circle cropped by a near-black squircle,
+ * The radar's face: a solid blue circle cropped by a near-black square,
  * with eyes that follow the pointer.
  *
  * Flat colour, no gradients and no glow. The circle is bigger than the frame
@@ -92,10 +92,23 @@ export function RadarCharacter({
   }, [track]);
 
   return (
-    <svg ref={svgRef} viewBox="0 0 100 100" className={className} aria-hidden focusable="false">
+    <svg
+      ref={svgRef}
+      viewBox="0 0 100 100"
+      /*
+       * The corner is rounded in CSS, not by the clip path's rx. rx is in
+       * viewBox units, so a fixed value there scales with the mark: the same
+       * 27 that read as a squircle at 64px would be a different radius at any
+       * other size. The clip path still does its real job, which is cropping
+       * the oversized circle to the frame.
+       */
+      className={`overflow-hidden rounded-[2px] ${className ?? ""}`}
+      aria-hidden
+      focusable="false"
+    >
       <defs>
         <clipPath id={`${uid}-squircle`}>
-          <rect width="100" height="100" rx="27" ry="27" />
+          <rect width="100" height="100" />
         </clipPath>
       </defs>
 
@@ -111,6 +124,11 @@ export function RadarCharacter({
           The offset is what makes the black a shape of its own rather than a
           margin, so it is generous: twelve units of band at the left, sixteen
           at the top.
+
+          Drawn as a bell once, for the Shopbell name. A silhouette cropped
+          this hard has only its top half on screen, and the top half of a bell
+          is a dome: it read as a ghost, not a bell. The circle is honest about
+          being a face.
         */}
         <circle cx="64" cy="68" r="52" fill={FACE} />
 
