@@ -52,7 +52,15 @@ export function SectionTabs({ sections }: { sections: Section[] }) {
   }, [compute, ids]);
 
   return (
-    <div className="sticky top-0 z-10 -mx-4 flex items-stretch border-b border-line bg-paper px-4 md:-mx-12 md:px-12">
+    <div
+      /*
+         Aligned with the column, not bled past it. The negative margins were
+         for the old layout, where this bar sat against a rail and needed to
+         reach the window's edge; here they made it the only line on the page
+         wider than the masthead rule above it and the section rules below.
+      */
+      className="sticky top-0 z-10 flex items-stretch border-b border-line bg-paper"
+    >
       {sections.map((s) => (
         <a
           key={s.id}

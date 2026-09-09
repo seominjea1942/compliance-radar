@@ -32,7 +32,7 @@ export function CarryList({
 
   return (
     <>
-      <div className="overflow-hidden rounded-lg border border-line">
+      <div className="overflow-hidden border border-line">
         <div className="flex items-baseline gap-4 bg-rail px-4 py-2.5 font-mono text-[10px] font-medium tracking-[0.14em] text-monoink uppercase">
           <span className="flex-1">Item</span>
           <span className="hidden w-[42%] sm:block">Brands</span>
@@ -75,7 +75,7 @@ export function CarryList({
           {notCarried.map((e) => (
             <span
               key={e.category}
-              className="group inline-flex items-center gap-1.5 rounded-full border border-line bg-paper py-1 pr-1.5 pl-3 text-[12.5px] text-ink transition-colors hover:border-line-strong hover:bg-hover"
+              className="group inline-flex items-center gap-1.5 border border-line bg-paper py-1 pr-1.5 pl-3 text-[12.5px] text-ink transition-colors hover:border-line-strong hover:bg-hover"
             >
               {e.category}
               <button
@@ -91,7 +91,7 @@ export function CarryList({
           <button
             type="button"
             onClick={() => setDialog({ mode: "not-carried" })}
-            className="cursor-pointer rounded-full border border-dashed border-line-strong px-3 py-1 text-[12.5px] text-muted transition-colors hover:border-brand hover:bg-brand-tint hover:text-brand"
+            className="cursor-pointer border border-dashed border-line-strong px-3 py-1 text-[12.5px] text-muted transition-colors hover:border-brand hover:bg-brand-tint hover:text-brand"
           >
             + Add something you don&apos;t carry
           </button>
@@ -211,7 +211,7 @@ function CarryDialog({
               value={item}
               onChange={(e) => setItem(e.target.value)}
               placeholder="Cooked steak, sliced to order"
-              className="rounded-[10px] border border-line-strong bg-shell px-3 py-2.5 text-[14px] text-ink placeholder:text-monoink focus:border-brand focus:outline-none"
+              className="border border-line-strong bg-shell px-3 py-2.5 text-[14px] text-ink placeholder:text-monoink focus:border-brand focus:outline-none"
             />
             <span className="text-[11.5px] text-faint">
               Name it the way a recall notice would: the product, not the shelf.
@@ -221,11 +221,11 @@ function CarryDialog({
           {showBrands && (
             <div className="flex flex-col gap-1.5">
               <span className="text-[12.5px] font-medium text-ink">Brands</span>
-              <div className="flex flex-wrap items-center gap-1.5 rounded-[10px] border border-line-strong bg-shell px-2.5 py-2">
+              <div className="flex flex-wrap items-center gap-1.5 border border-line-strong bg-shell px-2.5 py-2">
                 {brands.map((b) => (
                   <span
                     key={b}
-                    className="inline-flex items-center gap-1 rounded-full border border-line bg-paper py-1 pr-1.5 pl-2.5 text-[12.5px] text-ink"
+                    className="inline-flex items-center gap-1 border border-line bg-paper py-1 pr-1.5 pl-2.5 text-[12.5px] text-ink"
                   >
                     {b}
                     <button
@@ -263,7 +263,7 @@ function CarryDialog({
             The exact semantics the contract requires: when it takes effect,
             what does not change, and why the chat agent may be ahead of it.
           */}
-          <div className="flex items-start gap-2.5 rounded-lg border border-line bg-shell px-3.5 py-3">
+          <div className="flex items-start gap-2.5 border border-line bg-shell px-3.5 py-3">
             <MdScheduleSend className="mt-px size-4 flex-none text-faint" aria-hidden />
             <div className="flex flex-col gap-1">
               <p className="m-0 text-[12.5px]/relaxed text-body">

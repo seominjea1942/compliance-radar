@@ -16,7 +16,7 @@ export function FactList({ facts }: { facts: StoreFact[] }) {
 
   return (
     <>
-      <ul className="m-0 flex list-none flex-col gap-px overflow-hidden rounded-lg border border-line bg-line p-0">
+      <ul className="m-0 flex list-none flex-col gap-px overflow-hidden border border-line bg-line p-0">
         {facts.map((f) => (
           <li
             key={f.id}
@@ -111,7 +111,7 @@ function FactDialog({ fact, onClose }: { fact: StoreFact | null; onClose: () => 
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="You have a small parking lot with its entrance on Lincoln."
-            className="w-full resize-none rounded-[10px] border border-line-strong bg-shell px-3 py-2.5 text-[14px]/relaxed text-ink placeholder:text-monoink focus:border-brand focus:outline-none"
+            className="w-full resize-none border border-line-strong bg-shell px-3 py-2.5 text-[14px]/relaxed text-ink placeholder:text-monoink focus:border-brand focus:outline-none"
           />
           {error && <p className="m-0 text-[12.5px] text-alert">{error}</p>}
 
