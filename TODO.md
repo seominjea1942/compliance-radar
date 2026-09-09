@@ -10,6 +10,14 @@
 - [ ] Update .env.local + Vercel env with the new password.
 
 ## Deferred product decisions (need human call)
+- [ ] Make the masthead date range an actual selector. It reads
+      "AUG 28 - SEP 8, 2026" with a chevron and currently opens a popover that
+      says narrowing the span is not built. The label already comes from the
+      data (`getDataRange()` -> min/max `triage_decisions.created_at`), so the
+      work is the picker plus carrying the chosen span through the feed, log
+      and topic counts as URL state, the way `view`/`tag`/`q` already are.
+      Components: `components/DataRange.tsx`, `lib/view.ts`.
+      Deferred 2026-09-08 during the Shopbell visual pass.
 - [x] Store street address in profile — DONE 2026-09-03 (1287 Lincoln Ave).
 - [x] Carry-list freeze LIFTED 2026-09-05 with owner sign-off; profile edits
       are a supported write path (see contract). Freeze evidence remains in
