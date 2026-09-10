@@ -1,13 +1,15 @@
 @import "tailwindcss";
 
 /*
- * Single source of truth for the Compliance Radar look.
+ * Single source of truth for the Shopbell look.
  *
- * Structure and naming come from the Claude Design canvas
- * (`Compliance Radar.dc.html`); the palette is a neutral grey scale rather
- * than the canvas's warm cream. Change a colour here and it changes
- * everywhere: Tailwind utilities (`bg-paper`, `text-ink`) and the shadcn
- * semantic tokens below both read from these.
+ * Structure and naming came from a Claude Design canvas, whose palette was a
+ * warm cream. It was built here as a neutral grey scale instead, and that is
+ * exactly what made the app read as a wireframe; the cream is back.
+ *
+ * Change a colour here and it changes everywhere: Tailwind utilities
+ * (`bg-paper`, `text-ink`) and the shadcn semantic tokens below both read
+ * from these.
  */
 @theme {
   /* Surfaces */
@@ -114,7 +116,7 @@
   /*
    * Type. app/layout.tsx binds the actual faces to these role variables, so a
    * typeface swap happens there and nowhere else.
-   *   ui -> Geist   mono-ui -> IBM Plex Mono
+   *   ui -> Geist   mono-ui -> Geist Mono
    *
    * One face for the interface, no display serif. Newsreader ran on item
    * titles, reasons and section headers; two voices on a screen this dense

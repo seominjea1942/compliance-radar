@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, IBM_Plex_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 /*
@@ -12,14 +12,20 @@ const ui = Geist({
   weight: ["400", "500", "600"],
   variable: "--font-ui",
 });
-const mono = IBM_Plex_Mono({
+/*
+ * Geist's own mono, not another foundry's. The mono is structural here rather
+ * than decorative -- section labels, the spec strip, the topic ledger, the
+ * trust stamp -- so it has to sit at the same x-height and weight as the sans
+ * beside it, which only a companion face does.
+ */
+const mono = Geist_Mono({
   subsets: ["latin"],
   weight: ["400", "500"],
   variable: "--font-mono-ui",
 });
 
 export const metadata: Metadata = {
-  title: "Compliance Radar",
+  title: "Shopbell",
   description: "Silence is the product.",
 };
 

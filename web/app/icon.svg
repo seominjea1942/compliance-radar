@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="19 21 176 176">
+  <!--
+    The Shopbell mark as the tab icon. Square viewBox centred on the mark's
+    own bounds (x 39-175, y 44-175) with even padding, because a favicon is
+    rendered at 16px and an off-centre mark reads as a rendering fault at
+    that size. Cream ground rather than transparent: the mark is ink, and on
+    a dark browser chrome a transparent version would disappear.
+  -->
+  <rect x="19" y="21" width="176" height="176" fill="#efede5"/>
+  <path d="M156 44V124H175V145H133V65H81V145H39V124H58V44H156Z" fill="#191511"/>
+  <circle cx="107" cy="160" r="15" fill="#191511"/>
+</svg>
