@@ -91,7 +91,7 @@ export function BriefDialog({
         role="dialog"
         aria-modal="true"
         aria-label="Forwardable brief"
-        className="flex max-h-[88vh] w-full max-w-[540px] flex-col overflow-hidden rounded-card border border-line-strong bg-paper shadow-[0_12px_40px_rgba(24,24,27,0.2)]"
+        className="flex max-h-[88vh] w-full max-w-[540px] flex-col overflow-hidden rounded-[2px] border-2 border-rule bg-paper shadow-[0_10px_28px_-6px_rgba(25,21,17,0.16)]"
       >
         <header className="flex items-start gap-3 border-b border-line px-5 py-4">
           <div className="flex flex-1 flex-col gap-1">

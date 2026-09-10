@@ -59,7 +59,7 @@ export function ResolveDialog({
         role="dialog"
         aria-modal="true"
         aria-label="Resolve this recall event"
-        className="flex max-h-[88vh] w-full max-w-[520px] flex-col overflow-hidden rounded-card border border-line-strong bg-paper shadow-[0_12px_40px_rgba(24,24,27,0.2)]"
+        className="flex max-h-[88vh] w-full max-w-[520px] flex-col overflow-hidden rounded-[2px] border-2 border-rule bg-paper shadow-[0_10px_28px_-6px_rgba(25,21,17,0.16)]"
       >
         <header className="flex items-start gap-3 border-b border-line px-5 py-4">
           <div className="flex flex-1 flex-col gap-1">
@@ -88,7 +88,7 @@ export function ResolveDialog({
             it stays in your feed.
           </p>
 
-          <ul className="m-0 flex list-none flex-col gap-px overflow-hidden rounded-lg border border-line bg-line p-0">
+          <ul className="m-0 flex list-none flex-col gap-px overflow-hidden border border-line bg-line p-0">
             {event.items.map((item) => {
               const st = state[item.decisionId]!;
               const notCarried = st === "not_carried";
@@ -133,7 +133,7 @@ export function ResolveDialog({
                     */}
                     {item.product?.codeInfo && (
                       <span
-                        className={`self-start rounded border px-1.5 py-0.5 font-mono text-[11.5px] ${
+                        className={`self-start border px-1.5 py-0.5 font-mono text-[11.5px] ${
                           notCarried
                             ? "border-line bg-shell text-ghost"
                             : "border-line-strong bg-shell text-ink"
