@@ -21,8 +21,8 @@ import { RailLabel } from "@/components/rail/RailLabel";
 const COL = { read: "w-9 text-right", forYou: "w-6 text-right" };
 
 function Row({ topic }: { topic: TopicRow }) {
-  // Nothing arrived on this topic. That is the product working, not missing
-  // data, so it gets a stated quiet state rather than a blank cell.
+  // Nothing has ever arrived on this topic. That is the product working, not
+  // missing data, so it gets a stated quiet state rather than a blank cell.
   const quiet = topic.read === 0;
 
   return (

@@ -3,7 +3,8 @@ import { TopicTable } from "@/components/TopicTable";
 import { getNearbyPermits, getStreetWork, getWeeklyTopics } from "@/lib/queries";
 
 /**
- * The context column: what was read this week, and what the street is doing.
+ * The context column: everything read so far by topic, and what the street
+ * is doing.
  *
  * It owns its own column and its own queries. Three screens carry it now, and
  * passing four props plus four queries through each of them would have put
@@ -14,9 +15,16 @@ import { getNearbyPermits, getStreetWork, getWeeklyTopics } from "@/lib/queries"
  * and headline into a column only 380px wide. They are labelled sections on
  * the page's own paper now, separated by a rule.
  */
-export async function ContextRail({ className }: { className?: string } = {}) {
+export async function ContextRail({
+  className,
+  days = null,
+}: {
+  className?: string;
+  /** The screen's span, so the ledger counts the same window the feed does. */
+  days?: number | null;
+} = {}) {
   const [topics, permits, streetWork] = await Promise.all([
-    getWeeklyTopics(),
+    getWeeklyTopics(days),
     getNearbyPermits(),
     getStreetWork(),
   ]);

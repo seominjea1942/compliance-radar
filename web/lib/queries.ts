@@ -53,7 +53,27 @@ export function parseTags(raw: unknown): string[] {
 }
 
 /* ------------------------------------------------------------------ *
- * 1. v_weekly_summary: the home strip
+ * 0b. The span
+ * ------------------------------------------------------------------ */
+
+/**
+ * `created_at >= now - N days`, as a clause and its parameter.
+ *
+ * The aggregate views (`v_read_totals`, `v_topic_totals`) are already grouped
+ * and expose no date, so a span cannot be pushed into them. Everything the
+ * span touches therefore counts from the two row-level views instead, which
+ * both carry `created_at` and `tags`. That is the whole reason the totals are
+ * assembled here rather than read off a view: a screen where the feed honours
+ * the span and the ledger beside it does not is worse than no span at all.
+ */
+function sinceClause(days: number | null): { sql: string; params: unknown[] } {
+  return days === null
+    ? { sql: "", params: [] }
+    : { sql: "created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)", params: [days] };
+}
+
+/* ------------------------------------------------------------------ *
+ * 1. v_read_totals: the home strip
  * ------------------------------------------------------------------ */
 
 export type SourceRow = {
@@ -70,13 +90,37 @@ export type WeeklySummary = {
   bySource: SourceRow[];
 };
 
-export async function getWeeklySummary(): Promise<WeeklySummary> {
-  const rows = await query<{
-    source: string;
-    reviewed: number | string;
-    surfaced: number | string;
-    filtered: number | string;
-  }>(`SELECT * FROM v_weekly_summary`);
+export async function getWeeklySummary(days: number | null = null): Promise<WeeklySummary> {
+  const since = sinceClause(days);
+
+  /*
+   * All time reads the view; a span counts the rows. Same numbers at
+   * `days === null`, and the view stays the source of truth for the case that
+   * does not need filtering.
+   */
+  const rows = days === null
+    ? await query<{
+        source: string;
+        reviewed: number | string;
+        surfaced: number | string;
+        filtered: number | string;
+      }>(`SELECT * FROM v_read_totals`)
+    : await query<{
+        source: string;
+        reviewed: number | string;
+        surfaced: number | string;
+        filtered: number | string;
+      }>(
+        `SELECT source,
+                COUNT(*) AS reviewed,
+                SUM(decision IN ('ALERT','OPPORTUNITY')) AS surfaced,
+                SUM(decision = 'REJECT') AS filtered
+           FROM triage_decisions d
+           JOIN documents doc ON doc.id = d.document_id
+          WHERE d.${since.sql}
+          GROUP BY source`,
+        since.params,
+      );
 
   // NOTE (contract): on quiet weeks a source has no row at all, so this sums
   // whatever is present rather than assuming five rows.
@@ -96,15 +140,34 @@ export async function getWeeklySummary(): Promise<WeeklySummary> {
 }
 
 /* ------------------------------------------------------------------ *
- * 1b. v_weekly_topics: the per-tag home table
+ * 1b. v_topic_totals: the per-tag home table
  * ------------------------------------------------------------------ */
 
 const TAG_LABEL = new Map(TAGS.map((t) => [t.id, t.label]));
 
-export async function getWeeklyTopics(): Promise<TopicRow[]> {
-  const rows = await query<{ tag: string; read: number | string; for_you: number | string }>(
-    `SELECT * FROM v_weekly_topics`,
-  );
+export async function getWeeklyTopics(days: number | null = null): Promise<TopicRow[]> {
+  const since = sinceClause(days);
+
+  const rows = days === null
+    ? await query<{ tag: string; read: number | string; for_you: number | string }>(
+        `SELECT * FROM v_topic_totals`,
+      )
+    : await query<{ tag: string; read: number | string; for_you: number | string }>(
+        /*
+         * The fixed tag list on the left of the join is what keeps a topic
+         * with nothing in the span rendering as a stated quiet row rather
+         * than vanishing, which is the same reason the view is built that way.
+         */
+        `SELECT t.tag AS tag,
+                COUNT(d.id) AS \`read\`,
+                COALESCE(SUM(d.decision IN ('ALERT','OPPORTUNITY')), 0) AS for_you
+           FROM (${TAGS.map(() => "SELECT ? AS tag").join(" UNION ALL ")}) AS t
+           LEFT JOIN triage_decisions d
+             ON JSON_CONTAINS(d.tags, JSON_QUOTE(t.tag))
+            AND d.${since.sql}
+          GROUP BY t.tag`,
+        [...TAGS.map((t) => t.id), ...since.params],
+      );
   const byTag = new Map(rows.map((r) => [r.tag, r]));
 
   // Iterate the fixed tag set so display order is ours and a tag the view
@@ -299,7 +362,7 @@ function fdaDate(v: unknown): string | null {
     : null;
 }
 
-export async function getSurfaced(): Promise<SurfacedItem[]> {
+export async function getSurfaced(days: number | null = null): Promise<SurfacedItem[]> {
   const rows = await query<{
     decision_id: string | number;
     title: string;
@@ -329,7 +392,8 @@ export async function getSurfaced(): Promise<SurfacedItem[]> {
      * The window still governs the "read this week" strip and the topic table,
      * which really are weekly statistics (contract rec #4).
      */
-    `SELECT * FROM v_surfaced_feed`,
+    `SELECT * FROM v_surfaced_feed${days === null ? "" : " WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)"}`,
+    days === null ? [] : [days],
   );
 
   const items = rows.map((r) => {
@@ -588,6 +652,8 @@ export async function getFilteredLog(opts: {
   tag?: string | null;
   /** Free-text match over the title and the filtering reason. */
   q?: string | null;
+  /** Days back, or null for everything. */
+  days?: number | null;
   limit?: number;
 } = {}): Promise<LogPage> {
   const status = opts.status ?? "set-aside";
@@ -628,6 +694,17 @@ export async function getFilteredLog(opts: {
     params.push(like, like);
   }
 
+  /*
+   * The span narrows the rows and every count on the screen alike, so it goes
+   * into the totals clause below as well. A total that ignored it would
+   * report "showing 25 of 709" on a screen holding a week.
+   */
+  const days = opts.days ?? null;
+  if (days !== null) {
+    where.push("created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)");
+    params.push(days);
+  }
+
   const clause = where.length ? `WHERE ${where.join(" AND ")}` : "";
 
   // The tab counts have to answer "of what is on screen". Scoped to the same
@@ -646,6 +723,10 @@ export async function getFilteredLog(opts: {
   if (like) {
     totalsWhere.push("(title LIKE ? OR reason LIKE ?)");
     totalsParams.push(like, like);
+  }
+  if (days !== null) {
+    totalsWhere.push("created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)");
+    totalsParams.push(days);
   }
   const totalsClause = totalsWhere.length ? `WHERE ${totalsWhere.join(" AND ")}` : "";
 
@@ -670,9 +751,11 @@ export async function getFilteredLog(opts: {
   // global navigation, and a count that moved every time a filter changed
   // would be reporting the current screen rather than the destination.
   const narrowed = source !== "all" || tag !== null || like !== null;
+  const spanOnly = days === null ? "" : "WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)";
   const [everything] = narrowed
     ? await query<{ total: number | string; resolved: number | string | null }>(
-        `SELECT COUNT(*) AS total, SUM(overturned = 1) AS resolved FROM v_filtered_log`,
+        `SELECT COUNT(*) AS total, SUM(overturned = 1) AS resolved FROM v_filtered_log ${spanOnly}`,
+        days === null ? [] : [days],
       )
     : [totals];
 
@@ -847,7 +930,15 @@ export type SurfacedEvent = {
  * Grouping is never inferred from titles or firms: rows without an event_key
  * stand alone, which is also what a genuine single-item event looks like.
  */
-export function groupSurfaced(items: SurfacedItem[]): SurfacedEvent[] {
+export function groupSurfaced(
+  items: SurfacedItem[],
+  /**
+   * Which half of an event to build a card from. A part-resolved event has
+   * both, and appears in each place for the rows that belong there: its open
+   * products in the feed, its closed ones in the handled archive.
+   */
+  of: "open" | "resolved" = "open",
+): SurfacedEvent[] {
   const buckets = new Map<string, SurfacedItem[]>();
 
   for (const item of items) {
@@ -868,19 +959,20 @@ export function groupSurfaced(items: SurfacedItem[]): SurfacedEvent[] {
     });
 
     const open = ranked.filter((i) => !i.resolution);
-    // Fully resolved events leave the feed entirely.
-    if (open.length === 0) continue;
+    const shown = of === "open" ? open : ranked.filter((i) => i.resolution);
+    // An event with nothing on this side of the split has no card here.
+    if (shown.length === 0) continue;
 
-    const lead = open[0]!;
+    const lead = shown[0]!;
 
     events.push({
       key,
-      items: open,
+      items: shown,
       allItems: ranked,
-      resolvedCount: ranked.length - open.length,
+      resolvedCount: of === "open" ? ranked.length - open.length : 0,
       lead,
       severity: lead.severity,
-      isGroup: open.length > 1,
+      isGroup: shown.length > 1,
       firm: ranked.find((i) => i.firm)?.firm ?? null,
       hazard: ranked.find((i) => i.hazard)?.hazard ?? null,
     });
