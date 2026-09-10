@@ -67,13 +67,13 @@ maps to money or liability the owner would otherwise absorb without warning:
   is a survival issue, and a keyword search would never have connected that
   title to this street.
 
-While I was building the product, the radar also caught a live recall
-expansion for Everything Sprouts' Robust Radish Mix and emailed the owner at
-6 AM on a Saturday without anyone monitoring the system.
+Midway through the build, the radar caught a live recall expansion for
+Everything Sprouts' Robust Radish Mix and emailed the owner at 6 AM on a
+Saturday with nobody watching the system.
 
 ## How I built it
 
-I use one Strands agent brain with two modes running on one AgentCore
+The system runs one Strands agent with two modes on a single AgentCore
 Runtime.
 
 In batch mode, EventBridge Scheduler triggers Lambda, which calls
@@ -157,46 +157,35 @@ regulations and events relevant to that business.
 
 ## What I learned
 
-About Strands: the agent loop earns its place when the agent has real tools
-and real state, not just a prompt. The same Strands brain that runs
-single-shot triage decisions in batch also runs the tool-using chat agent,
-and giving that agent five small database tools kept every answer grounded
-in rows it actually read instead of things it remembered. I also learned
-where agent state belongs and where it does not: conversation history is the
-right kind of state for a chat session and the wrong kind for a batch loop,
-which is the precise shape of my $30 token lesson. Stateless per-item calls
-for triage, session-scoped state for conversation.
+About Strands: the same agent code serves both modes. Batch triage runs it
+as stateless single calls, and the chat panel runs it with tools and session
+state. Giving the chat agent five small database tools kept its answers tied
+to rows it actually read. The $30 token incident taught me where the
+boundary sits: conversation history belongs in a chat session and has no
+place in a batch loop.
 
-About AgentCore: one runtime serving two invocation patterns turned out to
-be the cleanest architecture I tried. The scheduler-driven batch mode and
-the session-based interactive mode share the same deployment, the same
-credentials, and the same data layer, so there is exactly one brain to
-version and monitor. AgentCore's session IDs gave me per-user conversation
-continuity without building any session infrastructure, and CodeZip deploys
-were fast enough (about two minutes) that I iterated on prompts against
-production data all week. I also learned to be deliberate about which state
-belongs in AgentCore and which belongs in a database: auditable product
-records went to TiDB where SQL, vector search, and row-level overturns work;
-that decision is what makes the rejection log queryable and trustworthy.
+About AgentCore: session IDs gave per-user conversation continuity without
+any session infrastructure on my side, and two-minute CodeZip deploys meant
+I could iterate on prompts against production data all week. The other
+lesson was deciding which state goes where. Audit records went to TiDB so
+that SQL, vector search, and row-level overturns all work; only
+conversational context stays with the agent.
 
-About the problem itself: public data is useful, but working with it is
-difficult. Sources have bot walls, misleading field names, incomplete feeds,
-and archives that appear to be real-time alerts. An agent that reads the
-underlying documents can outperform keyword filters in both directions: it
-finds important information hidden behind vague titles, and it rejects
-alarming-looking items that are not actually relevant to the business. And
-most importantly, trust comes from showing the negative space. Owners are
-more willing to trust the system's silence when they can see what it
-reviewed, what it rejected, and why.
+About the data: public sources have bot walls, misleading field names, and
+archives that look like alert feeds. An agent that reads the underlying
+documents beats keyword filters in both directions, finding what vague
+titles hide and rejecting what alarming titles inflate. And owners trust
+the silence because the app shows what was reviewed, what was rejected,
+and why.
 
 ## What's next
 
 I want to add recall-termination-based expiry, learning from alert
 dismissals, richer street-work windows, and profiles for additional business
-types. The market this generalizes to is large: U.S. Census data (SUSB 2021)
-counts about 35,000 grocery firms with fewer than 50 employees alone, before
-counting salons, restaurants, and every other main-street business under the
-same overlapping regulators.
+types. There are plenty of stores like this one: U.S. Census data (SUSB
+2021) counts about 35,000 grocery firms with fewer than 50 employees, before
+counting the salons, restaurants, and other main-street businesses that sit
+under the same overlapping regulators.
 
 The core system already generalizes through the business profile. Expanding
 to a new type of business should mostly require editing that profile rather
