@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { MdOpenInNew } from "react-icons/md";
 import { AskRadarProvider } from "@/components/ask/AskRadarProvider";
 import { AskRadarDock } from "@/components/ask/AskRadarDock";
@@ -55,15 +56,41 @@ export default async function AboutPage() {
           <div className="flex min-w-0 flex-1 flex-col">
             <main className="min-w-0 flex-1 bg-paper">
               <div className="mx-auto flex w-full max-w-[900px] flex-col gap-9 px-4 pt-5 pb-10 md:px-12 md:pt-7.5 md:pb-12">
-                {/* Same masthead as every other screen: centred, held to a
-                    measure inside the column, closed by its own dotted rule. */}
-                <div className="flex flex-col items-center gap-3.5 border-b border-dotted border-line-strong pt-4 pb-10 text-center md:pt-8 md:pb-12">
+                {/* No dotted rule closing this one. The other screens use it to
+                    part the masthead from a list of records; here the picture
+                    below does that job, and a rule between them read as a
+                    caption bar over the artwork. */}
+                <div className="flex flex-col items-center gap-3.5 pt-4 pb-6 text-center md:pt-8 md:pb-8">
                   <PageTitle className="max-w-[620px]">About this project</PageTitle>
                   <p className="max-w-[520px] text-[14.5px]/relaxed text-pretty text-body md:text-[15.5px]">
                     Shopbell watches the public record on behalf of one small grocery store, and
                     stays quiet unless something genuinely touches it. Silence is the product.
                   </p>
                 </div>
+
+                {/*
+                  The project's own picture, and the only decorative image in
+                  the app. It earns its place here because this is the page
+                  about the product rather than a page of what the product
+                  read; on the feed it would argue with the thesis, which is
+                  that the screen stays quiet.
+
+                  Same artwork as the Devpost thumbnail on purpose: a judge
+                  arrives from that card, and the repeat says they are in the
+                  right place.
+
+                  `priority` because it sits above the fold and is the first
+                  thing this page draws; sized 1800x1200 so Next can serve the
+                  right width rather than the full file.
+                */}
+                <Image
+                  src="/about-illustration.png"
+                  alt="Receipts and public notices unspooling past each other, with a checked box, a hazard sign and a watching face among them."
+                  width={1800}
+                  height={1200}
+                  priority
+                  className="mx-auto h-auto w-full max-w-[560px]"
+                />
 
                 <section className="flex flex-col gap-4">
                   <RailLabel>How it works</RailLabel>
@@ -74,8 +101,8 @@ export default async function AboutPage() {
                           {i + 1}
                         </span>
                         <div className="flex flex-col gap-0.5">
-                          <span className="text-[14px] font-medium text-ink">{s.title}</span>
-                          <span className="text-[13.5px]/relaxed text-body">{s.body}</span>
+                          <span className="text-[15px] font-medium text-ink">{s.title}</span>
+                          <span className="text-[15px]/relaxed text-body">{s.body}</span>
                         </div>
                       </li>
                     ))}
@@ -87,47 +114,75 @@ export default async function AboutPage() {
                     <RailLabel>Links</RailLabel>
                     <CardNote>Code, demo and writeup.</CardNote>
                   </div>
-                  <ul className="m-0 flex list-none flex-col gap-px overflow-hidden border border-line bg-line p-0">
-                    {LINKS.map((l) => (
-                      <li key={l.label} className="flex items-center gap-3 bg-paper px-4 py-3">
-                        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  {/*
+                    A card each, two across. As stacked rows the three read as
+                    one list of the same kind of thing, when a repository, a
+                    video and a deck are three different destinations. A card
+                    with a link that does not exist yet stays a card and says
+                    so, rather than being a row with a word missing.
+                  */}
+                  <ul className="m-0 grid list-none grid-cols-1 gap-3 p-0 sm:grid-cols-2">
+                    {LINKS.map((l) => {
+                      const body = (
+                        <>
+                          <span className="flex items-center gap-1.5 text-[15px] font-medium">
+                            {l.label}
+                            {l.href && <MdOpenInNew className="size-4 flex-none" aria-hidden />}
+                          </span>
+                          <span className="text-[15px]/relaxed text-body">{l.description}</span>
+                        </>
+                      );
+                      const box =
+                        "flex h-full flex-col gap-1.5 rounded-[2px] border p-4 transition-colors";
+
+                      return (
+                        <li key={l.label}>
                           {l.href ? (
                             <a
                               href={l.href}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-[14px] font-medium text-brand no-underline hover:underline"
+                              className={`${box} border-line-strong text-brand no-underline hover:border-rule`}
                             >
-                              {l.label}
-                              <MdOpenInNew className="size-3.5" aria-hidden />
+                              {body}
                             </a>
                           ) : (
-                            <span className="text-[14px] font-medium text-ghost">{l.label}</span>
+                            /* Dashed, the way an unfilled value is dashed
+                               everywhere else here: the card is a place held
+                               open, not a link that failed. */
+                            <div className={`${box} border-dashed border-line-strong text-monoink`}>
+                              {body}
+                              <span className="mt-auto pt-2 font-mono text-[10px] tracking-[0.14em] text-ghost uppercase">
+                                Not yet
+                              </span>
+                            </div>
                           )}
-                          <span className="text-[12.5px] text-faint">{l.description}</span>
-                        </div>
-                        {!l.href && (
-                          <span className="flex-none font-mono text-[10px] tracking-[0.1em] text-ghost uppercase">
-                            Soon
-                          </span>
-                        )}
-                      </li>
-                    ))}
+                        </li>
+                      );
+                    })}
                   </ul>
                 </section>
 
                 <section className="flex flex-col gap-4">
                   <RailLabel>Built with</RailLabel>
-                  <dl className="m-0 grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-[auto_1fr]">
+                  {/* Ruled rows, like the profile's tables: four pairs of a
+                      label and a value is a table, and it was set as a bare
+                      grid with nothing marking where one row ended. */}
+                  <dl className="m-0 flex flex-col p-0">
                     {[
                       ["Triage", "Amazon Bedrock via Strands agents, running on AgentCore"],
                       ["Data", "TiDB Serverless, queried through views"],
                       ["Frontend", "Next.js on Vercel, Tailwind and shadcn/ui"],
                       ["Sources", "openFDA, FDA recall feeds, Legistar, San José permits"],
                     ].map(([k, v]) => (
-                      <div key={k} className="contents">
-                        <dt className="text-[12.5px] text-faint sm:whitespace-nowrap">{k}</dt>
-                        <dd className="m-0 text-pretty text-[13.5px] text-ink">{v}</dd>
+                      <div
+                        key={k}
+                        className="flex flex-col gap-1 border-b border-line py-3 last:border-b-0 sm:flex-row sm:items-baseline sm:gap-4"
+                      >
+                        <dt className="font-mono text-[10px] tracking-[0.14em] text-monoink uppercase sm:w-[120px] sm:flex-none">
+                          {k}
+                        </dt>
+                        <dd className="m-0 text-pretty text-[15px] text-ink">{v}</dd>
                       </div>
                     ))}
                   </dl>
