@@ -109,6 +109,12 @@ export function PermitMapView({
        * `className: ""` matters. Leaflet's default divIcon class paints a
        * white background and a border of its own, which would frame every
        * marker in a second square.
+       *
+       * Borders are thinner than the circles' stroke widths were, and not by
+       * taste: an SVG stroke straddles the path, half outside it, while a
+       * border-box border eats entirely into the element. Carrying the old
+       * weights over left a 12px marker showing 8px of fill inside a ring
+       * that read as the marker itself.
        */
       const squareMarker = (
         lat: number,
@@ -157,8 +163,8 @@ export function PermitMapView({
           w.workType === "pavement_moratorium"
             ? { size: 6, fill: STREET_COLORS.moratorium, weight: 1 }
             : w.workType.startsWith("pavement_project")
-              ? { size: 10, fill: STREET_COLORS.planned, weight: 2 }
-              : { size: w.decision === "ALERT" ? 12 : 10, fill: STREET_COLORS.active, weight: 2 };
+              ? { size: 10, fill: STREET_COLORS.planned, weight: 1 }
+              : { size: w.decision === "ALERT" ? 12 : 10, fill: STREET_COLORS.active, weight: 1 };
 
         squareMarker(w.lat, w.lon, {
           size: style.size,
@@ -180,7 +186,7 @@ export function PermitMapView({
 
       squareMarker(STORE_ANCHOR.lat, STORE_ANCHOR.lon, {
         size: 14,
-        weight: 3,
+        weight: 1,
         color: "#ffffff",
         fill: "#28619e",
       })
