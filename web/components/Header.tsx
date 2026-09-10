@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {
   MdHelpOutline,
-  MdInfoOutline,
+  MdOutlineArticle,
   MdOutlineDashboard,
   MdOutlineSettings,
 } from "react-icons/md";
@@ -57,7 +57,10 @@ export async function Header({
       href: "/about",
       label: "About",
       section: "about" as const,
-      icon: <MdInfoOutline className="size-[18px] flex-none" aria-hidden />,
+      // A document, not an "i". The information glyph is what the trust stamp
+      // beside it uses to mean "hover me", so on a tab it promised a tooltip
+      // rather than a page.
+      icon: <MdOutlineArticle className="size-[18px] flex-none" aria-hidden />,
     },
   ];
 
