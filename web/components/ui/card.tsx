@@ -58,11 +58,19 @@ function CardTitle({
   );
 }
 
+/**
+ * The line under a section's name.
+ *
+ * Body colour and body size, not a caption's. This is the sentence that says
+ * what the section is for and how the radar uses it, so it is set like the
+ * table under it rather than a step smaller: greyed-out, shrunken text asks
+ * to be skipped.
+ */
 function CardNote({ className, ...props }: React.ComponentProps<"p">) {
   return (
     <p
       data-slot="card-note"
-      className={cn("text-sm/relaxed text-faint", className)}
+      className={cn("text-[15px]/relaxed text-body", className)}
       {...props}
     />
   );

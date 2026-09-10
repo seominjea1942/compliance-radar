@@ -63,7 +63,10 @@ export default async function ProfilePage() {
                   <FactList facts={profile.facts} />
                 </section>
 
-                <section id="carry-list" className="flex scroll-mt-16 flex-col gap-4">
+                {/* Its own space above, beyond the column's gap: the basics table ends
+                    in an add control, and 36px left that control looking like
+                    it belonged to the section starting underneath it. */}
+                <section id="carry-list" className="mt-12 flex scroll-mt-16 flex-col gap-4">
                   <div className="flex flex-col gap-1.5">
                     <RailLabel>Carry list</RailLabel>
                     <CardNote>

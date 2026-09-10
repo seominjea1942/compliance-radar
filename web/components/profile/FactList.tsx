@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { MdAdd, MdClose } from "react-icons/md";
 import { addFact, editFact, removeFact } from "@/app/profile/actions";
 import { Button } from "@/components/ui/button";
+import { ruled } from "@/components/profile/ruled-table";
 import type { StoreFact } from "@/lib/queries";
 
 /**
@@ -16,34 +17,45 @@ export function FactList({ facts }: { facts: StoreFact[] }) {
 
   return (
     <>
-      <ul className="m-0 flex list-none flex-col gap-px overflow-hidden border border-line bg-line p-0">
-        {facts.map((f) => (
-          <li
-            key={f.id}
-            className="group flex items-start gap-3 bg-paper px-4 py-3 transition-colors hover:bg-shell"
-          >
-            <div className="flex min-w-0 flex-1 flex-col gap-1">
-              <span className="text-[14.5px]/relaxed text-ink">{f.fact}</span>
-              {f.implies && (
-                <span className="text-[12px]/relaxed text-faint">{f.implies}</span>
-              )}
-            </div>
-            <button
-              type="button"
-              onClick={() => setEditing(f)}
-              className="flex-none cursor-pointer rounded-control px-2 py-1 text-[12.5px] font-medium text-brand opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            >
-              Edit
-            </button>
-          </li>
-        ))}
-      </ul>
+      <div className="flex flex-col pt-3">
+        <div className={ruled.head}>
+          <span className="flex-1">The fact</span>
+          <span className="hidden w-[46%] sm:block">What it changes</span>
+          <span className="w-10" aria-hidden />
+        </div>
 
-      <div className="flex">
-        <Button variant="outline" size="sm" onClick={() => setAdding(true)}>
-          <MdAdd className="size-4" aria-hidden />
-          Tell me something else about the store
-        </Button>
+        <ul className="m-0 flex list-none flex-col p-0">
+          {facts.map((f) => (
+            <li key={f.id} className={`${ruled.row} flex-col sm:flex-row`}>
+              <span className="flex-1 text-[15px]/relaxed text-ink">{f.fact}</span>
+              <span className="w-full text-[15px]/relaxed text-body sm:w-[46%]">
+                {f.implies ?? ""}
+              </span>
+              <button
+                type="button"
+                onClick={() => setEditing(f)}
+                aria-label={`Edit: ${f.fact.slice(0, 50)}`}
+                className={`${ruled.edit} w-10 self-start sm:self-auto`}
+              >
+                Edit
+              </button>
+            </li>
+          ))}
+        </ul>
+
+        <div className={ruled.foot}>
+          <button
+            type="button"
+            onClick={() => setAdding(true)}
+            className="flex cursor-pointer items-center gap-1.5 text-[14px] font-medium text-ink hover:text-brand focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            <MdAdd className="size-[18px]" aria-hidden />
+            Tell me something else
+          </button>
+          <span className={ruled.tally}>
+            {facts.length} {facts.length === 1 ? "fact" : "facts"}
+          </span>
+        </div>
       </div>
 
       {(adding || editing) && (

@@ -8,6 +8,9 @@ import {
   removeCarryEntry,
 } from "@/app/profile/carry-actions";
 import { Button } from "@/components/ui/button";
+import { ruled } from "@/components/profile/ruled-table";
+import { RailLabel } from "@/components/rail/RailLabel";
+import { CardNote } from "@/components/ui/card";
 import { nextCheckLabel } from "@/lib/next-check";
 import type { CarryEntry } from "@/lib/queries";
 
@@ -32,50 +35,83 @@ export function CarryList({
 
   return (
     <>
-      <div className="overflow-hidden border border-line">
-        <div className="flex items-baseline gap-4 bg-rail px-4 py-2.5 font-mono text-[10px] font-medium tracking-[0.14em] text-monoink uppercase">
+      <div className="flex flex-col pt-3">
+        <div className={ruled.head}>
           <span className="flex-1">Item</span>
-          <span className="hidden w-[42%] sm:block">Brands</span>
+          <span className="hidden w-[46%] sm:block">Brands I match against</span>
           <span className="w-10" aria-hidden />
         </div>
 
-        <ul className="m-0 flex list-none flex-col gap-px bg-line p-0">
+        <ul className="m-0 flex list-none flex-col p-0">
           {carried.map((e) => (
-            <li
-              key={e.category}
-              className="group flex flex-col gap-1 bg-paper px-4 py-3 transition-colors hover:bg-shell sm:flex-row sm:items-baseline sm:gap-4"
-            >
-              <span className="flex-1 text-[14px] text-ink">{e.category}</span>
-              <span className="w-full text-[13px] text-faint sm:w-[42%]">
-                {e.brands.length > 0 ? e.brands.join(", ") : "any brand"}
+            <li key={e.category} className={`${ruled.row} flex-col sm:flex-row`}>
+              <span className="flex-1 text-[15px] text-ink">{e.category}</span>
+              <span className="flex w-full flex-wrap items-center gap-x-3 gap-y-1.5 sm:w-[46%]">
+                {e.brands.length > 0 ? (
+                  /* Names, set plainly and separated by the rule of the row
+                     rather than each in its own filled pill: a chip per brand
+                     put five boxes on a page whose whole idea is that there
+                     are none. */
+                  e.brands.map((b) => (
+                    <span key={b} className="text-[15px] text-body">
+                      {b}
+                    </span>
+                  ))
+                ) : (
+                  <span className={ruled.note}>Any brand</span>
+                )}
               </span>
               <button
                 type="button"
                 onClick={() => setDialog({ mode: "edit", entry: e })}
-                className="w-10 flex-none cursor-pointer self-start text-left text-[12.5px] font-medium text-brand opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none sm:self-auto"
+                aria-label={`Edit: ${e.category}`}
+                className={`${ruled.edit} w-10 self-start sm:self-auto`}
               >
                 Edit
               </button>
             </li>
           ))}
         </ul>
+
+        <div className={ruled.foot}>
+          <button
+            type="button"
+            onClick={() => setDialog({ mode: "add" })}
+            className="flex cursor-pointer items-center gap-1.5 text-[14px] font-medium text-ink hover:text-brand focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            <MdAdd className="size-[18px]" aria-hidden />
+            Add an item
+          </button>
+          <span className={ruled.tally}>
+            {carried.length} {carried.length === 1 ? "item" : "items"}
+          </span>
+          {notCarried.length > 0 && (
+            <span className={ruled.tally}>{notCarried.length} not carried</span>
+          )}
+        </div>
       </div>
 
-      <div className="flex">
-        <Button variant="outline" size="sm" onClick={() => setDialog({ mode: "add" })}>
-          <MdAdd className="size-4" aria-hidden />
-          Add an item
-        </Button>
-      </div>
-
-      {/* Knowing what the store does NOT stock is what filters most recalls. */}
-      <div className="flex flex-col gap-2.5 border-t border-line-soft pt-5">
-        <span className="text-[14px] font-medium text-ink">What you don&apos;t carry</span>
-        <div className="flex flex-wrap items-center gap-1.5">
+      {/* Knowing what the store does NOT stock is what filters most recalls.
+          Its own block, set well clear of the table's add control above it:
+          at 20px the two ran together and the control read as belonging to
+          this heading rather than to the list it adds to. */}
+      <div className="mt-12 flex flex-col gap-4">
+        {/* Built like the sections above it, down to the spacing: the name and
+            its sentence are one group at gap-1.5, and the block below them is
+            the section's own gap away. Nesting them differently is what left
+            this sentence sitting further from its rule than the identical
+            sentence two sections up. */}
+        <div className="flex flex-col gap-1.5">
+          <RailLabel>What you don&apos;t carry</RailLabel>
+          <CardNote>
+            Knowing what you don&apos;t stock is how I set most recalls aside.
+          </CardNote>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
           {notCarried.map((e) => (
             <span
               key={e.category}
-              className="group inline-flex items-center gap-1.5 border border-line bg-paper py-1 pr-1.5 pl-3 text-[12.5px] text-ink transition-colors hover:border-line-strong hover:bg-hover"
+              className="group inline-flex items-center gap-2 rounded-[2px] border border-line-strong py-1.5 pr-2 pl-3 text-[14px] text-ink transition-colors hover:border-rule hover:bg-hover"
             >
               {e.category}
               <button
@@ -84,21 +120,18 @@ export function CarryList({
                 aria-label={`Remove ${e.category}`}
                 className="cursor-pointer text-ghost opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none"
               >
-                <MdClose className="size-3.5" aria-hidden />
+                <MdClose className="size-4" aria-hidden />
               </button>
             </span>
           ))}
           <button
             type="button"
             onClick={() => setDialog({ mode: "not-carried" })}
-            className="cursor-pointer border border-dashed border-line-strong px-3 py-1 text-[12.5px] text-muted transition-colors hover:border-brand hover:bg-brand-tint hover:text-brand"
+            className="cursor-pointer rounded-[2px] border border-dashed border-line-strong px-3 py-1.5 text-[14px] text-muted transition-colors hover:border-brand hover:text-brand"
           >
             + Add something you don&apos;t carry
           </button>
         </div>
-        <p className="m-0 text-[12px]/relaxed text-faint">
-          Knowing what you don&apos;t stock is how I set most recalls aside.
-        </p>
       </div>
 
       {granularity && (
@@ -234,7 +267,7 @@ function CarryDialog({
                       aria-label={`Remove ${b}`}
                       className="cursor-pointer text-faint hover:text-alert"
                     >
-                      <MdClose className="size-3.5" aria-hidden />
+                      <MdClose className="size-4" aria-hidden />
                     </button>
                   </span>
                 ))}
