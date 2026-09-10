@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { MdBlock, MdClose, MdUndo } from "react-icons/md";
+import { MdBlock, MdClose, MdOutlineWarningAmber, MdUndo } from "react-icons/md";
 import { resolveItems } from "@/app/actions";
 import { Button } from "@/components/ui/button";
+import { bestBeforeList } from "@/lib/format";
 import type { Resolution } from "@/lib/resolution";
-import type { SurfacedEvent } from "@/lib/queries";
+import type { SurfacedEvent, SurfacedItem } from "@/lib/queries";
 
 /**
  * Per-row state. The primary control is a true binary (handled / keep open);
@@ -13,6 +14,163 @@ import type { SurfacedEvent } from "@/lib/queries";
  * by cycling a three-way toggle.
  */
 type RowState = "handled" | "open" | "not_carried";
+
+/**
+ * The words every product in the event ends with, so the modal can say them
+ * once in its title instead of five times down the list.
+ *
+ * Whole words only: cutting mid-word would turn "Vanilla Bean ORGANIC" and
+ * "Dutch Chocolate ORGANIC" into a shared suffix starting at "GANIC". A
+ * suffix is only worth hoisting if it survives on every row, so one row
+ * without it is enough to keep them all whole.
+ */
+function commonTail(titles: string[]): string {
+  if (titles.length < 2) return "";
+  const words = titles.map((t) => t.trim().split(/\s+/));
+  const tail: string[] = [];
+
+  for (let i = 1; i <= Math.min(...words.map((w) => w.length)) - 1; i++) {
+    const word = words[0][words[0].length - i];
+    if (!words.every((w) => w[w.length - i] === word)) break;
+    tail.unshift(word);
+  }
+  return tail.join(" ");
+}
+
+/** One labelled column of a product row. Each lists its own values. */
+function Field({ label, values }: { label: string; values: string[] }) {
+  return (
+    <div className="flex min-w-0 flex-col gap-1">
+      <span className="font-mono text-[10px] tracking-[0.14em] text-monoink uppercase">
+        {label}
+      </span>
+      {values.length === 0 ? (
+        <span className="font-mono text-[12.5px] text-ghost">—</span>
+      ) : (
+        values.map((v, i) => (
+          <span
+            key={i}
+            /*
+             * Each column lists only its own values, never zipped with the
+             * others. Sizes, UPCs and dates are parallel in the source but
+             * not 1:1: one product reads "QUART - BEST BY: 24 DEC 26; PINT -
+             * BEST BY: 25 DEC 26", and pairing them by position would put a
+             * pint's date against a quart's code. The dotted rule marks the
+             * break between values without claiming they line up across.
+             */
+            className={`truncate font-mono text-[12.5px] text-ink ${
+              i > 0 ? "border-t border-dotted border-line pt-1" : ""
+            }`}
+          >
+            {v}
+          </span>
+        ))
+      )}
+    </div>
+  );
+}
+
+function Row({
+  item,
+  tail,
+  state,
+  disabled,
+  onToggle,
+  onNotCarried,
+}: {
+  item: SurfacedItem;
+  tail: string;
+  state: RowState;
+  disabled: boolean;
+  onToggle: (checked: boolean) => void;
+  onNotCarried: () => void;
+}) {
+  const notCarried = state === "not_carried";
+  const name = tail
+    ? item.displayTitle.slice(0, item.displayTitle.length - tail.length).trim() ||
+      item.displayTitle
+    : item.displayTitle;
+
+  return (
+    <li className="flex items-start gap-4 border-b border-line py-4 last:border-b-0">
+      <input
+        type="checkbox"
+        checked={state === "handled"}
+        disabled={notCarried || disabled}
+        onChange={(e) => onToggle(e.target.checked)}
+        aria-label={`Handled: ${item.title.slice(0, 60)}`}
+        /*
+         * Square and ink, drawn by the browser through accent-color rather
+         * than replaced with a div: it keeps the native focus ring, the
+         * keyboard behaviour and the disabled state for free.
+         */
+        className="mt-1 size-[18px] flex-none appearance-none rounded-[2px] border-2 border-rule accent-[var(--color-rule)] checked:appearance-auto disabled:opacity-35"
+      />
+
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        {/* The name, its state chip and the not-carry control share one row.
+            The control used to sit outside this column, nudged down by hand to
+            look level with the name, which held only while the name stayed on
+            one line. */}
+        <div className="flex items-center gap-2.5">
+          <span
+            className={`min-w-0 text-[17px] font-bold tracking-[-0.01em] ${
+              notCarried ? "text-ghost line-through" : "text-ink"
+            }`}
+          >
+            {name}
+          </span>
+          {state === "open" && (
+            <span className="border border-line-strong px-1.5 py-0.5 font-mono text-[10px] tracking-[0.14em] text-monoink uppercase">
+              Stays open
+            </span>
+          )}
+          {notCarried && (
+            <span className="border border-line-strong px-1.5 py-0.5 font-mono text-[10px] tracking-[0.14em] text-monoink uppercase">
+              Not carried
+            </span>
+          )}
+
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={onNotCarried}
+            title={notCarried ? "Undo" : "We don't carry this"}
+            aria-label={
+              notCarried
+                ? `Undo don't carry: ${item.title.slice(0, 40)}`
+                : `We don't carry: ${item.title.slice(0, 40)}`
+            }
+            className="ml-auto flex-none cursor-pointer rounded-[2px] p-1.5 text-ghost transition-colors hover:bg-hover hover:text-ink disabled:opacity-40"
+          >
+            {notCarried ? (
+              <MdUndo className="size-[18px]" aria-hidden />
+            ) : (
+              <MdBlock className="size-[18px]" aria-hidden />
+            )}
+          </button>
+        </div>
+
+        <div
+          /*
+             Auto columns, not thirds. An equal split gave PACK and BEST BY a
+             third of the row each for values that never fill it, and pushed
+             them apart far enough that the eye stopped reading them as one
+             product's readings.
+          */
+          className={`grid grid-cols-[auto_auto_auto] justify-start gap-x-7 gap-y-3 ${
+            notCarried ? "opacity-45" : ""
+          }`}
+        >
+          <Field label="Pack" values={item.product?.sizes ?? []} />
+          <Field label="UPC" values={item.product?.upcs ?? []} />
+          <Field label="Best by" values={bestBeforeList(item.product?.codeInfo)} />
+        </div>
+      </div>
+
+    </li>
+  );
+}
 
 export function ResolveDialog({
   event,
@@ -36,6 +194,10 @@ export function ResolveDialog({
   const set = (id: string, next: RowState) => setState((s) => ({ ...s, [id]: next }));
 
   const kept = event.items.filter((i) => state[i.decisionId] === "open").length;
+  const closing = event.items.length - kept;
+  const tail = commonTail(event.items.map((i) => i.displayTitle));
+  // Same test the card uses to decide whether its reason is a banner.
+  const urgent = event.lead.severity === "act";
 
   function save() {
     setError(null);
@@ -59,111 +221,68 @@ export function ResolveDialog({
         role="dialog"
         aria-modal="true"
         aria-label="Resolve this recall event"
-        className="flex max-h-[88vh] w-full max-w-[520px] flex-col overflow-hidden rounded-[2px] border-2 border-rule bg-paper shadow-[0_10px_28px_-6px_rgba(25,21,17,0.16)]"
+        className="flex max-h-[88vh] w-full max-w-[560px] flex-col overflow-hidden rounded-[2px] border-2 border-rule bg-paper shadow-[0_10px_28px_-6px_rgba(25,21,17,0.16)]"
       >
-        <header className="flex items-start gap-3 border-b border-line px-5 py-4">
-          <div className="flex flex-1 flex-col gap-1">
-            <span className="text-[15px] font-semibold text-ink">
+        <header className="flex flex-none items-start gap-4 border-b border-line px-6 py-5">
+          <div className="flex min-w-0 flex-1 flex-col gap-2">
+            <span className="font-mono text-[11px] tracking-[0.16em] text-monoink uppercase">
               Resolve {event.items.length} products
             </span>
-            <span className="text-pretty text-[12.5px] text-faint">
+            <h2 className="text-[22px]/[1.15] font-bold tracking-[-0.02em] text-ink uppercase">
               {event.firm ?? event.lead.sourceLabel}
-              {event.hazard ? ` · ${event.hazard}` : ""}
-            </span>
+              {tail && (
+                <>
+                  <br />
+                  {tail}
+                </>
+              )}
+            </h2>
+            {/*
+              The card's own sentence, verbatim, and styled the way the card
+              styled it. The modal opens from a card the reader has just been
+              looking at; introducing a different wording here makes them stop
+              and work out whether it is the same recall. The hazard field
+              said "foreign metal pieces" where the card said what that meant
+              for this store, which is the sentence worth repeating.
+            */}
+            {urgent ? (
+              <span className="flex items-center gap-2 self-start border-l-2 border-alert bg-alert-bg py-1.5 pr-3 pl-2.5 text-[14px] text-alert-ink">
+                <MdOutlineWarningAmber className="size-4 flex-none" aria-hidden />
+                {event.lead.shortReason}
+              </span>
+            ) : (
+              <span className="text-[14px]/relaxed text-body">{event.lead.shortReason}</span>
+            )}
           </div>
           <button
             type="button"
             onClick={onClose}
             disabled={pending}
             aria-label="Close"
-            className="cursor-pointer rounded-control p-1 text-faint hover:bg-hover hover:text-ink disabled:opacity-40"
+            className="cursor-pointer rounded-[2px] p-1 text-faint hover:bg-hover hover:text-ink disabled:opacity-40"
           >
-            <MdClose className="size-[18px]" aria-hidden />
+            <MdClose className="size-[20px]" aria-hidden />
           </button>
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-3">
-          <p className="mt-0 mb-3 text-[12.5px] text-faint">
-            Match the codes on the shelf. Checked means handled; uncheck to keep one open and
-            it stays in your feed.
-          </p>
-
-          <ul className="m-0 flex list-none flex-col gap-px overflow-hidden border border-line bg-line p-0">
-            {event.items.map((item) => {
-              const st = state[item.decisionId]!;
-              const notCarried = st === "not_carried";
-              return (
-                <li key={item.decisionId} className="flex items-start gap-3 bg-paper px-3.5 py-3">
-                  <input
-                    type="checkbox"
-                    checked={st === "handled"}
-                    disabled={notCarried || pending}
-                    onChange={(e) => set(item.decisionId, e.target.checked ? "handled" : "open")}
-                    aria-label={`Handled: ${item.title.slice(0, 60)}`}
-                    className="mt-0.5 size-4 flex-none accent-[var(--color-brand)] disabled:opacity-40"
-                  />
-                  <div className="flex min-w-0 flex-1 flex-col gap-1">
-                    <span
-                      className={`text-[13.5px]/snug ${
-                        notCarried ? "text-faint line-through" : "text-ink"
-                      }`}
-                    >
-                      {item.displayTitle}
-                    </span>
-
-                    {/*
-                      Sizes, UPCs and codes are parallel but not 1:1 aligned
-                      (one row can be "QUART - BEST BY: 24 DEC 26; PINT - BEST
-                      BY: 25 DEC 26"), so each renders as its own group. Zipping
-                      them into columns would mispair a code with a size.
-                    */}
-                    {item.product && (item.product.sizes.length > 0 || item.product.upcs.length > 0) && (
-                      <span className={`text-[12px] ${notCarried ? "text-ghost" : "text-faint"}`}>
-                        {item.product.sizes.join(" · ")}
-                        {item.product.sizes.length > 0 && item.product.upcs.length > 0 ? " · " : ""}
-                        {item.product.upcs.length > 0 && (
-                          <span className="font-mono">UPC {item.product.upcs.join(", ")}</span>
-                        )}
-                      </span>
-                    )}
-
-                    {/*
-                      The code is what the owner actually matches at the shelf,
-                      so it gets the strongest treatment in the row.
-                    */}
-                    {item.product?.codeInfo && (
-                      <span
-                        className={`self-start border px-1.5 py-0.5 font-mono text-[11.5px] ${
-                          notCarried
-                            ? "border-line bg-shell text-ghost"
-                            : "border-line-strong bg-shell text-ink"
-                        }`}
-                      >
-                        {item.product.codeInfo}
-                      </span>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    disabled={pending}
-                    onClick={() => set(item.decisionId, notCarried ? "handled" : "not_carried")}
-                    title={notCarried ? "Undo" : "We don't carry this"}
-                    aria-label={
-                      notCarried
-                        ? `Undo don't carry: ${item.title.slice(0, 40)}`
-                        : `We don't carry: ${item.title.slice(0, 40)}`
-                    }
-                    className="flex-none cursor-pointer rounded-control p-1 text-ghost transition-colors hover:bg-hover hover:text-ink disabled:opacity-40"
-                  >
-                    {notCarried ? (
-                      <MdUndo className="size-4" aria-hidden />
-                    ) : (
-                      <MdBlock className="size-4" aria-hidden />
-                    )}
-                  </button>
-                </li>
-              );
-            })}
+        <div className="scroll-quiet min-h-0 flex-1 overflow-y-auto px-6 py-4">
+          <ul className="m-0 flex list-none flex-col p-0">
+            {event.items.map((item) => (
+              <Row
+                key={item.decisionId}
+                item={item}
+                tail={tail}
+                state={state[item.decisionId]!}
+                disabled={pending}
+                onToggle={(checked) => set(item.decisionId, checked ? "handled" : "open")}
+                onNotCarried={() =>
+                  set(
+                    item.decisionId,
+                    state[item.decisionId] === "not_carried" ? "handled" : "not_carried",
+                  )
+                }
+              />
+            ))}
           </ul>
 
           <button
@@ -174,22 +293,23 @@ export function ResolveDialog({
                 Object.fromEntries(event.items.map((i) => [i.decisionId, "not_carried" as RowState])),
               )
             }
-            className="mt-3 cursor-pointer text-[12.5px] font-medium text-brand hover:underline disabled:opacity-50"
+            className="mt-4 cursor-pointer text-[13.5px] font-medium text-brand hover:text-brand-deep disabled:opacity-50"
           >
             We don&apos;t carry any of these
           </button>
         </div>
 
-        <footer className="flex items-center justify-between gap-3 border-t border-line px-5 py-4">
-          <span className="text-[11.5px] text-monoink">
-            {kept > 0 ? `${kept} will stay in your feed.` : "All of them will close."}
+        <footer className="flex flex-none items-center justify-between gap-4 border-t border-line px-6 py-4">
+          <span className="font-mono text-[11px] tracking-[0.12em] text-monoink uppercase">
+            {closing} will close
+            {kept > 0 && ` · ${kept} stays open`}
           </span>
-          <div className="flex items-center gap-2">
-            {error && <span className="text-[12px] text-alert">{error}</span>}
-            <Button variant="ghost" size="sm" onClick={onClose} disabled={pending}>
+          <div className="flex items-center gap-3">
+            {error && <span className="text-[12.5px] text-alert">{error}</span>}
+            <Button variant="ghost" onClick={onClose} disabled={pending}>
               Cancel
             </Button>
-            <Button size="sm" onClick={save} disabled={pending}>
+            <Button className="px-6" onClick={save} disabled={pending}>
               {pending ? "Saving…" : "Save"}
             </Button>
           </div>

@@ -80,6 +80,33 @@ function looksLikeDate(v: string): boolean {
 const BEST_BEFORE_WORDS =
   "Best if Used By|Best Before|Best By|Best if Used|Sell By|Use By|Used By|Expiration Date|Expiration|Expiry|EXP";
 
+/**
+ * Every best-before the source names, in the order it names them.
+ *
+ * `productCodes` deliberately refuses when there is more than one, because a
+ * card cell has room for a single answer and picking one would be a guess.
+ * The resolve modal has room for all of them, and the owner standing at the
+ * freezer needs all of them, so this returns the list instead of nothing.
+ *
+ * Still only dates: the same `looksLikeDate` guard, so "Sell By dates:" does
+ * not come back as the word "dates".
+ */
+export function bestBeforeList(codeInfo: string | null | undefined): string[] {
+  const text = (codeInfo ?? "").trim();
+  if (!text) return [];
+
+  const re = new RegExp(`\\b(?:${BEST_BEFORE_WORDS})\\b\\s*:?\\s*([A-Za-z0-9/ ,.-]{4,24})`, "gi");
+  const out: string[] = [];
+  for (const m of text.matchAll(re)) {
+    const v = m[1]
+      .split(/\b(?:Lot|LOT|Lots|LOTS|Batch|UPC|Item|Product|Code)\b/)[0]
+      .trim()
+      .replace(/[.,\-/]+$/, "");
+    if (looksLikeDate(v) && !out.includes(v)) out.push(v);
+  }
+  return out;
+}
+
 export function productCodes(codeInfo: string | null | undefined): {
   lot: string | null;
   bestBefore: string | null;
