@@ -203,6 +203,45 @@
 }
 
 /*
+ * The blink.
+ *
+ * Only the eyes scale, and only vertically, around their own bounding box:
+ * `fill-box` is what makes "centre" mean the middle of the pair rather than
+ * the middle of the SVG, so the lids appear to close rather than the eyes
+ * shrinking toward the corner.
+ *
+ * Two blinks a cycle, close together, then a long wait. One evenly spaced
+ * blink reads as a metronome; a double followed by a pause is roughly what
+ * eyes actually do.
+ */
+@keyframes radar-blink {
+  0%,
+  4%,
+  10%,
+  100% {
+    transform: scaleY(1);
+  }
+  2%,
+  7% {
+    transform: scaleY(0.1);
+  }
+}
+
+.radar-eyes {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: radar-blink 7s infinite;
+}
+
+/* A face that blinks at you is decoration, and decoration that moves is
+   exactly what this query is for. */
+@media (prefers-reduced-motion: reduce) {
+  .radar-eyes {
+    animation: none;
+  }
+}
+
+/*
  * The ask drawer's entrance. Slides from the edge it is docked to, so it
  * reads as arriving from off-screen rather than appearing in place. Below sm
  * the panel is a bottom sheet, so it rises instead.

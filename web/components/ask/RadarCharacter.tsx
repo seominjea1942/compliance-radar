@@ -5,7 +5,7 @@ import { gazeOffset } from "./gaze";
 
 /**
  * The radar's face: a solid blue circle cropped by a near-black square,
- * with eyes that follow the pointer.
+ * with a face that follows the pointer.
  *
  * Flat colour, no gradients and no glow. The circle is bigger than the frame
  * and runs off the bottom and sides, so the crop is the composition rather
@@ -18,24 +18,48 @@ const SHELL = "#151515";
 const FACE = "#4a90d9";
 
 /**
- * Sclera. The pupils move inside these; the whites stay put.
+ * Eyes. Rounded rectangles, not ovals: the corner radius is a little softening
+ * on a shape that is still square-shouldered, which is what the illustration
+ * draws and what the rest of this interface does everywhere else.
  *
- * Big, and set close together with only a few units between them: that
- * spacing is most of what reads as cute rather than merely as two eyes.
+ * Sized off the illustration rather than by eye. Measured there against the
+ * head it sits in: an eye is 0.052 of the diameter wide and 0.153 tall, a
+ * ratio near 3:1, and the pair sits 0.106 apart centre to centre. Guessed,
+ * they came out a fifth too wide, a fifth too short, and nearly twice as far
+ * apart, which is what turned a close-set pair into two spaced dots.
  */
-const EYE_RX = 12;
-const EYE_RY = 12.6;
-const PUPIL_RX = 8.8;
-const PUPIL_RY = 9.2;
+const EYE_W = 5.4;
+const EYE_H = 16;
+const EYE_R = 2;
 /**
  * Centred on the part of the circle you can actually see, which is neither the
  * frame's middle nor the circle's: most of the circle is outside the frame, so
  * centring on it would push the face into the cropped corner.
  */
+/**
+ * The face at rest, looking up and to the left rather than straight out.
+ *
+ * Centred on the circle it read as a stare: a mark facing the reader dead-on
+ * has no attitude, and this one is supposed to be watching something. Setting
+ * the features up and left of centre turns the same shapes into a glance.
+ *
+ * Both eyes are the same width. The illustration foreshortens the far one to
+ * 0.79, and copying that made one eye heavy and the other spindly: on a shape
+ * 5.4 units across, a fifth off is a whole unit, which reads as a mistake
+ * rather than as depth. The glance is carried by where the features sit, not
+ * by their thickness.
+ */
 const EYES = [
-  { cx: 43, cy: 58 },
-  { cx: 69, cy: 58 },
+  { cx: 51, cy: 50 },
+  { cx: 62.1, cy: 50 },
 ];
+
+/**
+ * The smile, as an open arc rather than a filled shape. Set under the pair and
+ * carried the same way up and left, or the mouth stays behind while the eyes
+ * turn.
+ */
+const MOUTH = "M51 66 Q56.5 74 62 66";
 
 export function RadarCharacter({
   className,
@@ -132,16 +156,35 @@ export function RadarCharacter({
         */}
         <circle cx="64" cy="68" r="52" fill={FACE} />
 
-        {EYES.map((e, i) => (
-          <ellipse key={i} cx={e.cx} cy={e.cy} rx={EYE_RX} ry={EYE_RY} fill="#ffffff" />
-        ))}
-
-        {/* Only the pupils track. Moving the whole eye slides the whites around
-            the face; moving the pupils inside them is what looking is. */}
-        <g ref={pupilsRef} fill={SHELL}>
-          {EYES.map((e, i) => (
-            <ellipse key={i} cx={e.cx} cy={e.cy} rx={PUPIL_RX} ry={PUPIL_RY} />
-          ))}
+        {/*
+          Eyes and mouth travel together as one face. With whites, only the
+          pupils could move: sliding the sclera around would have dragged two
+          white holes across the colour. With the face drawn straight onto the
+          blue there is nothing to leave behind, so the whole expression drifts
+          toward the pointer, which is closer to how looking actually works.
+        */}
+        <g ref={pupilsRef}>
+          {/* The eyes blink; the mouth does not, so they are grouped apart. */}
+          <g className="radar-eyes">
+            {EYES.map((e, i) => (
+              <rect
+                key={i}
+                x={e.cx - EYE_W / 2}
+                y={e.cy - EYE_H / 2}
+                width={EYE_W}
+                height={EYE_H}
+                rx={EYE_R}
+                fill={SHELL}
+              />
+            ))}
+          </g>
+          <path
+            d={MOUTH}
+            fill="none"
+            stroke={SHELL}
+            strokeWidth={3.4}
+            strokeLinecap="round"
+          />
         </g>
       </g>
     </svg>

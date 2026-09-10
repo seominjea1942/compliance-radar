@@ -1,5 +1,5 @@
 /**
- * Where the eyes should sit, given the pointer's offset from the face's centre.
+ * Where the face should sit, given the pointer's offset from its centre.
  *
  * Split out from the component so the behaviour can be exercised without a
  * browser: the DOM side is a listener and one `setAttribute`, but the feel of
@@ -7,13 +7,14 @@
  */
 
 /**
- * How far the pupils travel from centre, in viewBox units.
+ * How far the face travels from centre, in viewBox units.
  *
- * Bounded by how much white is left around them: at a pupil 73% of the sclera
- * there are 3.2 units of room, so 2.4 keeps a rim of white on the tight side
- * at full deflection instead of letting the pupil sit against the edge.
+ * The whole face moves now rather than pupils inside whites, so the bound is
+ * no longer a rim of sclera but the blue around it: at 3.5 the eyes stay well
+ * inside the circle at full deflection, and the drift is large enough to read
+ * as looking rather than as the mark wobbling.
  */
-export const EYE_TRAVEL = 2.4;
+export const EYE_TRAVEL = 3.5;
 /** Distance at which the gaze is fully committed toward the pointer. */
 export const FULL_GAZE_PX = 260;
 
