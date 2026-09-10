@@ -1,5 +1,6 @@
 import Link from "next/link";
 import {
+  MdHelpOutline,
   MdInfoOutline,
   MdOutlineDashboard,
   MdOutlineSettings,
@@ -51,6 +52,12 @@ export async function Header({
       // Settings, not a storefront: the page is a set of switches about
       // what the shop does and does not do.
       icon: <MdOutlineSettings className="size-[18px] flex-none" aria-hidden />,
+    },
+    {
+      href: "/about",
+      label: "About",
+      section: "about" as const,
+      icon: <MdInfoOutline className="size-[18px] flex-none" aria-hidden />,
     },
   ];
 
@@ -111,23 +118,29 @@ export async function Header({
           {/* Hidden below md, where the bar has three columns to fit in 375px
               and this is the only one that is not a control. */}
           {checked && (
-            <span className="hidden font-mono text-[11px] tracking-[0.08em] whitespace-nowrap text-monoink uppercase lg:inline">
-              {checked}
-            </span>
-          )}
-          <Tooltip content="About this project">
-            <Link
-              href="/about"
-              aria-label="About this project"
-              aria-current={current === "about" ? "page" : undefined}
-              className={cn(
-                "flex size-9 items-center justify-center rounded-full no-underline transition-colors",
-                current === "about" ? "bg-hover text-ink" : "text-faint hover:bg-hover hover:text-ink",
-              )}
+            <Tooltip
+              content={
+                <>
+                  <span className="font-medium">The daily pass</span>
+                  <br />
+                  Every source was read at this time: recall feeds, council agendas and permits.
+                  It stamps the run, not the last thing found, so it still moves on a day when
+                  nothing surfaced.
+                </>
+              }
             >
-              <MdInfoOutline className="size-[18px]" aria-hidden />
-            </Link>
-          </Tooltip>
+              {/* tabIndex so the explanation is reachable by keyboard, not
+                  hover only. The stamp is a claim about the product working;
+                  it should be able to say what it means. */}
+              <span
+                tabIndex={0}
+                className="hidden cursor-help items-center gap-1.5 font-mono text-[11px] tracking-[0.08em] whitespace-nowrap text-monoink uppercase outline-none focus-visible:ring-2 focus-visible:ring-ring lg:inline-flex"
+              >
+                {checked}
+                <MdHelpOutline className="size-[13px] flex-none opacity-70" aria-hidden />
+              </span>
+            </Tooltip>
+          )}
 
           <BusinessSwitcher storeName={storeName} location={profile?.location} compact />
 
