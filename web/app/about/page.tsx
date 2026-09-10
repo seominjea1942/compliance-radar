@@ -1,9 +1,9 @@
 import { MdOpenInNew } from "react-icons/md";
 import { AskRadarProvider } from "@/components/ask/AskRadarProvider";
 import { AskRadarDock } from "@/components/ask/AskRadarDock";
-import { ContextRail } from "@/components/rail/ContextRail";
 import { Header } from "@/components/Header";
-import { Card, CardNote, CardTitle } from "@/components/ui/card";
+import { CardNote } from "@/components/ui/card";
+import { RailLabel } from "@/components/rail/RailLabel";
 import { PageTitle } from "@/components/ui/page-title";
 import { getStoreProfile } from "@/lib/queries";
 
@@ -43,39 +43,34 @@ export default async function AboutPage() {
 
   return (
     <AskRadarProvider>
-      <div className="flex min-h-screen flex-col bg-shell">
+      <div className="flex min-h-screen flex-col bg-ground">
         <Header
           profile={profile}
           current="about"
         />
 
-        {/* The bar spans the window above this row; the panel is a
-            column of the row, so one header covers both. */}
         <div className="flex min-h-0 flex-1">
-          {/* Rail and content share a row inside the one holding the panel:
-              the panel carries no order, so as their sibling it sorted ahead
-              of both at every width. */}
-          <div className="flex min-w-0 flex-1 flex-col xl:flex-row">
-            <ContextRail />
-
-            <main className="order-1 min-w-0 flex-1 bg-paper xl:order-2">
-              <div className="mx-auto flex w-full max-w-[800px] flex-col gap-5 px-4 pt-5 pb-10 md:gap-6.5 md:px-12 md:pt-7.5 md:pb-12">
-                <div className="flex flex-col gap-1.5">
-                  <PageTitle>
-                    About this project
-                  </PageTitle>
-                  <p className="max-w-[700px] text-[14.5px]/relaxed text-pretty text-body md:text-[15.5px]">
-                    Compliance Radar watches the public record on behalf of one small grocery store,
-                    and stays quiet unless something genuinely touches it. Silence is the product.
+          {/* No context rail. This page is about the product, not about what
+              it read this week. */}
+          <div className="flex min-w-0 flex-1 flex-col">
+            <main className="min-w-0 flex-1 bg-paper">
+              <div className="mx-auto flex w-full max-w-[900px] flex-col gap-9 px-4 pt-5 pb-10 md:px-12 md:pt-7.5 md:pb-12">
+                {/* Same masthead as every other screen: centred, held to a
+                    measure inside the column, closed by its own dotted rule. */}
+                <div className="flex flex-col items-center gap-3.5 border-b border-dotted border-line-strong pt-4 pb-10 text-center md:pt-8 md:pb-12">
+                  <PageTitle className="max-w-[620px]">About this project</PageTitle>
+                  <p className="max-w-[520px] text-[14.5px]/relaxed text-pretty text-body md:text-[15.5px]">
+                    Shopbell watches the public record on behalf of one small grocery store, and
+                    stays quiet unless something genuinely touches it. Silence is the product.
                   </p>
                 </div>
 
-                <Card className="gap-4">
-                  <CardTitle>How it works</CardTitle>
+                <section className="flex flex-col gap-4">
+                  <RailLabel>How it works</RailLabel>
                   <ol className="m-0 flex list-none flex-col gap-3.5 p-0">
                     {STEPS.map((s, i) => (
                       <li key={s.title} className="flex gap-3">
-                        <span className="mt-0.5 flex size-5 flex-none items-center justify-center rounded-full bg-rail font-mono text-[11px] text-monoink">
+                        <span className="mt-0.5 flex size-5 flex-none items-center justify-center bg-rail font-mono text-[11px] text-monoink">
                           {i + 1}
                         </span>
                         <div className="flex flex-col gap-0.5">
@@ -85,14 +80,14 @@ export default async function AboutPage() {
                       </li>
                     ))}
                   </ol>
-                </Card>
+                </section>
 
-                <Card className="gap-4">
+                <section className="flex flex-col gap-4">
                   <div className="flex flex-col gap-1.5">
-                    <CardTitle>Links</CardTitle>
+                    <RailLabel>Links</RailLabel>
                     <CardNote>Code, demo and writeup.</CardNote>
                   </div>
-                  <ul className="m-0 flex list-none flex-col gap-px overflow-hidden rounded-lg border border-line bg-line p-0">
+                  <ul className="m-0 flex list-none flex-col gap-px overflow-hidden border border-line bg-line p-0">
                     {LINKS.map((l) => (
                       <li key={l.label} className="flex items-center gap-3 bg-paper px-4 py-3">
                         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -119,10 +114,10 @@ export default async function AboutPage() {
                       </li>
                     ))}
                   </ul>
-                </Card>
+                </section>
 
-                <Card className="gap-4">
-                  <CardTitle>Built with</CardTitle>
+                <section className="flex flex-col gap-4">
+                  <RailLabel>Built with</RailLabel>
                   <dl className="m-0 grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-[auto_1fr]">
                     {[
                       ["Triage", "Amazon Bedrock via Strands agents, running on AgentCore"],
@@ -136,7 +131,7 @@ export default async function AboutPage() {
                       </div>
                     ))}
                   </dl>
-                </Card>
+                </section>
               </div>
             </main>
           </div>
