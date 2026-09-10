@@ -1,5 +1,7 @@
--- All-time totals views (2026-09-08). The old v_weekly_* views stay in place
--- until FE switches lib/queries.ts, then they get dropped.
+-- All-time totals views (2026-09-08). The old v_weekly_* views stayed in
+-- place until FE switched lib/queries.ts; dropped 2026-09-10:
+DROP VIEW IF EXISTS v_weekly_summary;
+DROP VIEW IF EXISTS v_weekly_topics;
 
 CREATE OR REPLACE VIEW v_topic_totals AS
 SELECT t.tag,
