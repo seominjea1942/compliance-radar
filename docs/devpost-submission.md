@@ -1,4 +1,4 @@
-# Devpost submission — Compliance Radar (revised, first person)
+# Devpost submission: Compliance Radar (revised, first person)
 
 ## Inspiration
 
