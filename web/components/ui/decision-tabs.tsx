@@ -30,13 +30,21 @@ const LABEL: Record<View, string> = {
   act: "Needs action",
   check: "To check",
   file: "For the file",
+  handled: "Handled",
   "set-aside": "Set aside",
   overturned: "Overturned",
   all: "All",
 };
 
-/** The three behind the menu, in the order the audit is usually read. */
-const LOG_VIEWS = ["set-aside", "overturned", "all"] as const;
+/**
+ * What sits behind the menu, in the order the record is usually read.
+ *
+ * "Handled" is not part of the log -- the log is what was never surfaced --
+ * but it is the same kind of destination: something you go and look at rather
+ * than something waiting for you, so it shares the menu rather than taking a
+ * quarter of the row.
+ */
+const LOG_VIEWS = ["handled", "set-aside", "overturned", "all"] as const;
 
 function Count({ n, on }: { n: number; on: boolean }) {
   return (
@@ -86,7 +94,8 @@ export function DecisionTabs({
    * count on a control that stood for all three. A parent gets a parent's
    * name, and no count until one of its children is actually the view.
    */
-  const menuLabel = onLog ? LABEL[params.view] : "The log";
+  const inMenu = onLog || params.view === "handled";
+  const menuLabel = inMenu ? LABEL[params.view] : "The record";
 
   return (
     <div ref={track} className={cn(segmented.track, "self-start", className)}>
@@ -114,14 +123,14 @@ export function DecisionTabs({
         trigger={
           <button
             type="button"
-            aria-current={onLog ? "page" : undefined}
+            aria-current={inMenu ? "page" : undefined}
             aria-label={`${menuLabel}. Show everything the radar read`}
-            className={cn(segmented.item, onLog ? segmented.active : segmented.idle)}
+            className={cn(segmented.item, inMenu ? segmented.active : segmented.idle)}
           >
             {menuLabel}
-            {onLog && <Count n={counts[params.view]} on />}
+            {inMenu && <Count n={counts[params.view]} on />}
             <MdExpandMore
-              className={cn("size-[16px] flex-none", onLog ? "text-paper/65" : "text-muted")}
+              className={cn("size-[16px] flex-none", inMenu ? "text-paper/65" : "text-muted")}
               aria-hidden
             />
           </button>

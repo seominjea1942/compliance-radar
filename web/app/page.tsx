@@ -22,7 +22,16 @@ import {
   type Severity,
   type SurfacedEvent,
 } from "@/lib/queries";
-import { hrefFor, isLogView, logStatusFor, PAGE, readParams, type View } from "@/lib/view";
+import {
+  hrefFor,
+  isHandledView,
+  isLogView,
+  logStatusFor,
+  PAGE,
+  readParams,
+  spanDays,
+  type View,
+} from "@/lib/view";
 
 // Live operational data: never serve a build-time snapshot.
 export const dynamic = "force-dynamic";
@@ -56,6 +65,8 @@ const HEADING: Record<View, (n: number) => string> = {
   check: (n) => (n === 0 ? "Nothing to check." : `${count(n)} ${n === 1 ? "item" : "items"} to check.`),
   file: (n) =>
     n === 0 ? "Nothing for the file." : `${count(n)} ${n === 1 ? "item" : "items"} for the file.`,
+  handled: (n) =>
+    n === 0 ? "Nothing handled yet." : `${count(n)} ${n === 1 ? "item" : "items"} you closed.`,
   "set-aside": () => "Everything I've read",
   overturned: () => "Everything I've read",
   all: () => "Everything I've read",
@@ -65,6 +76,8 @@ const SUBHEAD: Record<View, string> = {
   act: "",
   check: "",
   file: "",
+  handled:
+    "Things I surfaced and you dealt with. They leave the feed when you close them; they do not leave the record.",
   "set-aside":
     "Set aside holds what I chose not to surface, each with a reason. If I set something aside wrongly, say so and I'll adjust.",
   overturned: "The calls you sent back. I watch these differently from now on.",
@@ -82,11 +95,13 @@ export default async function HomePage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = readParams(await searchParams);
-  const { view, tag, q, limit } = params;
+  const { view, tag, q, span, limit } = params;
+  // One window for every number on this screen.
+  const days = spanDays(span);
 
   const [summary, surfaced, profile, range, log] = await Promise.all([
-    getWeeklySummary(),
-    getSurfaced(),
+    getWeeklySummary(days),
+    getSurfaced(days),
     getStoreProfile(),
     // Always: the control needs the set-aside counts on every view. On a
     // surfaced view one row is enough, and the totals come back regardless.
@@ -96,23 +111,66 @@ export default async function HomePage({
       tag,
       // Search belongs to the log half only; a surfaced view keeps its counts.
       q: isLogView(view) ? q : null,
+      days,
       limit: isLogView(view) ? limit : 1,
     }),
   ]);
 
   // One card per real-world recall event, grouped on the backend's event_key.
-  const events = groupSurfaced(surfaced);
+  const events = groupSurfaced(surfaced, isHandledView(view) ? "resolved" : "open");
   const inTopic = tag ? events.filter((e) => topicsOf(e).includes(tag)) : events;
 
+  /*
+   * Tab counts are card counts, so they hold whatever the view is showing. The
+   * open tiers are counted off the open grouping; handled has to be grouped
+   * separately, because `events` is whichever side the current view asked for.
+   */
+  const openEvents = isHandledView(view) ? groupSurfaced(surfaced, "open") : events;
+  const handledEvents = isHandledView(view) ? events : groupSurfaced(surfaced, "resolved");
+
   const counts = {
-    act: events.filter((e) => TIER.act(e.severity)).length,
-    check: events.filter((e) => TIER.check(e.severity)).length,
-    file: events.filter((e) => TIER.file(e.severity)).length,
+    act: openEvents.filter((e) => TIER.act(e.severity)).length,
+    check: openEvents.filter((e) => TIER.check(e.severity)).length,
+    file: openEvents.filter((e) => TIER.file(e.severity)).length,
+    handled: handledEvents.length,
     "set-aside": log.overall.setAside,
     overturned: log.overall.overturned,
-    // Everything the radar decided: what it surfaced, plus what it did not.
-    all: events.length + log.overall.all,
+    /*
+     * Everything the radar decided, counted in decisions on both sides.
+     *
+     * It used to add surfaced *cards* to log *rows*, which came out 688
+     * against the 715 the same screen reported as read and as total flagged.
+     * The All view still lists 29 cards over 659 rows -- grouping is why --
+     * and the line under the tabs says so: "715 decisions, showing 25".
+     */
+    all: surfaced.length + log.overall.all,
   };
+
+  /*
+   * The read/sorted line counts decisions, not cards.
+   *
+   * `counts.act + check + file` counts event cards, and a card can be five
+   * decisions: Straus's five flavours are one. Adding those to the log's row
+   * counts produced a total 27 short of what the radar actually read, and two
+   * different totals on one screen -- this line said 688 where the topic
+   * ledger beside it said 715.
+   *
+   * `reviewed` is the decision count from the same view the ledger sums, so
+   * the two agree, and what was surfaced is what is left after the set-aside.
+   */
+  /*
+   * What the headline's line says: how much was read, and how little of it
+   * reached the owner.
+   *
+   * `read` counts decisions and `brought to you` counts cards, which are
+   * different units on purpose. A card is one thing to deal with however many
+   * product rows sit inside it -- Straus is five -- so cards are what the
+   * reader can actually count on the screen, and they match the tabs
+   * underneath. Counting rows here instead made the line disagree with the
+   * tabs; counting cards on both sides would understate what was read.
+   */
+  const readTotal = summary.reviewed;
+  const surfacedCards = counts.act + counts.check + counts.file;
 
   // Per topic, within the view on screen, so a dead option can say so.
   const topicCounts = Object.fromEntries(
@@ -120,7 +178,9 @@ export default async function HomePage({
       t.id,
       isLogView(view)
         ? 0
-        : events.filter((e) => TIER[view](e.severity) && topicsOf(e).includes(t.id)).length,
+        : isHandledView(view)
+          ? events.filter((e) => topicsOf(e).includes(t.id)).length
+          : events.filter((e) => TIER[view](e.severity) && topicsOf(e).includes(t.id)).length,
     ]),
   );
 
@@ -130,8 +190,26 @@ export default async function HomePage({
    * and the rows are paged, so any shared ordering would bury them on the
    * first page and lose them on the second.
    */
-  const cards = view === "all" ? inTopic : isLogView(view) ? [] : inTopic.filter((e) => TIER[view](e.severity));
-  const onScreen = cards.length + (isLogView(view) ? log.counts[view === "overturned" ? "overturned" : view === "all" ? "all" : "setAside"] : 0);
+  const cards =
+    view === "all"
+      ? inTopic
+      : isLogView(view)
+        ? []
+        : // Handled is not a tier, it is the whole closed side.
+          isHandledView(view)
+          ? inTopic
+          : inTopic.filter((e) => TIER[view](e.severity));
+  /*
+   * The count above the list. On All it is the decision total, matching the
+   * tab, not the number of things drawn: `shown` below reports that.
+   */
+  const onScreen =
+    view === "all"
+      ? counts.all
+      : cards.length +
+        (isLogView(view)
+          ? log.counts[view === "overturned" ? "overturned" : "setAside"]
+          : 0);
   const shown = cards.length + log.rows.length * (isLogView(view) ? 1 : 0);
 
   return (
@@ -157,10 +235,37 @@ export default async function HomePage({
                   runs wider than the title above it.
                 */}
                 <div className="flex flex-col items-center gap-3.5 border-b border-dotted border-line-strong pt-4 pb-10 text-center md:pt-8 md:pb-12">
-                  {range && <DataRange label={rangeLabel(range.from, range.to)} />}
+                  {range && (
+                    <DataRange
+                      params={params}
+                      fullLabel={rangeLabel(range.from, range.to)}
+                    />
+                  )}
                   <PageTitle className="max-w-[620px]">{HEADING[view](counts[view])}</PageTitle>
                   <p className="max-w-[520px] text-[14.5px]/relaxed text-pretty text-body md:text-[15.5px]">
-                    {SUBHEAD[view] || `${count(summary.reviewed)} items read this week.`}
+                    {SUBHEAD[view] || (
+                      <>
+                        {/*
+                          What it read in the span above, and what it did with
+                          it. "Items read this week" answered neither: it was a
+                          bare total, and a 7-day one under a masthead whose
+                          date range covers everything, so the two numbers on
+                          screen were counting different windows.
+                        */}
+                        {/*
+                          Two numbers, not five. The line is the product's
+                          whole argument -- it reads a great deal and
+                          interrupts rarely -- and a five-part breakdown made
+                          the reader do arithmetic instead of hearing it. What
+                          was set aside is the difference between these, the
+                          tabs below count what is waiting, and the handled
+                          archive has its own entry there.
+                        */}
+                        {count(readTotal)} read
+                        {" · "}
+                        {count(surfacedCards)} brought to you
+                      </>
+                    )}
                   </p>
                 </div>
 
@@ -218,7 +323,13 @@ export default async function HomePage({
                   className="m-0 mt-2 border-b-2 border-rule pb-1.5 font-mono text-[11px] font-medium tracking-[0.16em] text-ink uppercase"
                 >
                   <span className="tabular-nums">{count(onScreen)}</span>{" "}
-                  {isLogView(view) ? (onScreen === 1 ? "decision" : "decisions") : "open"}
+                  {isLogView(view)
+                    ? onScreen === 1
+                      ? "decision"
+                      : "decisions"
+                    : isHandledView(view)
+                      ? "closed"
+                      : "open"}
                   {tag
                     ? ` in ${TAGS.find((t) => t.id === tag)?.label.toLowerCase()}`
                     : " across every topic"}
@@ -255,7 +366,7 @@ export default async function HomePage({
                 )}
                   </div>
 
-                  <ContextRail className="flex flex-col gap-10 lg:w-[300px] lg:flex-none" />
+                  <ContextRail days={days} className="flex flex-col gap-10 lg:w-[300px] lg:flex-none" />
                 </div>
               </div>
             </main>

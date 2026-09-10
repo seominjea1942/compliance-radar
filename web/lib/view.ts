@@ -8,7 +8,7 @@ import { TAGS, type LogStatus } from "@/lib/queries";
  * last is the union of all five. There is one screen now, so these are views
  * of it rather than routes.
  */
-export const VIEWS = ["act", "check", "file", "set-aside", "overturned", "all"] as const;
+export const VIEWS = ["act", "check", "file", "handled", "set-aside", "overturned", "all"] as const;
 export type View = (typeof VIEWS)[number];
 
 /** The three that read from v_surfaced_feed rather than the log. */
@@ -18,6 +18,18 @@ export function isLogView(v: View): v is "set-aside" | "overturned" | "all" {
   return v === "set-aside" || v === "overturned" || v === "all";
 }
 
+/**
+ * Things the radar surfaced and the owner has since closed.
+ *
+ * Surfaced, so it reads from the feed rather than the log, but it is an
+ * archive rather than a queue, which is why it sits behind the same menu.
+ * Without it the home line could say "9 already handled" and leave no way to
+ * see them.
+ */
+export function isHandledView(v: View): v is "handled" {
+  return v === "handled";
+}
+
 /** The log query's own vocabulary. "all" carries the surfaced half too. */
 export function logStatusFor(v: View): LogStatus {
   return v === "overturned" ? "overturned" : v === "all" ? "all" : "set-aside";
@@ -25,7 +37,34 @@ export function logStatusFor(v: View): LogStatus {
 
 export const PAGE = 25;
 
-export type ViewParams = { view: View; tag: string | null; q: string | null; limit: number };
+/**
+ * How far back the screen looks.
+ *
+ * Presets, not a calendar. The span is a frame for reading the week's work,
+ * not a report parameter, and every number on the screen has to move with it
+ * together; three named windows keep that honest and keep the URL shareable.
+ */
+export const SPANS = ["all", "30d", "7d"] as const;
+export type Span = (typeof SPANS)[number];
+
+export const SPAN_LABEL: Record<Span, string> = {
+  all: "All time",
+  "30d": "Last 30 days",
+  "7d": "Last 7 days",
+};
+
+/** Days back, or null for everything the radar holds. */
+export function spanDays(s: Span): number | null {
+  return s === "30d" ? 30 : s === "7d" ? 7 : null;
+}
+
+export type ViewParams = {
+  view: View;
+  tag: string | null;
+  q: string | null;
+  span: Span;
+  limit: number;
+};
 
 /** Long enough to be a real query; the column is a title, not an essay. */
 export const MAX_QUERY = 80;
@@ -43,12 +82,14 @@ export function hrefFor(p: Partial<ViewParams>, from: ViewParams): string {
     view: p.view ?? from.view,
     tag: p.tag !== undefined ? p.tag : from.tag,
     q: p.q !== undefined ? p.q : from.q,
+    span: p.span ?? from.span,
     limit: p.limit ?? from.limit,
   };
   const params = new URLSearchParams();
   if (next.view !== "act") params.set("view", next.view);
   if (next.tag) params.set("tag", next.tag);
   if (next.q) params.set("q", next.q);
+  if (next.span !== "all") params.set("span", next.span);
   if (next.limit !== PAGE) params.set("limit", String(next.limit));
   const s = params.toString();
   return s ? `/?${s}` : "/";
@@ -66,6 +107,9 @@ export function readParams(sp: Record<string, string | string[] | undefined>): V
     // Free text, so it is trimmed and capped here rather than trusted; it
     // reaches SQL as a bound parameter either way.
     q: (one("q") ?? "").trim().slice(0, MAX_QUERY) || null,
+    span: (SPANS as readonly string[]).includes(one("span") ?? "")
+      ? (one("span") as Span)
+      : "all",
     limit: Math.min(Math.max(Number(one("limit")) || PAGE, PAGE), 500),
   };
 }
