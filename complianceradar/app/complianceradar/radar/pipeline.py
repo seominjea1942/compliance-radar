@@ -144,6 +144,16 @@ def run(limit=None) -> dict:
         items += street_work.fetch_items()
     except Exception as e:
         print(f"street_work fetch failed: {type(e).__name__}: {e}")
+    try:
+        from radar import legistar
+        items += legistar.fetch_items()
+    except Exception as e:
+        print(f"legistar fetch failed: {type(e).__name__}: {e}")
+    try:
+        from radar import permits
+        items += permits.nearby(permits.fetch_items(days_back=14), 1500)
+    except Exception as e:
+        print(f"permits fetch failed: {type(e).__name__}: {e}")
 
     with conn.cursor() as c:
         c.execute("SELECT source, external_id FROM documents")
@@ -157,9 +167,17 @@ def run(limit=None) -> dict:
     import datetime
     run_started = datetime.datetime.utcnow()
     for it in fresh:
-        emb = embed(it.get("title", "") + " " + it.get("reason_for_recall", it.get("description", "")))
-        past = db.similar_past_decisions(conn, emb, k=5)
-        decision = triage_with_context(agent, it, profile, past)
+        if it["source"] == "legistar":
+            # council items use the dedicated two-stage triage (title pass,
+            # then staff-report PDF deep-read for survivors)
+            from radar.council_triage import triage_council_item
+            emb = embed(it.get("title", "") + " " + (it.get("matter_type") or ""))
+            decision, extras = triage_council_item(it, profile)
+            it.update(extras)
+        else:
+            emb = embed(it.get("title", "") + " " + it.get("reason_for_recall", it.get("description", "")))
+            past = db.similar_past_decisions(conn, emb, k=5)
+            decision = triage_with_context(agent, it, profile, past)
         if it["source"] == "openfda_enforcement":
             try:
                 from radar.product_extract import extract_products
