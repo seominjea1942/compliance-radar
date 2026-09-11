@@ -9,12 +9,19 @@ import os
 import uuid
 
 import boto3
+from botocore.config import Config
 
 RUNTIME_ARN = os.environ["AGENT_RUNTIME_ARN"]
 ALERT_FROM = os.environ.get("ALERT_FROM", "radar@recalls.minjeaseo.com")
 ALERT_TO = os.environ.get("ALERT_TO", "seominjea1942@gmail.com")
 
-agentcore = boto3.client("bedrock-agentcore")
+# One attempt, long read timeout: a daily run longer than boto3's default
+# 60s read timeout must NOT be client-retried (a retry re-runs the whole
+# triage pass; same failure class as the Sept 8 scheduler-retry incident).
+agentcore = boto3.client(
+    "bedrock-agentcore",
+    config=Config(read_timeout=900, retries={"total_max_attempts": 1}),
+)
 ses = boto3.client("ses")
 
 
