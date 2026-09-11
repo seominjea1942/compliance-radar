@@ -223,46 +223,56 @@ export function ResolveDialog({
         aria-label="Resolve this recall event"
         className="flex max-h-[88vh] w-full max-w-[560px] flex-col overflow-hidden rounded-[2px] border-2 border-rule bg-paper shadow-[0_10px_28px_-6px_rgba(25,21,17,0.16)]"
       >
-        <header className="flex flex-none items-start gap-4 border-b border-line px-6 py-5">
-          <div className="flex min-w-0 flex-1 flex-col gap-2">
-            <span className="font-mono text-[11px] tracking-[0.16em] text-monoink uppercase">
-              Resolve {event.items.length} products
-            </span>
-            <h2 className="text-[22px]/[1.15] font-bold tracking-[-0.02em] text-ink uppercase">
-              {event.firm ?? event.lead.sourceLabel}
-              {tail && (
-                <>
-                  <br />
-                  {tail}
-                </>
-              )}
-            </h2>
-            {/*
-              The card's own sentence, verbatim, and styled the way the card
-              styled it. The modal opens from a card the reader has just been
-              looking at; introducing a different wording here makes them stop
-              and work out whether it is the same recall. The hazard field
-              said "foreign metal pieces" where the card said what that meant
-              for this store, which is the sentence worth repeating.
-            */}
-            {urgent ? (
-              <span className="flex items-center gap-2 self-start border-l-2 border-alert bg-alert-bg py-1.5 pr-3 pl-2.5 text-[14px] text-alert-ink">
-                <MdOutlineWarningAmber className="size-4 flex-none" aria-hidden />
-                {event.lead.shortReason}
+        {/*
+          The banner is a sibling of the title row, not part of it. Inside, it
+          filled the title's column, which is the header minus the close
+          button and the gap beside it -- so a tinted block stopped short of
+          the panel's edge while the text above it, having no background, hid
+          the same shortfall.
+        */}
+        <header className="flex flex-none flex-col gap-2.5 border-b border-line px-6 py-5">
+          <div className="flex items-start gap-4">
+            <div className="flex min-w-0 flex-1 flex-col gap-2">
+              <span className="font-mono text-[11px] tracking-[0.16em] text-monoink uppercase">
+                Resolve {event.items.length} products
               </span>
-            ) : (
-              <span className="text-[14px]/relaxed text-body">{event.lead.shortReason}</span>
-            )}
+              <h2 className="text-[22px]/[1.15] font-bold tracking-[-0.02em] text-ink uppercase">
+                {event.firm ?? event.lead.sourceLabel}
+                {tail && (
+                  <>
+                    <br />
+                    {tail}
+                  </>
+                )}
+              </h2>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={pending}
+              aria-label="Close"
+              className="cursor-pointer rounded-[2px] p-1 text-faint hover:bg-hover hover:text-ink disabled:opacity-40"
+            >
+              <MdClose className="size-[20px]" aria-hidden />
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={pending}
-            aria-label="Close"
-            className="cursor-pointer rounded-[2px] p-1 text-faint hover:bg-hover hover:text-ink disabled:opacity-40"
-          >
-            <MdClose className="size-[20px]" aria-hidden />
-          </button>
+
+          {/*
+            The card's own sentence, verbatim, and styled the way the card
+            styled it. The modal opens from a card the reader has just been
+            looking at; introducing a different wording here makes them stop
+            and work out whether it is the same recall. The hazard field said
+            "foreign metal pieces" where the card said what that meant for
+            this store, which is the sentence worth repeating.
+          */}
+          {urgent ? (
+            <span className="flex items-start gap-2 border-l-2 border-alert bg-alert-bg py-2 pr-3 pl-2.5 text-[14px]/relaxed text-alert-ink">
+              <MdOutlineWarningAmber className="mt-[3px] size-4 flex-none" aria-hidden />
+              {event.lead.shortReason}
+            </span>
+          ) : (
+            <span className="text-[14px]/relaxed text-body">{event.lead.shortReason}</span>
+          )}
         </header>
 
         <div className="scroll-quiet min-h-0 flex-1 overflow-y-auto px-6 py-4">
