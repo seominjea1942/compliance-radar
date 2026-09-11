@@ -232,7 +232,13 @@ export function AskRadarPanel({
                     <span className="truncate text-[11.5px] text-muted">{m.attached}</span>
                   </div>
                 )}
-                <div className="rounded-xl border border-brand-tint-line bg-brand-tint px-3.5 py-2.5 text-sm/relaxed text-ink">
+                <div
+                  /* The same darker cream the suggestions sit on, not the
+                     accent tint: blue is the link colour here, and a filled
+                     blue bubble made every question the reader had asked look
+                     like something to click. */
+                  className="bg-wash px-3.5 py-2.5 text-sm/relaxed text-ink"
+                >
                   {m.text}
                 </div>
               </div>
