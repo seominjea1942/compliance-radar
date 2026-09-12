@@ -1,4 +1,4 @@
-# Devpost submission: Compliance Radar (revised, first person)
+# Devpost submission: Shopbell (revised, first person)
 
 ## Inspiration
 
@@ -8,8 +8,8 @@ recall notice that never reached them, or a fee that quietly appears on a
 property tax bill.
 
 The owner of an 18-employee grocery store cannot realistically read the FDA
-enforcement feed, the USDA recall list, 70 council agenda items per meeting,
-and every permit filed near the store. So most owners do not, and the anxiety
+enforcement feed, the USDA recall list, the dozens of council agenda items
+that come with every meeting, and every permit filed near the store. So most owners do not, and the anxiety
 of missing something never goes away.
 
 I built the radar for one of the hardest cases first: an independent grocery
@@ -27,8 +27,8 @@ The agent triages every item against a detailed profile of one specific
 store. The profile includes what the store carries down to the brand level,
 its street address, headcount, and licenses.
 
-Silence is the product. Across 90 days of real data, the radar reviewed more
-than 640 items and surfaced only a handful.
+Silence is the product. It has read 761 real items so far and brought 30 of
+them to the owner. Four of those thirty asked for a decision today.
 
 Its signature feature is the rejection log. The log shows every item the
 radar chose not to interrupt the owner about, along with a one-line reason
@@ -54,8 +54,9 @@ maps to money or liability the owner would otherwise absorb without warning:
   against a regional grocer over exactly this class of shelf-management
   failure), and nobody calls a small store to tell them. The radar named the
   exact flavors, UPCs, and best-by dates to pull.
-- It found a sewer-rate hearing involving about $242 million in county
-  property tax charges. This matters because commercial sewer charges are
+- It found a sewer-rate hearing placing about $209 million in sanitary sewer
+  charges, and $33 million in storm sewer charges, on the county property tax
+  roll. This matters because commercial sewer charges are
   rate-classed, and a store with a deli that prepares hot food falls into a
   higher-strength class: the outcome of that one hearing lands directly on
   the store's property tax bill as a line item most owners only discover
@@ -69,7 +70,7 @@ maps to money or liability the owner would otherwise absorb without warning:
 
 Midway through the build, the radar caught a live recall expansion for
 Everything Sprouts' Robust Radish Mix and emailed the owner at 6 AM on a
-Saturday with nobody watching the system.
+Sunday with nobody watching the system.
 
 ## How I built it
 
@@ -140,9 +141,10 @@ state after each item.
 
 ## Accomplishments I'm proud of
 
-Every number in the demo comes from real data. The system includes 90 days
-of genuine backfill, a live recall that it caught and emailed without human
-intervention, and a rejection log with reasons that still hold up when
+Every number in the demo comes from real data. The backfill is genuine and
+deep: recall records reaching back to December 2025 and street-work records
+to July 2025. There is a live recall the system caught and emailed without
+human intervention, and a rejection log with reasons that still hold up when
 someone audits the underlying source.
 
 The consent-calendar example captures the main idea of the product in one
