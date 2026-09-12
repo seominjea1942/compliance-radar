@@ -29,8 +29,12 @@ data already in TiDB.
       in the narration.
 - [ ] Verify FE deployed: all-time totals strip, act / check / file tabs +
       Handled, Resolve modal, carry-list save, Ask panel wired, brief
-      button, and **log search re-enabled** (S4 depends on it: Fromm is
-      ~400 rows deep in the Food-recalls filter, unreachable by scrolling).
+      button.
+- [ ] **Pre-load a tab for S4** at
+      `/?view=set-aside&tag=food-recalls&q=Fromm` (the log's `?q=` filter
+      works from the URL even with the search box hidden; no FE change
+      needed. Fromm is row 406 of 413 in the filter, unreachable by
+      scrolling).
 - [ ] Vercel env vars present (runtime key); warm the ask endpoint with one
       throwaway question ~2 min before recording (cold start).
 - [ ] Confirm trust stamp shows today ("Checked today, 6:00 AM").
@@ -77,16 +81,21 @@ the silence trustworthy."
 ## S1 (0:40-1:10) — The quiet home
 
 Open Overview. Expect: trust stamp with today's time; the all-time strip
-(that day's numbers from demo_numbers.py: "761 read · 57 brought to you"
-on 2026-09-11) with the period selector on its default
+(that day's CARD numbers from demo_numbers.py: "761 read · 30 brought to
+you" on 2026-09-11; the subhead counts open cards, not decision rows)
+with the period selector on its default
 (all-time); topics table with all five tags, zero rows rendered as
 watched-and-quiet; act / check / file tabs plus Handled.
 Say: "In its first two weeks it read 761 real items, with data reaching
-back to 2025. 57 were worth the owner's attention, and only 8 said act
-now. Most mornings it brought nothing. One of those mornings it emailed a
-live recall expansion at 6 AM on a Saturday while nobody was watching."
-(All four figures from demo_numbers.py: 761 read / 57 surfaced / act 8;
-operating window 2026-08-28 onward; oldest source dates are openFDA
+back to 2025. Thirty reached the owner, and only four of those needed a
+signature. One of those four is a single recall covering five products.
+Most mornings it brought nothing. One of those mornings it emailed a live
+recall expansion at 6 AM on a Saturday while nobody was watching."
+(Figures from demo_numbers.py, CARD unit: 761 read, 30 open cards, act 4.
+The narration must use the card numbers because the subhead and tabs
+count cards; the topic table's Total flagged (57) is the DECISION count
+and sits on the same screen. Do not read both aloud in the same breath.
+Operating window 2026-08-28 onward; oldest source dates are openFDA
 2025-12-15 and street work 2025-07-18, which is what "reaching back to
 2025" means. Never claim a 90-day window or a longer operating history.)
 Breaks the take: missing trust stamp; topic rows hidden when zero; period
@@ -120,9 +129,11 @@ Breaks the take: partial UPCs anywhere; modal missing default-checked state.
 
 ## S4 (2:25-3:00) — The overturn (learning loop, genuinely earned)
 
-Open the Log and search "Fromm" (requires the re-enabled log search from
-the checklist; the item sits at row 406 of 413 in the Food-recalls filter
-per demo_numbers.py, so scrolling is not a fallback). Show the real miss: filtered as pet-related while the profile
+Switch to the pre-loaded tab at
+`/?view=set-aside&tag=food-recalls&q=Fromm` (checklist item; the `?q=`
+URL filter works with the search box hidden. The item sits at row 406 of
+413 in the unqueried filter per demo_numbers.py, so scrolling is not a
+fallback). Show the real miss: filtered as pet-related while the profile
 says the store carries pet food. Overturn it with "This actually affects
 us". Expect: it appears in overturn history.
 Say: "This is a genuine miss, not a staged one. The correction becomes
