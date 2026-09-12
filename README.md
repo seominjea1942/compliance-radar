@@ -12,6 +12,9 @@ reason. The owner can overturn any rejection, and that correction feeds
 future triage. Built for the AWS "Agents for Humans" hackathon
 (Professional Agents track).
 
+**Live:** https://shopbell.minjeaseo.com (the product is branded Shopbell in
+the UI; this repository keeps its original Compliance Radar name).
+
 ![Architecture](docs/architecture.png)
 
 ## What it watches (all real, live sources)

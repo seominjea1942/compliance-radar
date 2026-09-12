@@ -13,7 +13,7 @@ from botocore.config import Config
 
 RUNTIME_ARN = os.environ["AGENT_RUNTIME_ARN"]
 ALERT_FROM = os.environ.get("ALERT_FROM", "radar@recalls.minjeaseo.com")
-ALERT_TO = os.environ.get("ALERT_TO", "seominjea1942@gmail.com")
+ALERT_TO = os.environ["ALERT_TO"]
 
 # One attempt, long read timeout: a daily run longer than boto3's default
 # 60s read timeout must NOT be client-retried (a retry re-runs the whole

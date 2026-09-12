@@ -323,7 +323,7 @@ for Vercel; AGENT_RUNTIME_ARN included). Payloads:
   Bedrock key needed on Vercel anymore, this one key covers both).
 
 ## FE /api/ask public route contract (recorded 2026-09-08, FE-owned)
-POST https://compliance-radar-red.vercel.app/api/ask with camelCase keys:
+POST https://shopbell.minjeaseo.com/api/ask with camelCase keys:
 `sessionId` (required, ^[A-Za-z0-9_-]{33,128}$), `question` (required,
 <=2000 chars), `decisionId` (optional, decimal digits as STRING). The route
 translates to the runtime's snake_case internally. Verified live end to end
