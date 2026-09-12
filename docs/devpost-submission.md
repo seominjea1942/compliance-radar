@@ -112,32 +112,50 @@ runtime.
 
 ## Challenges I ran into
 
-The USDA FSIS recall API is blocked by bot protection at the network edge,
-including its own documentation page. I worked around this by subscribing to
-FSIS's official GovDelivery emails and building an SES inbound pipeline that
-stores the emails in S3 and parses them. The agent now reads the same recall
-announcement that a human subscriber receives.
+Most of my hard problems were about running one agent in two very different
+modes, and about sources that lie in ways you only see if you check.
 
-I also learned that openFDA is better treated as an archive than an alert
-feed. Its data can lag by 11 to 80 days. I therefore use FDA press-release
-RSS for freshness and openFDA for structured enrichment.
+Reusing a stateful chat agent inside a batch loop cost me $30 and a day. The
+Strands agent kept its conversation history across items, so item 400 carried
+the prompts of the 399 before it and my token usage went up about 25 times. I
+now clear the agent state between items: batch triage wants amnesia, chat
+wants memory, and the same agent object cannot have both.
 
-San Jose's Legistar data created another issue. Its consent flag is
-populated as zero for every item, so the field cannot be trusted to identify
-consent-calendar items.
+A quieter version of the same lesson nearly corrupted a day of data. The
+Lambda that calls InvokeAgentRuntime used boto3's defaults, and a daily run
+that took longer than the default 60-second read timeout was silently
+retried by the client. The retry re-ran the entire triage pass. Nothing
+errored; there were just two runs. I set the client to one attempt with a
+900-second read timeout, matching the Lambda's own.
 
-The city's permit data had a similar semantic trap. A permit with an
-"Accepted" status sounds like it has been approved and may be upcoming, but
-my validation showed that it actually means the work was completed. I
-confirmed this by sampling 85 permits, and all 85 had final dates.
+Interactive mode needed a different shape again. Ask has to remember the last
+few turns, so I keep a bounded window of 12 messages per AgentCore session in
+an LRU of 64 sessions. Follow-up questions work, and a long conversation
+cannot grow without limit. AgentCore's cold start is real: the first call
+after an idle period takes about ten seconds, so anything that looks like a
+demo gets a warm-up request first.
 
-I found both problems because I validated each source against real records
-before building the product around it.
+Council agendas forced a two-stage design. Reading every staff-report PDF
+would have been slow and expensive, and most agenda items are ceremonial. So
+stage one triages titles only and returns REJECT or INVESTIGATE, and stage
+two downloads and reads the PDF for survivors. That is how the system found
+the trenching schedule on page 2 of an item titled "Rule 20A and Rule 20B
+(In-Lieu Fee) Underground Utility Program." Everything that makes that catch
+possible would have been priced out by reading all of them.
 
-I also learned a $30 lesson about reusing a stateful chat agent inside a
-batch loop. Conversation history accumulated across items and increased my
-token usage by about 25 times. I fixed the problem by clearing the agent
-state after each item.
+On the data side, the USDA FSIS recall API is blocked by bot protection at
+the network edge, including its own documentation page. I subscribed to
+FSIS's official GovDelivery emails instead and built an SES inbound pipeline
+that stores them in S3 and parses them, so the agent reads the same
+announcement a human subscriber receives. openFDA turned out to be an archive
+rather than an alert feed, lagging by 11 to 80 days, so I use FDA's
+press-release RSS for freshness and openFDA for the structured detail.
+
+San Jose's permit data had a semantic trap worth naming. A permit with an
+"Accepted" status sounds approved and upcoming; validation showed it means
+the work is finished. I sampled 85 permits and all 85 had final dates. I
+found that, and Legistar's consent flag being zero for every item, only
+because I checked each source against real records before building on it.
 
 ## Accomplishments I'm proud of
 
