@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { MdArrowBack } from "react-icons/md";
 import { AskRadarProvider } from "@/components/ask/AskRadarProvider";
 import { AskRadarDock } from "@/components/ask/AskRadarDock";
-import { ContextRail } from "@/components/rail/ContextRail";
 import { Provenance } from "@/components/item/Provenance";
 import { Header } from "@/components/Header";
 import { Badge } from "@/components/ui/badge";
@@ -37,15 +36,12 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
         />
 
         {/* The bar spans the window above this row; the panel is a
-            column of the row, so one header covers both. */}
+            column of the row, so one header covers both. There is no rail
+            here: an item page is one record, and the overview's topic and
+            street-work context has nothing to say about it. */}
         <div className="flex min-h-0 flex-1">
-          {/* Rail and content share a row inside the one holding the panel:
-              the panel carries no order, so as their sibling it sorted ahead
-              of both at every width. */}
-          <div className="flex min-w-0 flex-1 flex-col xl:flex-row">
-            <ContextRail />
-
-            <main className="order-1 min-w-0 flex-1 bg-paper xl:order-2">
+          <div className="flex min-w-0 flex-1 flex-col">
+            <main className="min-w-0 flex-1 bg-paper">
               <div className="mx-auto flex w-full max-w-[800px] flex-col gap-5 px-4 pt-5 pb-10 md:gap-6.5 md:px-12 md:pt-7.5 md:pb-12">
                 <Link
                   href={backHref}
@@ -81,9 +77,13 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
                     {item.reason}
                   </p>
                   {item.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 pt-1">
+                    /* Chips, not bare mono: bare text here is the same
+                       treatment as a section label, so it read as a heading
+                       with nothing beneath it. */
+                    <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                      <span className="text-[12.5px] text-faint">Topic</span>
                       {item.tags.map((t) => (
-                        <Badge key={t} variant="bare">
+                        <Badge key={t} variant="outline">
                           {t.replace(/-/g, " ")}
                         </Badge>
                       ))}

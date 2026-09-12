@@ -113,7 +113,13 @@ export function Provenance({
       {quote && (
         <blockquote className="m-0 border-l-2 border-line-strong pl-3.5">
           <p className="m-0 text-[15px]/relaxed text-body">“{quote}”</p>
-          {pageHint && <cite className="text-[11.5px] text-faint not-italic">{pageHint}</cite>}
+          {/* The raw hint is a page number, so on its own it renders as a
+              stray digit under the quote. */}
+          {pageHint && (
+            <cite className="text-[11.5px] text-faint not-italic">
+              {/^\d+$/.test(pageHint) ? `Staff report, page ${pageHint}` : pageHint}
+            </cite>
+          )}
         </blockquote>
       )}
 
