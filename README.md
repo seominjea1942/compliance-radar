@@ -77,7 +77,9 @@ docs/ui-data-contract.md               the FE/BE data contract (single source of
 docs/demo-script.md                    demo click-through script
 analysis/                              validation and data-mining reports
 trigger/daily_trigger.py               EventBridge-invoked Lambda
-scripts/                               one-time backfills (all documented)
+scripts/                               one-time backfills (all documented) +
+                                       demo_numbers.py (prints every figure
+                                       the demo script quotes, from TiDB)
 ```
 
 ## Honest-data rules we built under

@@ -19,11 +19,14 @@ data already in TiDB.
       --state ENABLED after the final take. NOTE: update-schedule requires
       the full flag set on some CLI versions; if it errors, ask BE to
       pause/resume it instead.)
-- [ ] **Note that day's on-screen totals** (X read / Y brought to you) and
-      keep narration consistent with them. Do not script fixed numbers:
-      they grow with every daily run (761 / 57 as of 2026-09-11). The
-      rounded narration below ("over seven hundred", "fewer than sixty")
-      absorbs day-to-day drift.
+- [ ] **Run `scripts/demo_numbers.py` and reconcile the narration** before
+      the first take. It prints, straight from TiDB, every figure this
+      script quotes: totals, the action_type split, the operating window,
+      per-source data ranges, the Albertsons cluster, the Fromm row
+      position, and the profile counts. Numbers below are marked
+      `(demo_numbers.py)` and reflect the 2026-09-11 run; if a number in
+      this document cannot be produced by that script, it does not belong
+      in the narration.
 - [ ] Verify FE deployed: all-time totals strip, act / check / file tabs +
       Handled, Resolve modal, carry-list save, Ask panel wired, brief
       button, and **log search re-enabled** (S4 depends on it: Fromm is
@@ -60,10 +63,10 @@ of S1 narration even when the scene is cut.
 No clicks. Say, over a title card or a slow pan of the home screen:
 
 "A small grocery store sits under several regulators at once. Food recalls,
-city council decisions, street construction. Hundreds of items flow past
-every day, and the two or three a month that actually hit this store look
-exactly like the hundreds that don't. Owners can't read it all, so they
-read none of it, and the anxiety never goes away.
+city council decisions, street construction. Hundreds of items flow past,
+and the handful that actually hit this store look exactly like the hundreds
+that don't. Owners can't read it all, so they read none of it, and the
+anxiety never goes away.
 
 This is Shopbell, built for the owner of an 18-employee grocery.
 It reads everything every morning, interrupts almost never, and, this is
@@ -74,24 +77,26 @@ the silence trustworthy."
 ## S1 (0:40-1:10) — The quiet home
 
 Open Overview. Expect: trust stamp with today's time; the all-time strip
-(that day's numbers, e.g. "761 read · 57 brought to you" on 2026-09-11)
-with the period selector on its default
+(that day's numbers from demo_numbers.py: "761 read · 57 brought to you"
+on 2026-09-11) with the period selector on its default
 (all-time); topics table with all five tags, zero rows rendered as
 watched-and-quiet; act / check / file tabs plus Handled.
-Say: "In its first two weeks of operation it read over seven hundred real
-items, covering ninety days of recalls, agendas, and permits. It brought
-fewer than sixty to the owner, and most mornings it brought nothing. One
-of those mornings it emailed a live recall expansion at 6 AM on a Saturday
-while nobody was watching."
-(Dates are auditable: decisions run 2026-08-28 through today. Never claim
-a longer operating history; the 90 days describes the DATA the backfill
-covered, not the runtime.)
+Say: "In its first two weeks it read 761 real items, with data reaching
+back to 2025. 57 were worth the owner's attention, and only 8 said act
+now. Most mornings it brought nothing. One of those mornings it emailed a
+live recall expansion at 6 AM on a Saturday while nobody was watching."
+(All four figures from demo_numbers.py: 761 read / 57 surfaced / act 8;
+operating window 2026-08-28 onward; oldest source dates are openFDA
+2025-12-15 and street work 2025-07-18, which is what "reaching back to
+2025" means. Never claim a 90-day window or a longer operating history.)
 Breaks the take: missing trust stamp; topic rows hidden when zero; period
 selector not on all-time (numbers in the narration assume it).
 
 ## S2 (1:10-1:50) — The consent-calendar catch (the highlight)
 
-Open the Rule 20A item. Expect: title a keyword alert would never flag
+Open the Rule 20A item **from the check tab** (its action_type is NULL, so
+the FE ranks it as verify; it is NOT under act. Know the tab before the
+take so nobody hunts on camera). Expect: title a keyword alert would never flag
 ("Rule 20A and Rule 20B (In-Lieu Fee) Underground Utility Program"), the
 June 2029 date chip from key_dates, and the evidence quote from staff
 report page 2 ("will underground Lincoln Avenue from West San Carlos
@@ -116,8 +121,8 @@ Breaks the take: partial UPCs anywhere; modal missing default-checked state.
 ## S4 (2:25-3:00) — The overturn (learning loop, genuinely earned)
 
 Open the Log and search "Fromm" (requires the re-enabled log search from
-the checklist; the item is ~400 rows deep in the Food-recalls filter, so
-scrolling is not a fallback). Show the real miss: filtered as pet-related while the profile
+the checklist; the item sits at row 406 of 413 in the Food-recalls filter
+per demo_numbers.py, so scrolling is not a fallback). Show the real miss: filtered as pet-related while the profile
 says the store carries pet food. Overturn it with "This actually affects
 us". Expect: it appears in overturn history.
 Say: "This is a genuine miss, not a staged one. The correction becomes
@@ -130,7 +135,8 @@ front of the model."
 Stay in the Log, filter to "Food recalls". Show the Albertsons cluster.
 Say: "One competitor chain put out 121 recall notices dated a single day.
 Every one was filtered with one legible sentence, and zero interrupted
-the owner." (Verified: 121 rows; do not say "in seven days" or "159".)
+the owner." (121 rows, one distinct source date: demo_numbers.py. Do not
+say "in seven days" or "159".)
 Show 2-3 favorite short reasons ("Sold exclusively at Albertsons",
 "Distributed only to OR and WA").
 
@@ -148,7 +154,8 @@ Breaks the take: cold start (warm it first); a wrong or stale answer
 
 ## S7 (4:10-4:40) — Profile, architecture, closing
 
-Open Store profile. Show the 8 facts and the 53-entry carry list. Add one
+Open Store profile. Show the 8 facts and the 53-entry carry list (both
+counts from demo_numbers.py). Add one
 item via the modal ("Cooked steak, sliced to order" as don't-carry); point
 at the effect-timing disclaimer ("applies from the next daily check").
 Say: "The reasoning engine knows nothing about groceries. Everything
