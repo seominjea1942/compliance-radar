@@ -58,13 +58,14 @@ def main():
         reviewed, surfaced, filtered = c.fetchone()
         print(f"  read {reviewed} | brought to you {surfaced} | set aside {filtered}")
 
-        print("== Surfaced split by action_type (v_surfaced_feed; NULL renders as check) ==")
+        print("== Surfaced DECISIONS by action_type (v_surfaced_feed ROWS, incl. handled;")
+        print("   the topic table's Total flagged counts these, NOT what the subhead shows) ==")
         c.execute("""SELECT COALESCE(action_type, 'NULL(check)'), COUNT(*)
                      FROM v_surfaced_feed GROUP BY action_type ORDER BY 2 DESC""")
         for at, n in c.fetchall():
             print(f"  {at}: {n}")
 
-        print("== Open cards (resolution IS NULL) by action_type ==")
+        print("== Open DECISIONS (rows, resolution IS NULL) by action_type ==")
         c.execute("""SELECT COALESCE(action_type, 'NULL(check)'), COUNT(*)
                      FROM triage_decisions
                      WHERE decision IN ('ALERT','OPPORTUNITY') AND resolution IS NULL
@@ -74,6 +75,25 @@ def main():
         c.execute("""SELECT COUNT(*) FROM triage_decisions
                      WHERE decision IN ('ALERT','OPPORTUNITY') AND resolution IS NOT NULL""")
         print(f"  handled: {c.fetchone()[0]}")
+
+        print("== Open CARDS (what the UI subhead and tabs show: open v_surfaced_feed")
+        print("   rows grouped by event_key; no event_key = its own card; a card's")
+        print("   bucket is its best action_type, act > check > fyi; NULL = check) ==")
+        c.execute("""SELECT decision_id, event_key, action_type FROM v_surfaced_feed
+                     WHERE resolution IS NULL""")
+        rank = {"act": 0, "verify": 1, None: 1, "fyi": 2}
+        bucket_name = {0: "act", 1: "check", 2: "fyi"}
+        cards = {}
+        for did, ek, at in c.fetchall():
+            key = ek or f"row-{did}"
+            r = rank.get(at, 1)
+            cards[key] = min(cards.get(key, 2), r)
+        by_bucket = {}
+        for r in cards.values():
+            by_bucket[bucket_name[r]] = by_bucket.get(bucket_name[r], 0) + 1
+        print(f"  total open cards: {len(cards)}")
+        for b in ("act", "check", "fyi"):
+            print(f"  {b}: {by_bucket.get(b, 0)}")
 
         print("== Runtime range (triage_decisions.created_at; the honest operating window) ==")
         c.execute("SELECT MIN(created_at), MAX(created_at) FROM triage_decisions")
