@@ -24,7 +24,7 @@ data already in TiDB.
       script quotes: totals, the action_type split, the operating window,
       per-source data ranges, the Albertsons cluster, the Fromm row
       position, and the profile counts. Numbers below are marked
-      `(demo_numbers.py)` and reflect the 2026-09-11 run; if a number in
+      `(demo_numbers.py)` and reflect the 2026-09-12 run; if a number in
       this document cannot be produced by that script, it does not belong
       in the narration.
 - [ ] Verify FE deployed: all-time totals strip, act / check / file tabs +
@@ -33,7 +33,7 @@ data already in TiDB.
 - [ ] **Pre-load a tab for S4** at
       `/?view=set-aside&tag=food-recalls&q=Fromm` (the log's `?q=` filter
       works from the URL even with the search box hidden; no FE change
-      needed. Fromm is row 406 of 413 in the filter, unreachable by
+      needed. Fromm is row 413 of 420 in the filter, unreachable by
       scrolling).
 - [ ] Vercel env vars present (runtime key); warm the ask endpoint with one
       throwaway question ~2 min before recording (cold start).
@@ -81,19 +81,19 @@ the silence trustworthy."
 ## S1 (0:40-1:10) — The quiet home
 
 Open Overview. Expect: trust stamp with today's time; the all-time strip
-(that day's CARD numbers from demo_numbers.py: "761 read · 30 brought to
-you" on 2026-09-11; the subhead counts open cards, not decision rows)
+(that day's CARD numbers from demo_numbers.py: "773 read · 30 brought to
+you" on 2026-09-12; the subhead counts open cards, not decision rows)
 with the period selector on its default
 (all-time); topics table with all five tags, zero rows rendered as
 watched-and-quiet; act / check / file tabs plus Handled.
-Say: "In its first two weeks it read 761 real items, with data reaching
+Say: "In its first two weeks it read 773 real items, with data reaching
 back to 2025. Thirty reached the owner, and only four of those needed a
 signature. One of those four is a single recall covering five products.
 Most mornings it brought nothing. One of those mornings it emailed a live
 recall expansion at 6 AM on a Sunday while nobody was watching."
 (Weekday verified: 2026-08-30 was a Sunday; the decision row is stamped
 13:00:39 UTC, which is 06:00 PT.)
-(Figures from demo_numbers.py, CARD unit: 761 read, 30 open cards, act 4.
+(Figures from demo_numbers.py, CARD unit: 773 read, 30 open cards, act 4.
 The narration must use the card numbers because the subhead and tabs
 count cards; the topic table's Total flagged (57) is the DECISION count
 and sits on the same screen. Do not read both aloud in the same breath.
@@ -133,8 +133,8 @@ Breaks the take: partial UPCs anywhere; modal missing default-checked state.
 
 Switch to the pre-loaded tab at
 `/?view=set-aside&tag=food-recalls&q=Fromm` (checklist item; the `?q=`
-URL filter works with the search box hidden. The item sits at row 406 of
-413 in the unqueried filter per demo_numbers.py, so scrolling is not a
+URL filter works with the search box hidden. The item sits at row 413 of
+420 in the unqueried filter per demo_numbers.py, so scrolling is not a
 fallback). Show the real miss: filtered as pet-related while the profile
 says the store carries pet food. Overturn it with "This actually affects
 us". Expect: it appears in overturn history.

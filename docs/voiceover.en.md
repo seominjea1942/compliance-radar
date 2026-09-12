@@ -14,9 +14,9 @@ Pronunciation notes for the TTS tool:
 - UPCs: say "U-P-Cs". If mangled, write "U P Cs".
 - Rule 20A: "rule twenty-A".
 - AgentCore, EventBridge, Lambda: normal English words, no changes needed.
-- Numbers below are the 2026-09-11 demo_numbers.py run. Re-run the script
-  on recording day and update 761 / 30 / 4 / 121 here before generating
-  audio.
+- Numbers below are the 2026-09-12 demo_numbers.py run (reconciled on
+  recording day; scheduler paused after that morning's run). Re-run the
+  script and update 773 / 30 / 4 / 121 here before regenerating audio.
 
 ---
 
@@ -39,7 +39,7 @@ stays silent, it shows exactly why. Silence is the product.
 
 ## Block 2 — The quiet home (0:40-1:10, target 70 words)
 
-In its first two weeks, it read seven hundred sixty-one real items, with
+In its first two weeks, it read seven hundred seventy-three real items, with
 data reaching back to 2025. Thirty reached the owner, and only four of
 those needed a signature. One of those four is a single recall covering
 five products. Most mornings, it brought nothing. And one of those
