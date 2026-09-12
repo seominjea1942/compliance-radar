@@ -20,19 +20,22 @@ Pronunciation notes for the TTS tool:
 
 ---
 
-## Block 1 — Pitch (0:00-0:40, target 100 words)
+## Block 1 — Pitch (0:00-0:40, ~85 words, generated 31s at speed 0.93)
 
-A small grocery store sits under several regulators at once. Food
-recalls. City council decisions. Street construction. Hundreds of items
-flow past, and the handful that actually hit this store look exactly
-like the hundreds that don't. Owners can't read it all, so they read
-none of it, and the anxiety never goes away.
+Visual order: Shopbell logo and main screen first, then a
+frustrated-owner illustration, then a happy-owner illustration.
 
-This is Shopbell, built for the owner of an eighteen-employee grocery.
-It reads everything, every morning. It interrupts almost never. And,
-this is the important part, it shows its work for every item it chose
-not to interrupt about. Silence is the product. The rejection log is
-what makes the silence trustworthy.
+This is Shopbell. A compliance radar for small businesses. Every
+morning, it reads the recalls, the council agendas, and the
+construction permits around one specific store, and decides what
+actually matters.
+
+Because hundreds of these flow past every week, and the few that really
+matter look exactly like the rest. Owners can't read them all, so they
+read none of them.
+
+Shopbell reads everything, and almost never interrupts. And when it
+stays silent, it shows exactly why. Silence is the product.
 
 ## Block 2 — The quiet home (0:40-1:10, target 70 words)
 
