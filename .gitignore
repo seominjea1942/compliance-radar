@@ -4,3 +4,5 @@ inbox/
 __pycache__/
 .vercel-aws-key.local
 .venv
+.DS_Store
+demo/
