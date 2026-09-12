@@ -6,7 +6,7 @@ import { AskRadarDock } from "@/components/ask/AskRadarDock";
 import { Provenance } from "@/components/item/Provenance";
 import { Header } from "@/components/Header";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardTitle } from "@/components/ui/card";
+import { RailLabel } from "@/components/rail/RailLabel";
 import { getDecisionDetail, getStoreProfile } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
@@ -69,10 +69,15 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
                   <p className="m-0 text-[12.5px] text-faint">{item.postedLabel}</p>
                 </div>
 
-                <Card className="gap-3">
-                  <CardTitle as="h2">
+                {/* Ruled sections, not boxes. A frame around content that is
+                    already on the page colour draws a rectangle and says
+                    nothing; the rule under the section name is what the
+                    profile and the overview rail already use to say where one
+                    section ends. */}
+                <section className="flex flex-col gap-3.5">
+                  <RailLabel>
                     {item.surfaced ? "Why this reached you" : "Why I set this aside"}
-                  </CardTitle>
+                  </RailLabel>
                   <p className="m-0 text-pretty text-[17px]/relaxed text-body md:text-[19px]">
                     {item.reason}
                   </p>
@@ -89,12 +94,15 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
                       ))}
                     </div>
                   )}
-                </Card>
+                </section>
 
-                <Card className="gap-3">
-                  <CardTitle as="h2">What the record says</CardTitle>
+                {/* Its own space above: with no frames, the gap between two
+                    sections is the only thing separating the end of one from
+                    the name of the next. */}
+                <section className="mt-8 flex flex-col gap-3.5">
+                  <RailLabel>What the record says</RailLabel>
                   <Provenance source={item.source} payload={item.payload} />
-                </Card>
+                </section>
               </div>
             </main>
           </div>
