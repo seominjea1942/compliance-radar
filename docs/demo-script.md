@@ -90,7 +90,9 @@ Say: "In its first two weeks it read 761 real items, with data reaching
 back to 2025. Thirty reached the owner, and only four of those needed a
 signature. One of those four is a single recall covering five products.
 Most mornings it brought nothing. One of those mornings it emailed a live
-recall expansion at 6 AM on a Saturday while nobody was watching."
+recall expansion at 6 AM on a Sunday while nobody was watching."
+(Weekday verified: 2026-08-30 was a Sunday; the decision row is stamped
+13:00:39 UTC, which is 06:00 PT.)
 (Figures from demo_numbers.py, CARD unit: 761 read, 30 open cards, act 4.
 The narration must use the card numbers because the subhead and tabs
 count cards; the topic table's Total flagged (57) is the DECISION count
