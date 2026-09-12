@@ -1,13 +1,10 @@
 # TODO
 
 ## Before making the repo public (blocking)
-- [ ] Rotate the TiDB password (TiDB Cloud console -> cluster -> Connect ->
-      Reset password). The current password is in git history
-      (complianceradar/agentcore/agentcore.json, since commit 60b0aa8), so it
-      must be dead before the repo is public.
-- [ ] Remove TIDB_PASSWORD from agentcore.json envVars; have the runtime read
-      it from AWS Secrets Manager (~$0.40/mo) or a deploy-time injection.
-- [ ] Update .env.local + Vercel env with the new password.
+- [x] Rotate the TiDB password — DONE 2026-09-08 (old value in git history is dead).
+- [x] TIDB_PASSWORD removed from agentcore.json; runtime reads Secrets Manager
+      (compliance-radar/tidb-password) — DONE 2026-09-08.
+- [x] .env.local (both worktrees) + Vercel env updated — DONE 2026-09-08.
 
 ## Deferred product decisions (need human call)
 - [ ] Make the masthead date range an actual selector. It reads

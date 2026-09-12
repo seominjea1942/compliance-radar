@@ -1,115 +1,189 @@
-# Demo click-through script (recording checklist)
+# Demo recording script (5-minute video, target runtime 4:40)
 
-Every scenario below runs on real data already in TiDB. Prerequisites listed
-first; each scenario has the clicks, the expected state, and what breaks the
-take if missing. Order is the suggested recording order.
+Structure follows the hackathon rules: the video must be 5 minutes or less
+and must pitch the problem, who it is for, and why it matters. Those three
+land in the first 40 seconds, before any clicking. Every scene runs on real
+data already in TiDB.
 
-## Pre-record checklist (do in this order)
+## Pre-record checklist (all mandatory, in this order)
 
-- [ ] BE grooming run (owner approved wording pending): reopen the 3 Sept
-      council items, bulk-resolve the aged Aug verifies, keep open: sprouts
-      pair, 1-2 act recall events, sewer ALERT, Rule 20A, concrete-repair
-      OPPORTUNITY, Fromm stays REJECT+not-overturned.
-- [ ] Verify FE deployed: action tabs unscoped + age labels (contract rec #4),
-      street-work card, Resolve modal, carry-list save, Ask panel wired to the
-      runtime, brief button.
+- [ ] **Pause the 6 AM scheduler AFTER that morning's run completes**
+      (REQUIRED: a run mid-take changes on-screen numbers between scenes.
+      Order matters: pause only after the 6 AM run has finished, so the
+      trust stamp still shows today. Pausing the night before makes the
+      stamp show yesterday and breaks S1):
+
+      aws scheduler update-schedule --region us-west-2 \
+        --name compliance-radar-daily --state DISABLED
+      (name verified against the live account; re-enable with
+      --state ENABLED after the final take. NOTE: update-schedule requires
+      the full flag set on some CLI versions; if it errors, ask BE to
+      pause/resume it instead.)
+- [ ] **Run `scripts/demo_numbers.py` and reconcile the narration** before
+      the first take. It prints, straight from TiDB, every figure this
+      script quotes: totals, the action_type split, the operating window,
+      per-source data ranges, the Albertsons cluster, the Fromm row
+      position, and the profile counts. Numbers below are marked
+      `(demo_numbers.py)` and reflect the 2026-09-12 run; if a number in
+      this document cannot be produced by that script, it does not belong
+      in the narration.
+- [ ] Verify FE deployed: all-time totals strip, act / check / file tabs +
+      Handled, Resolve modal, carry-list save, Ask panel wired, brief
+      button.
+- [ ] **Pre-load a tab for S4** at
+      `/?view=set-aside&tag=food-recalls&q=Fromm` (the log's `?q=` filter
+      works from the URL even with the search box hidden; no FE change
+      needed. Fromm is row 413 of 420 in the filter, unreachable by
+      scrolling).
 - [ ] Vercel env vars present (runtime key); warm the ask endpoint with one
       throwaway question ~2 min before recording (cold start).
-- [ ] Optional: BE pauses the 6 AM scheduler during takes (ask if wanted).
 - [ ] Confirm trust stamp shows today ("Checked today, 6:00 AM").
+- [ ] Prepare the architecture frame: FE's new AWS-style diagram (Shopbell
+      title) full screen, ready to cut to in the closing scene.
+- [ ] Scene 5 fallback assets ready if used: email screenshot with the
+      owner's email address BLURRED or cropped out (never show the raw
+      inbox address on screen).
 
-## Scenario 1 — The quiet open (product thesis)
+## Timeline
 
-Open Overview. Expect: trust stamp with today's time; "read this week" strip
-with a modest number; topics table with all five tags INCLUDING zero rows
-rendered as watched-and-quiet; a small Needs action count (single digits).
-Say the line: "It read hundreds of items; it interrupted about a handful in
-90 days; half of all weeks were completely silent."
-Breaks the take: missing trust stamp; topic rows hidden when zero.
+| Time | Scene |
+|---|---|
+| 0:00-0:40 | Pitch (no UI, or slow pan over the quiet home) |
+| 0:40-1:10 | S1 The quiet home |
+| 1:10-1:50 | S2 Rule 20A deep-read (the highlight) |
+| 1:50-2:25 | S3 Recall catch + Resolve modal |
+| 2:25-3:00 | S4 The overturn (learning loop) |
+| 3:00-3:30 | S5 Rejection log, Albertsons cluster |
+| 3:30-4:10 | S6 Ask the radar (two questions only) |
+| 4:10-4:40 | S7 Profile + closing, architecture frame, live URL |
 
-## Scenario 2 — The recall catch and Resolve (hero interaction)
+Cut list (only if time remains): real alert email (blur address), sewer
+rates, street-work map. The strongest line from the email scene ("this
+exact email went out while nobody was watching") survives as one sentence
+of S1 narration even when the scene is cut.
+
+## 0:00-0:40 — Pitch (rules requirement: problem, who, why)
+
+No clicks. Say, over a title card or a slow pan of the home screen:
+
+"A small grocery store sits under several regulators at once. Food recalls,
+city council decisions, street construction. Hundreds of items flow past,
+and the handful that actually hit this store look exactly like the hundreds
+that don't. Owners can't read it all, so they read none of it, and the
+anxiety never goes away.
+
+This is Shopbell, built for the owner of an 18-employee grocery.
+It reads everything every morning, interrupts almost never, and, this is
+the important part, shows its work for every item it chose NOT to
+interrupt about. Silence is the product; the rejection log is what makes
+the silence trustworthy."
+
+## S1 (0:40-1:10) — The quiet home
+
+Open Overview. Expect: trust stamp with today's time; the all-time strip
+(that day's CARD numbers from demo_numbers.py: "773 read · 30 brought to
+you" on 2026-09-12; the subhead counts open cards, not decision rows)
+with the period selector on its default
+(all-time); topics table with all five tags, zero rows rendered as
+watched-and-quiet; act / check / file tabs plus Handled.
+Say: "In its first two weeks it read 773 real items, with data reaching
+back to 2025. Thirty reached the owner, and only four of those needed a
+signature. One of those four is a single recall covering five products.
+Most mornings it brought nothing. One of those mornings it emailed a live
+recall expansion at 6 AM on a Sunday while nobody was watching."
+(Weekday verified: 2026-08-30 was a Sunday; the decision row is stamped
+13:00:39 UTC, which is 06:00 PT.)
+(Figures from demo_numbers.py, CARD unit: 773 read, 30 open cards, act 4.
+The narration must use the card numbers because the subhead and tabs
+count cards; the topic table's Total flagged (57) is the DECISION count
+and sits on the same screen. Do not read both aloud in the same breath.
+Operating window 2026-08-28 onward; oldest source dates are openFDA
+2025-12-15 and street work 2025-07-18, which is what "reaching back to
+2025" means. Never claim a 90-day window or a longer operating history.)
+Breaks the take: missing trust stamp; topic rows hidden when zero; period
+selector not on all-time (numbers in the narration assume it).
+
+## S2 (1:10-1:50) — The consent-calendar catch (the highlight)
+
+Open the Rule 20A item **from the check tab** (its action_type is NULL, so
+the FE ranks it as verify; it is NOT under act. Know the tab before the
+take so nobody hunts on camera). Expect: title a keyword alert would never flag
+("Rule 20A and Rule 20B (In-Lieu Fee) Underground Utility Program"), the
+June 2029 date chip from key_dates, and the evidence quote from staff
+report page 2 ("will underground Lincoln Avenue from West San Carlos
+Street...").
+Say: "The agenda title says fee program. The agent read the staff report
+behind the consent item, and page 2 says they are digging up this store's
+street. It kept the quote and the page number as evidence. This is the
+scene that proves it is not a keyword alert."
+Breaks the take: evidence/key_dates not rendered; item resolved (reopen it).
+
+## S3 (1:50-2:25) — The recall catch and Resolve
 
 Click the Straus event card (grouped: 5 products, one card). Expect: hazard
 line "foreign metal pieces" (backend field, not paraphrase), act badge,
 expandable product list with full UPCs and "BEST BY: 27 DEC 26" lot info.
-Click Resolve: modal lists 5 products, all checked by default; uncheck none,
-mark two as "don't carry" via the row action, Save. Expect: card closes or
-shows remaining, log reflects it.
+Click Resolve: modal lists 5 products, all checked by default; mark two as
+"don't carry" via the row action, Save.
+Say: "It names the exact flavors, the UPCs, the best-by dates to pull, and
+resolving it is part of the audit trail."
 Breaks the take: partial UPCs anywhere; modal missing default-checked state.
 
-## Scenario 3 — The live-alert story (real email)
+## S4 (2:25-3:00) — The overturn (learning loop, genuinely earned)
 
-Show the real alert email received Aug 30, 6:00 AM (Robust Radish expansion)
-in the owner's inbox, then the matching item in the feed. Click "Share via
-email" on it: expect a forwardable brief (4 plain-text sections) generated in
-a few seconds. Say: "This exact email went out while nobody was watching."
-Breaks the take: brief endpoint not wired; latency over ~10s (warm it first).
+Switch to the pre-loaded tab at
+`/?view=set-aside&tag=food-recalls&q=Fromm` (checklist item; the `?q=`
+URL filter works with the search box hidden. The item sits at row 413 of
+420 in the unqueried filter per demo_numbers.py, so scrolling is not a
+fallback). Show the real miss: filtered as pet-related while the profile
+says the store carries pet food. Overturn it with "This actually affects
+us". Expect: it appears in overturn history.
+Say: "This is a genuine miss, not a staged one. The correction becomes
+retrieved context: future pet-food recalls arrive with this overturn in
+front of the model."
+(Undo exists if a take goes wrong: BE can revert in one command.)
 
-## Scenario 4 — The consent-calendar catch (the thesis proof)
+## S5 (3:00-3:30) — The rejection log (silence made trustworthy)
 
-Open the Rule 20A item. Expect: title that keyword search would never flag
-("Rule 20A and Rule 20B (In-Lieu Fee) Underground Utility Program"), the
-June 2029 date chip from key_dates, and the "where we found it" evidence
-quote (staff report page 2: "will underground Lincoln Avenue from West San
-Carlos Street..."). Say: "The agenda title says fee program. Page 2 says
-they're digging up this street."
-Breaks the take: evidence/key_dates not rendered; item resolved (reopen it).
+Stay in the Log, filter to "Food recalls". Show the Albertsons cluster.
+Say: "One competitor chain put out 121 recall notices dated a single day.
+Every one was filtered with one legible sentence, and zero interrupted
+the owner." (121 rows, one distinct source date: demo_numbers.py. Do not
+say "in seven days" or "159".)
+Show 2-3 favorite short reasons ("Sold exclusively at Albertsons",
+"Distributed only to OR and WA").
 
-## Scenario 5 — The fee that lands on the bill
+## S6 (3:30-4:10) — Ask the radar (agent with tools)
 
-Open the sewer-rates ALERT. Expect: hearing date chip (2026-08-11), evidence
-quote about $209M placed on the county property tax roll, deli rate-class
-reasoning. Quick beat, 15 seconds.
-
-## Scenario 6 — The honest map
-
-Open the map/street-work card. Expect headline: "No active street work
-blocking your block" (or current count), with watched excavation permits
-listed with utility work descriptions ("PG&E to replace pole...") and expiry
-dates, moratorium segments as protected context, building permits demoted to
-gray. Say: "Watching is the feature. Most days the answer is no, and it shows
-its work."
-
-## Scenario 7 — The rejection log (silence made trustworthy)
-
-Open the Log, filter by "Food recalls". Scroll the Albertsons cluster: say
-"one competitor's bad week: 159 recalls hit the feed in seven days; every one
-filtered with one legible sentence; zero interruptions." Show 2-3 favorite
-short reasons ("Sold exclusively at Albertsons", "Distributed only to OR and
-WA", "City payroll classification, not private wage law").
-
-## Scenario 8 — The overturn (learning loop, genuinely earned)
-
-In the log, search "Fromm". Show the real miss: dog-food recall filtered as
-"pet food, unrelated" while the profile says the store carries pet food.
-Overturn it with "This actually affects us". Expect: it appears in overturn
-history; say: "future pet-food recalls now retrieve this correction as
-context." (Undo exists if a take goes wrong: BE can revert.)
-
-## Scenario 9 — Ask the radar (agent with tools)
-
-Open the chat. Ask, in order:
+Record this scene LAST (it is non-deterministic; plan at least two takes).
+Open the chat. Ask exactly two questions:
 1. "Why did this reach me?" from the sprouts item (expect grounded answer
    citing sprouts/deli profile facts).
-2. "Show me what you filtered today" (expect real filtered list summary).
-3. "What did I handle recently?" (expect the Resolve actions from Scenario 2,
-   "as of now" phrasing).
-Say: "Same agent, same data, on AgentCore sessions: it answers from what it
-watched, and says so when it can't."
-Breaks the take: cold start latency; wrong/stale answers (re-record, it's
-non-deterministic prose).
+2. "Show me what you filtered today" (expect a real filtered-list summary).
+Say: "Same agent, same database, on AgentCore sessions. It answers from
+rows it actually read, and says so when it can't."
+Breaks the take: cold start (warm it first); a wrong or stale answer
+(re-record).
 
-## Scenario 10 — The closing shot (generalization argument)
+## S7 (4:10-4:40) — Profile, architecture, closing
 
-Open Store profile. Show the 8 facts and the 53-entry carry list. Add one
-item via the modal ("Cooked steak, sliced to order" as don't-carry): expect
-the effect-timing disclaimer ("applies from the next daily check, 6:00 AM").
-Closing line: "The reasoning engine knows nothing about groceries. Everything
-grocery-specific is this editable page. Swap the profile, and the same radar
-watches a salon, a taqueria, a bike shop."
+Open Store profile. Show the 8 facts and the 53-entry carry list (both
+counts from demo_numbers.py). Add one
+item via the modal ("Cooked steak, sliced to order" as don't-carry); point
+at the effect-timing disclaimer ("applies from the next daily check").
+Say: "The reasoning engine knows nothing about groceries. Everything
+grocery-specific is this editable page. Swap the profile and the same
+radar watches a salon or a taqueria."
+Cut to the NEW architecture diagram (FE's AWS-style redraw with the
+Shopbell name; do NOT use docs/architecture.png, which still carries the
+old Compliance Radar title) for ~5 seconds while saying: "One Strands
+agent, two modes, on Bedrock AgentCore. EventBridge to Lambda to the
+runtime every morning; TiDB holds every decision, reason, and embedding."
+End frame: the live URL and the repo URL on screen.
 
 ## After recording
 
+- [ ] Re-enable the 6 AM scheduler (--state ENABLED).
 - [ ] BE reset if another take is needed: resolutions, overturns, profile
       test entry (one command each; timestamps never faked).
 - [ ] Keep the recording as backup for live-demo failure on judging day.

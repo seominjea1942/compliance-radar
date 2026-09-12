@@ -22,10 +22,11 @@ Fixed tag set (exactly these 5): `food-recalls`, `city-programs-fees`,
 
 ## Queryable views
 
-### 1. `v_weekly_summary` — home screen strip ("reviewed 94, surfaced 2")
-Columns: `source` (str), `reviewed` (int), `surfaced` (num), `filtered` (num).
-Rolling last-7-days window. One row per source; sum across rows for the
-headline numbers. NOTE: on quiet weeks some sources have no row at all.
+### 1. `v_read_totals` (all-time)
+`v_read_totals` (added 2026-09-08): `source`, `reviewed`, `surfaced`,
+`filtered`, no time window; SUM(reviewed) = COUNT(triage_decisions).
+(The legacy 7-day `v_weekly_summary` was dropped 2026-09-10 after FE
+switched.)
 
 ### 2. `v_filtered_log` — rejection log screen (reasons are the primary content)
 Columns: `decision_id` (int), `title` (str), `source` (str), `reason` (str,
@@ -96,9 +97,15 @@ deep-read items `key_dates` (list of {label, date}), `evidence`
 ({quote, page_hint}), `staff_report_attachment`; permits: `lat`, `lon`,
 `permit_value`, `square_footage`, `address`, `work_category`.
 
-### 6. `v_weekly_topics` — per-tag home table (added 2026-09-03)
-Columns: `tag` (str), `read` (int), `for_you` (num). One row per fixed tag,
-zeros kept, rolling 7 days. Replaces the interim getWeeklyTopics() query.
+### 6. `v_topic_totals` (all-time)
+`v_topic_totals` (added 2026-09-08): `tag`, `read`, `for_you`, one row per
+fixed tag, zeros kept, NO time window — matches the masthead date-range
+indicator. Verified: read sums with no double-counting (0 rows carry two
+tags today; the write path allows up to 2, so if a future decision gets 2
+tags the sum exceeds the total — FE should treat TOTAL FLAGGED as
+sum-of-rows or read COUNT(*) separately).
+(The legacy 7-day `v_weekly_topics` was dropped 2026-09-10 after FE
+switched.)
 
 ### 7. `v_run_status` — trust stamp (added 2026-09-03)
 Single row: `last_checked` (datetime, UTC) = the last pipeline run, INCLUDING
@@ -233,9 +240,10 @@ cent. Not pre-stored; the UI should call it lazily per surfaced item.
    runtime and everything else can be Edge or static. Do NOT put the project's
    admin AWS keys in Vercel: request a least-privilege key (bedrock:InvokeModel
    only) from the backend session, which will provision it.
-4. **Scoping rule (CORRECTED 2026-09-05): stats are weekly, the todo list is
-   not.** The 7-day window applies to activity STATS only: the "read this
-   week" strip, v_weekly_summary, v_weekly_topics. The action tabs
+4. **Scoping rule (UPDATED 2026-09-10): stats are all-time, the todo list is
+   open-obligations.** Activity STATS (the read strip, By topic) read the
+   all-time views v_read_totals and v_topic_totals; the legacy 7-day
+   v_weekly_* views are gone. The action tabs
    (Needs action / To check / For the file) are an OPEN-OBLIGATIONS list:
    show ALL rows with resolution IS NULL regardless of age: an unchecked
    recall does not stop needing action after 7 days, and silently aging
@@ -313,6 +321,13 @@ for Vercel; AGENT_RUNTIME_ARN included). Payloads:
 - Brief: `{"action":"brief", "decision_id": "<STRING, same rule as ask>"}` -> `{"status":"ok",
   "brief":"<plain text>"}` (replaces the earlier make_brief guidance; no
   Bedrock key needed on Vercel anymore, this one key covers both).
+
+## FE /api/ask public route contract (recorded 2026-09-08, FE-owned)
+POST https://shopbell.minjeaseo.com/api/ask with camelCase keys:
+`sessionId` (required, ^[A-Za-z0-9_-]{33,128}$), `question` (required,
+<=2000 chars), `decisionId` (optional, decimal digits as STRING). The route
+translates to the runtime's snake_case internally. Verified live end to end
+(Vercel -> AgentCore -> Secrets Manager -> TiDB) on 2026-09-08.
 
 ## Hard rules from the backend
 

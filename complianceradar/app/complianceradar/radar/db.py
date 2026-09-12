@@ -9,10 +9,27 @@ import pymysql
 SCHEMA = pathlib.Path(__file__).parent / "schema.sql"
 
 
+_secret_password = None
+
+
+def _tidb_password() -> str:
+    """Env var wins (local dev); otherwise fetch once from Secrets Manager."""
+    if os.environ.get("TIDB_PASSWORD"):
+        return os.environ["TIDB_PASSWORD"].strip('"')
+    global _secret_password
+    if _secret_password is None:
+        import boto3
+        sm = boto3.client("secretsmanager", region_name="us-west-2")
+        _secret_password = sm.get_secret_value(
+            SecretId=os.environ.get("TIDB_PASSWORD_SECRET",
+                                    "compliance-radar/tidb-password"))["SecretString"]
+    return _secret_password
+
+
 def connect():
     return pymysql.connect(
         host=os.environ["TIDB_HOST"], port=int(os.environ.get("TIDB_PORT", "4000")),
-        user=os.environ["TIDB_USER"], password=os.environ["TIDB_PASSWORD"].strip('"'),
+        user=os.environ["TIDB_USER"], password=_tidb_password(),
         database=os.environ.get("TIDB_DATABASE", "compliance_radar"),
         ssl={"ca": certifi.where()}, connect_timeout=10, autocommit=True)
 
@@ -44,8 +61,25 @@ DEFAULT_TAG_BY_SOURCE = {
 }
 
 
+VALID_DECISIONS = {"ALERT", "REJECT", "OPPORTUNITY"}
+
+
+def _normalize_decision(decision: dict) -> str:
+    """Guard the enum: the 2026-09-08 incident stored the model's 'VERIFY'
+    verbatim, creating rows invisible to every view."""
+    d = str(decision.get("decision", "")).upper()
+    if d in VALID_DECISIONS:
+        return d
+    if d == "VERIFY":  # model conflated action_type with decision
+        decision.setdefault("action_type", "verify")
+        return "ALERT"
+    decision["reason"] = f"(model returned invalid decision '{d}') " + str(decision.get("reason", ""))
+    return "REJECT"
+
+
 def insert_decision(conn, document_id: int, decision: dict, embedding=None,
                     source: str = None) -> int:
+    decision["decision"] = _normalize_decision(decision)
     tags = [t for t in (decision.get("tags") or []) if t in FIXED_TAGS]
     if not tags and source in DEFAULT_TAG_BY_SOURCE:
         tags = [DEFAULT_TAG_BY_SOURCE[source]]
@@ -53,10 +87,13 @@ def insert_decision(conn, document_id: int, decision: dict, embedding=None,
     if decision["decision"] == "REJECT" or action not in ACTION_TYPES:
         action = None
     with conn.cursor() as c:
+        # UNIQUE(document_id): a concurrent or retried run keeps the first
+        # decision instead of duplicating cards
         c.execute(
             """INSERT INTO triage_decisions
                (document_id, decision, reason, short_reason, hazard, profile_fact_id, embedding, tags, action_type)
-               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+               ON DUPLICATE KEY UPDATE id = id""",
             (document_id, decision["decision"], decision["reason"],
              (decision.get("short_reason") or None) and decision["short_reason"][:160],
              (decision.get("hazard") or None) and str(decision["hazard"])[:60],
