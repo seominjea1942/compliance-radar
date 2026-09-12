@@ -7,8 +7,11 @@ data already in TiDB.
 
 ## Pre-record checklist (all mandatory, in this order)
 
-- [ ] **Pause the 6 AM scheduler** (REQUIRED, not optional: a run mid-take
-      changes on-screen numbers between scenes and breaks continuity):
+- [ ] **Pause the 6 AM scheduler AFTER that morning's run completes**
+      (REQUIRED: a run mid-take changes on-screen numbers between scenes.
+      Order matters: pause only after the 6 AM run has finished, so the
+      trust stamp still shows today. Pausing the night before makes the
+      stamp show yesterday and breaks S1):
 
       aws scheduler update-schedule --region us-west-2 \
         --name compliance-radar-daily --state DISABLED
@@ -16,14 +19,20 @@ data already in TiDB.
       --state ENABLED after the final take. NOTE: update-schedule requires
       the full flag set on some CLI versions; if it errors, ask BE to
       pause/resume it instead.)
-- [ ] Verify FE deployed: all-time totals (715 read / 56 brought to you),
-      act / check / file tabs + Handled, Resolve modal, carry-list save,
-      Ask panel wired, brief button.
+- [ ] **Note that day's on-screen totals** (X read / Y brought to you) and
+      keep narration consistent with them. Do not script fixed numbers:
+      they grow with every daily run (761 / 57 as of 2026-09-11). The
+      rounded narration below ("over seven hundred", "fewer than sixty")
+      absorbs day-to-day drift.
+- [ ] Verify FE deployed: all-time totals strip, act / check / file tabs +
+      Handled, Resolve modal, carry-list save, Ask panel wired, brief
+      button, and **log search re-enabled** (S4 depends on it: Fromm is
+      ~400 rows deep in the Food-recalls filter, unreachable by scrolling).
 - [ ] Vercel env vars present (runtime key); warm the ask endpoint with one
       throwaway question ~2 min before recording (cold start).
 - [ ] Confirm trust stamp shows today ("Checked today, 6:00 AM").
-- [ ] Prepare the architecture frame: docs/architecture.png full screen,
-      ready to cut to in the closing scene.
+- [ ] Prepare the architecture frame: FE's new AWS-style diagram (Shopbell
+      title) full screen, ready to cut to in the closing scene.
 - [ ] Scene 5 fallback assets ready if used: email screenshot with the
       owner's email address BLURRED or cropped out (never show the raw
       inbox address on screen).
@@ -56,7 +65,7 @@ every day, and the two or three a month that actually hit this store look
 exactly like the hundreds that don't. Owners can't read it all, so they
 read none of it, and the anxiety never goes away.
 
-This is Compliance Radar, built for the owner of an 18-employee grocery.
+This is Shopbell, built for the owner of an 18-employee grocery.
 It reads everything every morning, interrupts almost never, and, this is
 the important part, shows its work for every item it chose NOT to
 interrupt about. Silence is the product; the rejection log is what makes
@@ -65,13 +74,18 @@ the silence trustworthy."
 ## S1 (0:40-1:10) — The quiet home
 
 Open Overview. Expect: trust stamp with today's time; the all-time strip
-"715 read · 56 brought to you" with the period selector on its default
+(that day's numbers, e.g. "761 read · 57 brought to you" on 2026-09-11)
+with the period selector on its default
 (all-time); topics table with all five tags, zero rows rendered as
 watched-and-quiet; act / check / file tabs plus Handled.
-Say: "It has read over seven hundred real items since mid June. It brought
-about fifty to the owner, and most mornings it brought nothing. One of
-those mornings it emailed a live recall expansion at 6 AM on a Saturday
+Say: "In its first two weeks of operation it read over seven hundred real
+items, covering ninety days of recalls, agendas, and permits. It brought
+fewer than sixty to the owner, and most mornings it brought nothing. One
+of those mornings it emailed a live recall expansion at 6 AM on a Saturday
 while nobody was watching."
+(Dates are auditable: decisions run 2026-08-28 through today. Never claim
+a longer operating history; the 90 days describes the DATA the backfill
+covered, not the runtime.)
 Breaks the take: missing trust stamp; topic rows hidden when zero; period
 selector not on all-time (numbers in the narration assume it).
 
@@ -101,9 +115,9 @@ Breaks the take: partial UPCs anywhere; modal missing default-checked state.
 
 ## S4 (2:25-3:00) — The overturn (learning loop, genuinely earned)
 
-Open the Log and filter by "Food recalls", then scroll to the Fromm
-dog-food item (log search is disabled in the deployed UI; do NOT script a
-search box). Show the real miss: filtered as pet-related while the profile
+Open the Log and search "Fromm" (requires the re-enabled log search from
+the checklist; the item is ~400 rows deep in the Food-recalls filter, so
+scrolling is not a fallback). Show the real miss: filtered as pet-related while the profile
 says the store carries pet food. Overturn it with "This actually affects
 us". Expect: it appears in overturn history.
 Say: "This is a genuine miss, not a staged one. The correction becomes
@@ -113,11 +127,12 @@ front of the model."
 
 ## S5 (3:00-3:30) — The rejection log (silence made trustworthy)
 
-Stay in the Log, still filtered to "Food recalls". Scroll the Albertsons
-cluster. Say: "One competitor's bad week: 159 recalls hit the feed in
-seven days. Every one was filtered with one legible sentence, and zero
-interrupted the owner." Show 2-3 favorite short reasons ("Sold exclusively
-at Albertsons", "Distributed only to OR and WA").
+Stay in the Log, filter to "Food recalls". Show the Albertsons cluster.
+Say: "One competitor chain put out 121 recall notices dated a single day.
+Every one was filtered with one legible sentence, and zero interrupted
+the owner." (Verified: 121 rows; do not say "in seven days" or "159".)
+Show 2-3 favorite short reasons ("Sold exclusively at Albertsons",
+"Distributed only to OR and WA").
 
 ## S6 (3:30-4:10) — Ask the radar (agent with tools)
 
@@ -139,7 +154,9 @@ at the effect-timing disclaimer ("applies from the next daily check").
 Say: "The reasoning engine knows nothing about groceries. Everything
 grocery-specific is this editable page. Swap the profile and the same
 radar watches a salon or a taqueria."
-Cut to docs/architecture.png for ~5 seconds while saying: "One Strands
+Cut to the NEW architecture diagram (FE's AWS-style redraw with the
+Shopbell name; do NOT use docs/architecture.png, which still carries the
+old Compliance Radar title) for ~5 seconds while saying: "One Strands
 agent, two modes, on Bedrock AgentCore. EventBridge to Lambda to the
 runtime every morning; TiDB holds every decision, reason, and embedding."
 End frame: the live URL and the repo URL on screen.
