@@ -22,6 +22,13 @@ Primitives live in `components/ui/`:
 | `Badge` | the uppercase mono eyebrow: source chips, recall class |
 | `Avatar` | initials tile (`square` store, `round` owner) |
 | `NavItem` | a row in the left rail |
+| `Tooltip` | designed hover/focus bubble, Radix-backed |
+| `ItemCard` | shared shell for one decision: overview feed and log |
+| `FilterPills` | segmented control for filtering a list in place |
+| `RadarFace` | the radar mark, used by the Ask launcher and panel |
+
+Icons are Google Material Design, via `react-icons/md` (SVG components rather
+than the icon font, so there is no ligature flash on load).
 
 Screen-level components (`Sidebar`, `TopicTable`, `SurfacedCard`, `PermitMap`)
 compose those. Add a card action by adding one `<Button variant="cardAction">`,
@@ -35,7 +42,7 @@ Note: `text-muted` is the design's muted *ink* (`#6E675C`). shadcn's muted
 
 ## What is implemented
 
-The **home screen** (`/`), reading live TiDB data. No mock data anywhere: if a
+`/` overview, `/log`, `/profile`, `/item/[id]`, `/street-work`, `/about` — reading live TiDB data. No mock data anywhere: if a
 value is not in the database, the component omits it rather than inventing one.
 
 Scope is the **current 7-day window**; 90-day totals belong to the log screen.
@@ -43,21 +50,28 @@ Scope is the **current 7-day window**; 90-day totals belong to the log screen.
 | Region | Source |
 |---|---|
 | Home strip totals | `v_weekly_summary` (summed across source rows) |
-| Surfaced feed | the contract's sanctioned direct query (§5), scoped to 7 days |
-| Nearby permits map | `v_nearby_permits` |
+| Surfaced feed | `v_surfaced_feed`, scoped to 7 days |
+| Topic table | `v_weekly_topics` |
+| "Checked …" stamp | `v_run_status` |
+| Street work (map card headline) | `v_street_work`, ALERTs within 400m |
+| Nearby permits map (background pins) | `v_nearby_permits` |
 | Sidebar store/owner | `store_profile` row `id = 1` |
-| Topic table | ⚠ interim — needs `v_weekly_topics` |
-| "Checked …" stamp | ⚠ interim — needs `last_checked` |
+| Log | `v_filtered_log` (status/source/paging in the URL) |
+| Profile | `store_profile` facts + carry_list (both writable) |
+| Item detail | `v_surfaced_feed`, falling back to `v_filtered_log` |
 
 Shapes follow `../docs/ui-data-contract.md`. The views are the query layer: TS
 does `SELECT * FROM v_...`, and a screen needing a new shape gets a new view
 rather than a bespoke join here.
 
-### Pending view requests
+Every read is now a view. There is no bespoke SQL left in the app.
 
-`lib/pending-views.ts` holds the only bespoke SQL in the app, for the two
-elements no view covers. Both are requested from the backend session; when the
-views land, delete that file and point the call sites at the views.
+### Open request: payload on the log
+
+`v_filtered_log` has no `payload`, so the detail route can show provenance for
+surfaced items but not filtered ones. Either add `payload` to that view or add
+a `v_decision_detail` view covering both; the page degrades honestly until then
+rather than joining `documents` here.
 
 ### A note on the 7-day window
 
@@ -101,13 +115,58 @@ to `bedrock:InvokeModel` — not the project's admin AWS keys.
   The contract describes them as serialized strings (true of pymysql); HTTP
   drivers hand back parsed values. `asJson()` in `lib/queries.ts` accepts both,
   and any new query touching a JSON column must go through it.
-- **Writes.** None. The contract permits exactly two write paths (overturns and
-  profile facts) and the home screen needs neither. "Done" is session-local
-  view state, not persistence.
-- **Feed order** is severity first, then newest within a severity. Severity is
-  derived from the payload, so the sort cannot live in SQL; it happens in
-  `getSurfaced()` after mapping. Without it, ingestion time decides what the
-  owner sees first and Class I recalls sink below routine permits.
+- **Writes.** Overturns, resolutions, profile facts and carry-list entries.
+  Carry-list editing was unfrozen by owner sign-off on 2026-09-05; the runtime
+  reads the profile from the DB, so an edit changes how FUTURE items are
+  triaged and never rewrites a past decision. The save dialog says so, and
+  notes that Ask the radar sees the change before the next daily check does.
+- **Feed order** comes from the backend's `action_type`: act, then priority
+  verify, then verify, then fyi, newest within a tier. The promotion inside
+  `verify` uses `payload.classification` plus a narrow pathogen term list,
+  because `classification` is missing on every `fda_rss` row (the sprouts
+  recalls included) and the contract explicitly sanctions reading the reason
+  there. That list only reorders; it never decides what surfaces.
+- **The headline counts `act`, not everything surfaced.** Most surfaced rows
+  are precautionary checks; calling forty of those "things that need you" is
+  the alert fatigue the product exists to prevent.
+- **`short_reason` in list rows**, full `reason` reserved for detail views.
+- **Product fields decide layout by coverage.** `product_name` and `code_info`
+  (~93% of surfaced recall rows) can anchor a layout; `sizes` ~85%, `brand`
+  ~78%, `upcs` ~59%, `containers` ~37% are conditional and vanish cleanly.
+  Headlines fall back to the source title when extraction found no name.
+- **Long codes are announced, not truncated.** `code_info` runs from 6 to 692
+  characters (median 37). Cards show it only when it fits at a glance and say
+  "multiple date codes" otherwise, because half a list of sell-by dates reads
+  as the whole list. The full value stays in the Resolve checklist and on the
+  detail page, which is where lots actually get matched.
+- **Sizes, UPCs and codes are never zipped into columns.** They are parallel
+  but not 1:1 aligned (one row reads "QUART - BEST BY: 24 DEC 26; PINT - BEST
+  BY: 25 DEC 26"), so a grid would mispair a code with the wrong size.
+- **Ask the radar is UI only.** The launcher and panel are built; nothing is
+  sent anywhere and no answer is generated, because answering means an LLM call
+  and that goes through the backend's cost review first (hard rule 4). The
+  panel says so rather than faking a reply. Each card's Ask button opens it
+  scoped to that item.
+- **One card per recall event.** Rows are grouped on the backend's `event_key`
+  and never on titles or firms, so 48 rows render as 32 cards. A row without a
+  key stands alone, which is also what a real single-item event looks like. A
+  group is ranked by its worst member.
+- **Resolve** writes `resolution` + `resolved_at` per product. A group opens the
+  modal (there is a choice to make per product); a single-item card writes
+  straight away, with "Don't carry" as the second outcome. "Keep open" writes
+  nothing. Resolved rows are fetched rather than filtered in SQL, so a card can
+  say "1 remaining of 5"; an event with nothing open leaves the feed.
+- **The feed filters by tier**, and the heading follows the selection: "23
+  items to check" rather than a fixed line about whether anything needs action.
+  It opens on the most urgent group that is not empty (act, then check, then
+  file), so the screen never opens on an empty list with work one tab away.
+- **Two columns above `lg`**: the feed on the left, the weekly numbers and map
+  in a sticky right rail, inside a 1200px shell. Below `lg` it stacks, feed
+  first. The rail is 380px because the topic table's longest label
+  ("City programs & fees") and its "For you" header both wrap below that.
+- **Map plate** carries the same aspect ratio as its viewBox, so the SVG fits
+  exactly and the roads reach the edges instead of letterboxing into the
+  middle. Road positions are fractions of W/H so the plate can be resized.
 - **Responsive, not a separate mobile build.** The rail is a left column at
   `md+` and a sticky top bar below it, with the nav scrolling horizontally.
   Plain Tailwind breakpoints, no JS and no second layout to maintain.
@@ -116,10 +175,12 @@ to `bedrock:InvokeModel` — not the project's admin AWS keys.
   compress ~70 near-store permits into an unreadable blob. Outliers are clamped
   to the edge keeping their bearing. The streets are the design's decoration,
   not surveyed geometry.
-- **Severity** is taken from the FDA `classification` field where the source
-  provides one (Class I → urgent, Class III → logged). The contract suggests
-  deriving urgency from reason text where classification is missing (fda_rss);
-  that is deliberately not done, because keyword-sniffing prose would
-  manufacture a severity the record does not state. Say the word if you want it.
+- **The alert banner means "the store is affected"** (`action_type = act`),
+  not "a serious recall exists". A Class I recall of something the store does
+  not stock is not an emergency.
+- **Recall class chips** show the FDA's own term (Class I/II/III) because that
+  is what the source document says, with an info icon and a tooltip carrying
+  the plain-English meaning. The chip is focusable, so the explanation is
+  reachable by keyboard and not hover-only.
 - **BIGINT ids** are read as strings (`bigNumberStrings: true`), per contract
   rule 2. Do not turn them into numbers.

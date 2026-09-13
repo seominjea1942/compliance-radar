@@ -1,66 +1,138 @@
 @import "tailwindcss";
 
 /*
- * Single source of truth for the Compliance Radar look.
+ * Single source of truth for the Shopbell look.
  *
- * Values are lifted verbatim from the Claude Design canvas
- * (`Compliance Radar.dc.html`). Change a colour here and it changes
- * everywhere: Tailwind utilities (`bg-paper`, `text-ink`) and the shadcn
- * semantic tokens below both read from these.
+ * Structure and naming came from a Claude Design canvas, whose palette was a
+ * warm cream. It was built here as a neutral grey scale instead, and that is
+ * exactly what made the app read as a wireframe; the cream is back.
+ *
+ * Change a colour here and it changes everywhere: Tailwind utilities
+ * (`bg-paper`, `text-ink`) and the shadcn semantic tokens below both read
+ * from these.
  */
 @theme {
   /* Surfaces */
-  --color-canvas: #ede8df;
-  --color-paper: #ffffff;
-  --color-shell: #faf7f1;
-  --color-rail: #f4f0e7;
-  --color-wash: #f0ebe0;
-  --color-hover: #f1ece1;
+  --color-canvas: #e9e6dc;
+  /* Cream, not white: every surface in the app reads from this, so the page
+     and the things sitting on it are one material. */
+  --color-paper: #efede5;
+  /* The hover, so it has to be darker than the surface now rather than
+     lighter, or a hovered card would flash white against the page. */
+  --color-shell: #e6e3d8;
+  --color-rail: #e9e6dc;
+  --color-wash: #e6e3d8;
+  --color-hover: #e6e3d8;
+
+  /*
+   * The page ground. Warm cream rather than the neutral near-white it
+   * replaced, and its own token rather than a change to --color-shell:
+   * shell is what a card turns on hover, and pointing both at one value
+   * would make a hovered card disappear into the page.
+   */
+  --color-ground: #efede5;
+  /* Controls sitting on a hovered card. --color-hover is the card's own hover
+     background, so a button using it vanishes exactly when the pointer is on
+     the card. This has to stay darker than that. */
+  --color-control-hover: #dcd8ca;
 
   /* Lines */
-  --color-line: #e7e0d2;
-  --color-line-soft: #efe9dc;
-  --color-line-strong: #ded6c7;
-  --color-line-card: #e3dccf;
-  --color-line-warm: #e3d3cc;
-  --color-line-chip: #d9d0be;
+  /*
+   * Warm, and darker than they were. The old scale was built for white and
+   * measured 1.02-1.26 against the cream, so on this page the dividers were
+   * not faint, they were absent. These run 1.3-1.9, which is a visible
+   * hairline without becoming a second rule competing with --color-rule.
+   */
+  --color-line: #c4bfad;
+  --color-line-soft: #d6d2c4;
+  --color-line-strong: #b8b2a0;
+  --color-line-card: #c4bfad;
+  --color-line-warm: #e8c4bd;
+  --color-line-chip: #b8b2a0;
+
+  /*
+   * The rule: the heavy hairline that separates a structural region from the
+   * page, starting with the app bar. Warm near-black rather than the neutral
+   * greys above it, so it reads as ink on paper instead of another shade of
+   * the border scale.
+   */
+  --color-rule: #191511;
 
   /* Ink */
-  --color-ink: #23201b;
-  --color-ink-soft: #3b372f;
-  --color-body: #57514a;
-  --color-muted: #6e675c;
-  --color-faint: #8a8175;
-  --color-monoink: #7c7466;
-  --color-ghost: #a9a093;
+  --color-ink: #18181b;
+  --color-ink-soft: #27272a;
+  --color-body: #3f3f46;
+  --color-muted: #52525b;
+  /* Darkened from #71717a when the page went cream: the old value measured
+     4.12:1 on #efede5, under the 4.5 floor, while still passing on a white
+     card. One value that clears both is less fragile than deciding per site
+     which ground a given line happens to sit on. */
+  --color-faint: #67676d;
+  --color-monoink: #67676d;
+  --color-ghost: #a1a1aa;
 
-  /* Accent */
-  --color-green: #2e5a46;
-  --color-green-deep: #1f3f31;
-  --color-green-soft: #9fbfac;
-  --color-green-tint: #f2f6f3;
-  --color-green-tint-line: #dce6df;
+  /*
+   * Accent. Named for its role, not its hue: it was green, and a token called
+   * --color-green holding a blue is a lie the next person has to find out the
+   * hard way.
+   *
+   * Each blue is matched to the luminance of the green it replaces, to three
+   * decimal places, so every contrast ratio in the app is what it was: the
+   * accent 6.38:1 on white against the old 6.37, deep 8.92 against 8.91.
+   */
+  --color-brand: #28619e;
+  --color-brand-deep: #1d4b7d;
+  --color-brand-soft: #93b3d4;
+  --color-brand-tint: #f2f6fb;
+  --color-brand-tint-line: #dce6f2;
+  /* A pressed control on a card. Matched to the grey it replaces: 1.25
+     against a hovered card, where #e0e0e6 measured 1.26. */
+  --color-brand-wash: #d4e3f8;
 
   /* Urgent */
-  --color-alert: #a8412a;
-  --color-alert-ink: #8c3722;
-  --color-alert-bg: #fbf1ed;
-  --color-alert-line: #ebd3c8;
+  --color-alert: #b42318;
+  --color-alert-ink: #912018;
+  --color-alert-bg: #fef4f2;
+  --color-alert-line: #f6d2cd;
+  /* Solid ground for the action/class badges. Darkened from #ce6969 so
+     white text clears 4.5:1 at the badge's 10.5px. */
+  --color-alert-fill: #c65050;
 
   /* Map */
-  --color-pin: #a79e8e;
-  --color-pin-faint: #bfb7a8;
-  --color-road: #e4dccc;
-  --color-road-faint: #e9e2d4;
+  --color-pin: #a1a1aa;
+  --color-pin-faint: #c7c7cc;
+  --color-road: #e4e4e7;
+  --color-road-faint: #ededf0;
 
-  /* Type. next/font sets the --font-* variables in app/layout.tsx. */
-  --font-serif: var(--font-newsreader), Georgia, serif;
-  --font-sans: var(--font-plex-sans), system-ui, sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  /*
+   * The application bar's height, and the ask drawer's header with it. One
+   * number because the two sit side by side when the drawer is open, and a
+   * few pixels of difference between their bottom borders is the kind of
+   * thing you see without being able to name. Below md the bar wraps to two
+   * rows and the drawer is a bottom sheet, so neither is pinned to this.
+   */
+  --app-bar-h: 73px;
 
-  --radius-card: 12px;
-  --radius-panel: 10px;
-  --radius-control: 6px;
+  /*
+   * Type. app/layout.tsx binds the actual faces to these role variables, so a
+   * typeface swap happens there and nowhere else.
+   *   ui -> Geist   mono-ui -> Geist Mono
+   *
+   * One face for the interface, no display serif. Newsreader ran on item
+   * titles, reasons and section headers; two voices on a screen this dense
+   * read as two products rather than as emphasis.
+   */
+  --font-sans: var(--font-ui), system-ui, sans-serif;
+  --font-mono: var(--font-mono-ui), ui-monospace, monospace;
+
+  /*
+   * Near-square. 2px rather than 0: a true right angle renders a hair ragged
+   * where a border meets at the corner, and the 2px keeps the edge clean
+   * while still reading as an unrounded frame.
+   */
+  --radius-card: 2px;
+  --radius-panel: 2px;
+  --radius-control: 2px;
 }
 
 /*
@@ -68,25 +140,25 @@
  * added later inherits the editorial look without being restyled by hand.
  */
 :root {
-  --radius: 0.625rem;
-  --background: var(--color-shell);
+  --radius: 2px;
+  --background: var(--color-ground);
   --foreground: var(--color-ink);
   --card: var(--color-paper);
   --card-foreground: var(--color-ink);
   --popover: var(--color-paper);
   --popover-foreground: var(--color-ink);
-  --primary: var(--color-green);
+  --primary: var(--color-brand);
   --primary-foreground: var(--color-shell);
   --secondary: var(--color-rail);
   --secondary-foreground: var(--color-ink);
   --muted: var(--color-rail);
   --muted-foreground: var(--color-faint);
   --accent: var(--color-hover);
-  --accent-foreground: var(--color-green);
+  --accent-foreground: var(--color-brand);
   --destructive: var(--color-alert);
   --border: var(--color-line);
   --input: var(--color-line-card);
-  --ring: var(--color-green-soft);
+  --ring: var(--color-brand-soft);
 }
 
 @theme inline {
@@ -114,7 +186,188 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /*
+    Reserve the scrollbar's width whether or not there is one to show.
+    Without this, a filter that leaves one row or none makes the page short
+    enough to lose the scrollbar, the viewport gets wider by its width, and
+    every centred container jumps sideways: the log looked like it was
+    shivering as the filters changed. Browsers with overlay scrollbars
+    reserve nothing here, so this costs them no space.
+  */
+  html {
+    scrollbar-gutter: stable;
+  }
   body {
     @apply bg-background text-foreground font-sans;
   }
+}
+
+/*
+ * The blink.
+ *
+ * Only the eyes scale, and only vertically, around their own bounding box:
+ * `fill-box` is what makes "centre" mean the middle of the pair rather than
+ * the middle of the SVG, so the lids appear to close rather than the eyes
+ * shrinking toward the corner.
+ *
+ * Two blinks a cycle, close together, then a long wait. One evenly spaced
+ * blink reads as a metronome; a double followed by a pause is roughly what
+ * eyes actually do.
+ */
+@keyframes radar-blink {
+  0%,
+  4%,
+  10%,
+  100% {
+    transform: scaleY(1);
+  }
+  2%,
+  7% {
+    transform: scaleY(0.1);
+  }
+}
+
+.radar-eyes {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: radar-blink 7s infinite;
+}
+
+/* A face that blinks at you is decoration, and decoration that moves is
+   exactly what this query is for. */
+@media (prefers-reduced-motion: reduce) {
+  .radar-eyes {
+    animation: none;
+  }
+}
+
+/*
+ * The ask drawer's entrance. Slides from the edge it is docked to, so it
+ * reads as arriving from off-screen rather than appearing in place. Below sm
+ * the panel is a bottom sheet, so it rises instead.
+ */
+@keyframes radar-drawer-up {
+  from {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+}
+
+@keyframes radar-drawer-in {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+}
+
+.radar-drawer {
+  animation: radar-drawer-up 180ms ease-out;
+}
+
+@media (min-width: 40rem) {
+  .radar-drawer {
+    animation: radar-drawer-in 200ms ease-out;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radar-drawer {
+    animation: none;
+  }
+}
+
+/*
+ * A scrollbar that only shows when it is being used.
+ *
+ * The gutter is always reserved and only the thumb comes and goes, so
+ * revealing it never reflows what is beside it. Hover covers the wheel, which
+ * needs the pointer over the element anyway, and focus-within covers the
+ * keyboard, which is the other way this column gets scrolled.
+ */
+.scroll-quiet {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.scroll-quiet:hover,
+.scroll-quiet:focus-within {
+  scrollbar-color: var(--color-line-strong) transparent;
+}
+
+.scroll-quiet::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scroll-quiet::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 4px;
+  background-clip: content-box;
+  background-color: transparent;
+}
+
+.scroll-quiet:hover::-webkit-scrollbar-thumb,
+.scroll-quiet:focus-within::-webkit-scrollbar-thumb {
+  background-color: var(--color-line-strong);
+}
+
+/* Tooltip entrance. Kept here rather than pulling in an animation plugin. */
+@keyframes radar-tooltip-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.radar-tooltip[data-state="delayed-open"],
+.radar-tooltip[data-state="instant-open"] {
+  animation: radar-tooltip-in 120ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radar-tooltip[data-state="delayed-open"],
+  .radar-tooltip[data-state="instant-open"] {
+    animation: none;
+  }
+}
+
+/*
+ * Street-work tooltips carry the detail the card no longer lists.
+ *
+ * An explicit width, not max-width: the tooltip is absolutely positioned
+ * inside the map pane, so a max-width still shrinks to whatever space is left
+ * between the marker and the map edge, which collapsed it to ~96px on markers
+ * near the right side.
+ */
+/*
+ * Leaflet gives its own panes z-index values in the hundreds, and they were
+ * winning against the ask panel at z-40. Isolating the map's container turns
+ * those into a private stack: they still order correctly among themselves,
+ * and the whole map now sits at z-0 in the page.
+ */
+.leaflet-container {
+  isolation: isolate;
+  z-index: 0;
+}
+
+.leaflet-tooltip.radar-tip {
+  width: 230px;
+  white-space: normal;
+  line-height: 1.45;
+}
+
+/*
+ * City work descriptions run to a paragraph. Unclamped they made the tooltip
+ * taller than the map, which clips it: Leaflet's "auto" direction flips left
+ * and right but does nothing about vertical overflow.
+ */
+.radar-tip-desc {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
 }

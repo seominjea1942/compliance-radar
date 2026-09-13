@@ -11,21 +11,24 @@ import { cn } from "@/lib/utils";
  * rather than on every button.
  */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-control transition-colors disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-ring",
+  "inline-flex cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-control transition-colors disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-ring",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-green-deep",
+        default: "bg-primary text-primary-foreground hover:bg-brand-deep",
         outline: "border border-line-card bg-paper text-ink hover:bg-hover",
-        ghost: "text-muted hover:bg-hover hover:text-green",
-        link: "text-green underline-offset-4 hover:underline",
+        ghost: "text-muted hover:bg-hover hover:text-brand",
+        link: "text-brand underline-offset-4 hover:underline",
         cardAction:
-          "flex-none tracking-[0.02em] text-muted hover:bg-hover hover:text-green",
+          "flex-none tracking-[0.02em] text-muted hover:bg-brand-wash hover:text-brand",
       },
       size: {
         default: "h-9 px-4 text-sm",
         sm: "h-8 px-3 text-[13px]",
-        action: "px-[9px] py-[7px] text-[10.5px] font-normal",
+        // 12px, not 10.5. The card action row is the only place in the app
+        // that went under 11, and these are the controls the whole card is
+        // there to offer.
+        action: "px-2.5 py-[7px] text-[12px] font-normal",
         icon: "size-9",
       },
     },
