@@ -17,11 +17,10 @@ export const dynamic = "force-dynamic";
 const LINKS: { label: string; description: string; href?: string }[] = [
   {
     label: "Source code",
-    description: "Backend pipeline and this frontend. Private repository.",
+    description: "The agent, the pipeline, and this frontend. MIT licensed.",
     href: "https://github.com/seominjea1942/compliance-radar",
   },
   { label: "Demo video", description: "Walkthrough of a week on the radar." },
-  { label: "Slides", description: "The pitch and the architecture." },
 ];
 
 const STEPS = [
