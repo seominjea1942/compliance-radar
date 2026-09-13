@@ -174,9 +174,9 @@ at the effect-timing disclaimer ("applies from the next daily check").
 Say: "The reasoning engine knows nothing about groceries. Everything
 grocery-specific is this editable page. Swap the profile and the same
 radar watches a salon or a taqueria."
-Cut to the NEW architecture diagram (FE's AWS-style redraw with the
-Shopbell name; do NOT use docs/architecture.png, which still carries the
-old Compliance Radar title) for ~5 seconds while saying: "One Strands
+Cut to docs/architecture.png (the AWS-style Shopbell diagram; the
+old Compliance Radar poster was replaced on 2026-09-13 and its SVG
+source removed) for ~5 seconds while saying: "One Strands
 agent, two modes, on Bedrock AgentCore. EventBridge to Lambda to the
 runtime every morning; TiDB holds every decision, reason, and embedding."
 End frame: the live URL and the repo URL on screen.
