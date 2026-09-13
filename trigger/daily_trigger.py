@@ -26,16 +26,19 @@ ses = boto3.client("ses")
 
 
 def handler(event, context):
+    # EventBridge passes the schedule's Input as the event; the 6:00 schedule
+    # sends none (daily_run) and the 6:30 schedule sends {"action": "demo_reset"}
+    action = (event or {}).get("action", "daily_run")
     resp = agentcore.invoke_agent_runtime(
         agentRuntimeArn=RUNTIME_ARN,
-        runtimeSessionId=f"daily-{uuid.uuid4()}",
-        payload=json.dumps({"action": "daily_run"}).encode(),
+        runtimeSessionId=f"{action}-{uuid.uuid4()}",
+        payload=json.dumps({"action": action}).encode(),
     )
     body = resp["response"].read() if hasattr(resp.get("response"), "read") else resp.get("response")
     result = json.loads(body)
     summary = result.get("summary", {})
-    alerts = summary.get("alerts", [])
-    print(f"summary: {json.dumps(summary)[:500]}")
+    alerts = summary.get("alerts", []) if action == "daily_run" else []
+    print(f"{action} summary: {json.dumps(summary)[:500]}")
 
     if alerts:
         lines = [f"[{a['decision']}] {a['title']}\n    Why: {a['reason']}" for a in alerts]

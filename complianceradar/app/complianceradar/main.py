@@ -4,6 +4,7 @@ One runtime, two modes:
   Batch (EventBridge Scheduler -> Lambda -> InvokeAgentRuntime):
     {"action": "ping"}                      health check
     {"action": "daily_run", "limit": N}     full triage pass (limit optional)
+    {"action": "demo_reset"}                undo visitor interactions (6:30 AM)
   Interactive (web app -> InvokeAgentRuntime with a per-user runtimeSessionId):
     {"action": "ask", "question": "...", "decision_id": <optional int>,
      "session_id": "<chat session key>"}    tool-using Q&A over watched data
@@ -27,6 +28,12 @@ def handler(payload, context=None):
     log.info("compliance-radar invoked, action=%s", action)
     if action == "ping":
         return {"status": "ok"}
+
+    if action == "demo_reset":
+        from radar.demo_reset import reset
+        summary = reset()
+        log.info("demo reset: %s", summary)
+        return {"status": "ok", "summary": summary}
 
     def _as_id(v):
         # decision_ids exceed JS safe integers; accept them as strings
