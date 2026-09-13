@@ -1,6 +1,4 @@
-# One Strands agent, two modes, one AgentCore Runtime: what I learned building a compliance radar for a grocery store
-
-*Draft for builder.aws (community post). First person, ~1,200 words.*
+# Agents for Humans: one Strands agent, two modes, one AgentCore Runtime, and the $30 lesson in between
 
 I spent the past few weeks building Shopbell for the AWS "Agents for Humans"
 hackathon. It is a background compliance agent for one specific small
